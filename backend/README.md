@@ -56,6 +56,18 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+
+# create migration
+npm run typeorm:generate {migration name}
+
+# show migrations
+npm run typeorm:show 
+
+# run migrations
+npm run typeorm:run
+
+# revert migrations
+npm run typeorm:revert
 ```
 
 ## Support
