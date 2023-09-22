@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login with OAuth2 & Two-Factor Authentication</title>
+</head>
+<body>
+<div>
+  <h1>OAuth2 and 2FA</h1>
+  <a href="http://localhost:3000/api/auth/42/login">Login with OAuth2</a>
+  <br>
+  <br>
+  <a href="http://localhost:3000/api/auth/logout">Logout</a>
+  <br>
+  <br>
+  <a href="http://localhost:3000/api/auth/2fa/qr-code">Register 2FA</a>
+</div>
+<br>
+<div>
+  <form
+    id="2fa-register-form"
+    action="http://localhost:3000/api/auth/2fa/turn-on"
+    method="post"
+  >
+    <label for="2fa-register-code">Enter the code to enable 2FA:</label>
+    <input
+      type="text"
+      id="2fa-register-code"
+      name="code"
+      placeholder="Enter your 2FA code here"
+    />
+    <button type="submit">Submit</button>
+  </form>
+</div>
+<br>
+<div>
+  <form
+    id="2fa-validate-form"
+    action="http://localhost:3000/api/auth/2fa/validate"
+    method="post"
+  >
+    <label for="2fa-validate-code">Enter 2FA to login:</label>
+    <input
+      type="text"
+      id="2fa-validate-code"
+      name="code"
+      placeholder="Enter your 2FA code here"
+    />
+    <button type="submit">Submit</button>
+  </form>
+</div>
+<br>
+<div>
+  <form
+    id="2fa-disable-form"
+    action="http://localhost:3000/api/auth/2fa/turn-off"
+    method="post"
+  >
+    <button type="submit">Disable 2FA</button>
+  </form>
+</div>
+
+</body>
+</html>
