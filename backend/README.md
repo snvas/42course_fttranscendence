@@ -27,6 +27,12 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Installation
+```bash
+# install typescript
+npm i -g typescript
+
+# install typeorm cli
+npm i -g typeorm
 
 ```bash
 $ npm install
@@ -45,6 +51,22 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Running migrations
+```bash
+# create migration
+npm run typeorm:generate {migration name}
+
+# show migrations
+npm run typeorm:show 
+
+# run migrations
+npm run typeorm:run
+
+# revert migrations
+npm run typeorm:revert
+
+```
+
 ## Test
 
 ```bash
@@ -57,17 +79,6 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 
-# create migration
-npm run typeorm:generate {migration name}
-
-# show migrations
-npm run typeorm:show 
-
-# run migrations
-npm run typeorm:run
-
-# revert migrations
-npm run typeorm:revert
 ```
 
 ## Support
