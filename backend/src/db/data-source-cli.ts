@@ -8,11 +8,11 @@ const configService: ConfigService<Record<string, any>> = new ConfigService();
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: configService.get('DB_HOST'),
-  port: configService.get('DB_PORT'),
-  username: configService.get('DB_USERNAME'),
-  password: configService.get('DB_PASSWORD'),
-  database: configService.get('DB_NAME'),
+  host: configService.get<string>('DB_HOST') || 'localhost',
+  port: configService.get<number>('DB_PORT') || 5432,
+  username: configService.get<string>('DB_USERNAME') || 'root',
+  password: configService.get<string>('DB_PASSWORD') || 'root',
+  database: configService.get<string>('DB_NAME') || 'transcendence',
   entities: ['dist/**/*.entity.js'],
   migrations: ['dist/db/migrations/*.js'],
   //synchronize: true,

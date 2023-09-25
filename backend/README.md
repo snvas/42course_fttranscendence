@@ -26,7 +26,7 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+## Utils
 ```bash
 # install typescript
 $ npm i -g typescript
@@ -39,8 +39,21 @@ $ npm i -g @nestjs/cli
 
 # install npx
 $ npm i -g npx
+```
 
+## Installation
+```bash
+# run docker-compose.yml on project root folder
+$ docker-compose up -d
+
+# Move to backend/ folder
+$ cd backend/
+
+# Install dependencies
 $ npm install
+
+# run migrations
+$ npm run migration:run
 ```
 
 ## Running the app
@@ -56,7 +69,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Running migrations
+## Migrations
 ```bash
 # create migration
 npm run migration:generate {migration name}

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  NotFoundException,
   Post,
   Req,
   Res,
@@ -13,7 +14,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { TwoFactorAuth, FortyTwoAuthGuard, Public } from './index';
+import {
+  FortyTwoAuthGuard,
+  Public,
+  ResponseMessage,
+  DisableTwoFactorAuthenticationBlock,
+} from './index';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -21,6 +27,8 @@ import { OneTimePasswordDto } from './models/one-time-password.dto';
 import { ResponseMessageDto } from './models/response-message.dto';
 import { ConfigService } from '@nestjs/config';
 import { plainToClass } from 'class-transformer';
+import { ProfileService } from '../profile/profile.service';
+import { ProfileDTO } from '../profile/models/profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -51,6 +59,16 @@ export class AuthController {
       this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
       'http://localhost:5173';
 
+    const hasProfile: boolean = await this.authService.userHasProfile(user);
+
+    if (!hasProfile) {
+      res.redirect(redirectUrl + '/welcome');
+    }
+
+    if (user.otpEnabled) {
+      res.redirect(redirectUrl + '/validate-otp');
+    }
+
     res.redirect(redirectUrl);
   }
 
@@ -75,7 +93,7 @@ export class AuthController {
     return plainToClass(FortyTwoUserDto, user);
   }
 
-  @TwoFactorAuth()
+  @DisableTwoFactorAuthenticationBlock()
   @Get('2fa/session')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -106,7 +124,7 @@ export class AuthController {
     return { message: 'Two-factor authentication disabled' };
   }
 
-  @TwoFactorAuth()
+  @DisableTwoFactorAuthenticationBlock()
   @Post('2fa/validate')
   async validate2FA(
     @Req() req: Request,
@@ -118,16 +136,12 @@ export class AuthController {
   }
 
   @Get('2fa/qr-code')
-  async qrCode2FA(
-    @Req() { user }: { user: FortyTwoUserDto },
-    @Res() res: Response,
-  ) {
+  async qrCode2FA(@Req() { user }: { user: FortyTwoUserDto }): Promise<string> {
     const otpAuthUrl: string = await this.authService.generate2FASecret(
       user.id,
       user.email,
     );
-    await this.authService.pipeQrCodeStream(res, otpAuthUrl);
-    //return this.authService.qrCodeToDataURL(otpAuthUrl);
+    return this.authService.qrCodeToDataURL(otpAuthUrl);
   }
 
   // Debug route to check if user is authenticated

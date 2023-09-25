@@ -14,7 +14,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly configService: ConfigService,
+    private configService: ConfigService,
   ) {
     super({
       clientID: configService.get<string>('APP_OAUTH2_CLIENT_ID'),

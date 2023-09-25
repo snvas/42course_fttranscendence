@@ -8,13 +8,17 @@ import {
   SessionSerializer,
   UserAuthenticatedGuard,
 } from './index';
-import { UserService } from '../user/user.service';
 import entities from '../db/entities';
+import { UserService } from '../user/user.service';
+import { ProfileService } from '../profile/profile.service';
+import { AvatarService } from '../avatar/avatar.service';
 
 @Module({
   controllers: [AuthController],
   providers: [
     UserService,
+    AvatarService,
+    ProfileService,
     FortyTwoStrategy,
     UserAuthenticatedGuard,
     FortyTwoAuthGuard,

@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-import { FortyTwoUser } from '../../user/interfaces/fortytwo-user.interface';
+import { FortyTwoUser } from '../../auth';
 
 @Entity({ name: 'users' })
 export class UserEntity implements FortyTwoUser {

@@ -22,7 +22,7 @@ export class UserAuthenticatedGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    const isTwoFactorAuth: boolean = this.reflector.getAllAndOverride<boolean>(
+    const isTwoFactorAuth = this.reflector.getAllAndOverride<boolean>(
       IS_TWO_FACTOR_AUTH,
       [context.getHandler(), context.getClass()],
     );

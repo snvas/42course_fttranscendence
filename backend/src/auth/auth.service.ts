@@ -15,6 +15,8 @@ import { toDataURL, toFileStream } from 'qrcode';
 import { FortyTwoUser, OneTimePassword } from './index';
 import { plainToClass } from 'class-transformer';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { ProfileDTO } from '../profile/models/profile.dto';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +25,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly profileService: ProfileService,
   ) {}
 
   async loginUser(user: FortyTwoUser): Promise<FortyTwoUser> {
@@ -147,15 +150,33 @@ export class AuthService {
     return otpAuthUrl;
   }
 
-  public async qrCodeToDataURL(otpAuthUrl: string): Promise<string> {
-    return await toDataURL(otpAuthUrl);
-  }
-
   public async pipeQrCodeStream(
     stream: Response,
     otpauthUrl: string,
   ): Promise<void> {
-    this.logger.verbose(`### Generating QR Code`);
+    //toDataURL()
+    this.logger.verbose(`### Generating QR Code for ${otpauthUrl}`);
     return toFileStream(stream, otpauthUrl);
+  }
+
+  public async qrCodeToDataURL(otpAuthUrl: string): Promise<string> {
+    return await toDataURL(otpAuthUrl);
+  }
+
+  public async userHasProfile(user: FortyTwoUserDto): Promise<boolean> {
+    try {
+      const profileDTO: ProfileDTO = await this.profileService.findByUserId(
+        user.id,
+      );
+
+      if (profileDTO) {
+        return true;
+      }
+    } catch (e) {
+      if (!(e instanceof NotFoundException)) {
+        throw e;
+      }
+    }
+    return false;
   }
 }

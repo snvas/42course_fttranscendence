@@ -4,7 +4,7 @@ import { FortyTwoUser } from '../user/interfaces/fortytwo-user.interface';
 import { SessionSerializer } from './serializers/fortytwo-auth.serializer';
 import { FortyTwoStrategy } from './strategies/fortytwo.strategy';
 import { Public } from './decorators/public.decorator';
-import { TwoFactorAuth } from './decorators/two-factor-auth.decorator';
+import { DisableTwoFactorAuthenticationBlock } from './decorators/two-factor-auth.decorator';
 import { OneTimePassword } from './interfaces/one-time-password.interface';
 import { ResponseMessage } from './interfaces/response-message.interface';
 
@@ -17,5 +17,5 @@ export {
   OneTimePassword,
   ResponseMessage,
   Public,
-  TwoFactorAuth,
+  DisableTwoFactorAuthenticationBlock,
 };
