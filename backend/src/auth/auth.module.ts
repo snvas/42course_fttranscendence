@@ -8,8 +8,8 @@ import {
   SessionSerializer,
   UserAuthenticatedGuard,
 } from './index';
-import entities from '../db/entities';
 import { UserService } from '../user/user.service';
+import entities from '../db/entities';
 
 @Module({
   controllers: [AuthController],

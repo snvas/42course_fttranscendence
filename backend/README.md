@@ -29,12 +29,17 @@
 ## Installation
 ```bash
 # install typescript
-npm i -g typescript
+$ npm i -g typescript
 
 # install typeorm cli
-npm i -g typeorm
+$ npm i -g typeorm
 
-```bash
+# install nest cli
+$ npm i -g @nestjs/cli
+
+# install npx
+$ npm i -g npx
+
 $ npm install
 ```
 
@@ -54,16 +59,16 @@ $ npm run start:prod
 ## Running migrations
 ```bash
 # create migration
-npm run typeorm:generate {migration name}
+npm run migration:generate {migration name}
 
 # show migrations
-npm run typeorm:show 
+npm run migration:show 
 
 # run migrations
-npm run typeorm:run
+npm run migration:run
 
 # revert migrations
-npm run typeorm:revert
+npm run migration:revert
 
 ```
 
