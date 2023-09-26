@@ -49,6 +49,22 @@ export class ProfileService {
     return plainToClass(ProfileDTO, profileEntity);
   }
 
+  async findByProfileId(profileId: number): Promise<ProfileDTO> {
+    const profileEntity: ProfileEntity | null =
+      await this.profileRepository.findOneBy({
+        id: profileId,
+      });
+
+    if (!profileEntity) {
+      throw new NotFoundException(
+        `Public profile for profileId [${profileId}] not found`,
+      );
+    }
+
+    this.logger.log(`Public profile found for user [${profileId}]`);
+    return plainToClass(ProfileDTO, profileEntity);
+  }
+
   async create(userId: number, nickname: string): Promise<ProfileDTO> {
     const userEntity: UserEntity | null = await this.userService.findById(
       userId,

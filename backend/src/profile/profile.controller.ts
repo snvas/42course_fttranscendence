@@ -42,10 +42,19 @@ export class ProfileController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
-  async getProfile(
+  async getUserProfile(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<ProfileDTO> {
     return await this.profileService.findByUserId(user.id);
+  }
+
+  @Get('public/:id')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getPublicProfile(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ProfileDTO> {
+    return await this.profileService.findByProfileId(id);
   }
 
   @Post('create')
@@ -84,7 +93,7 @@ export class ProfileController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({
-            maxSize: 1024 * 1024 * 5,
+            maxSize: 1024 * 1024 * 2,
           }),
           new FileTypeValidator({
             fileType: '(png|jpeg|jpg|gif|svg|bmp|webp|tiff)',
