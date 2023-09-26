@@ -16,3 +16,13 @@
     @apply text-blue-600 underline;
   }
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#38761d] border-4 hover:bg-[#5bbd30];
+    @apply rounded-lg;
+    @apply w-full;
+    @apply text-2xl uppercase;
+    @apply py-2 px-4;
+  }
+}

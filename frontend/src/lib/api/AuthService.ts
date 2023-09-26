@@ -1,8 +1,8 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import type { FortyTwoUserDto } from '../../../backend/src/user/models/forty-two-user.dto.ts';
-import type { ResponseMessageDto } from '../../../backend/src/auth/models/response-message.dto.ts';
-import type { OneTimePasswordDto } from '../../../backend/src/auth/models/one-time-password.dto.ts';
+import type { FortyTwoUserDto } from '../../../../backend/src/user/models/forty-two-user.dto.ts';
+import type { ResponseMessageDto } from '../../../../backend/src/auth/models/response-message.dto.ts';
+import type { OneTimePasswordDto } from '../../../../backend/src/auth/models/one-time-password.dto.ts';
 
 class AuthService {
 	private axiosInstance: AxiosInstance;
@@ -43,6 +43,4 @@ class AuthService {
 	}
 }
 
-const authService: AuthService = new AuthService('http://localhost:3000/api/auth');
-
-export default authService;
+export const authService: AuthService = new AuthService('http://localhost:3000/api/auth');

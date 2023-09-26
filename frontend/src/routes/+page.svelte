@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { AxiosResponse } from "axios";
 	import type { FortyTwoUserDto } from "../../../backend/src/user/models/forty-two-user.dto";
-	import authService from "../api/AuthService"
+	import {authService} from "$lib/api"
 
 	let logoutResponse = JSON.stringify({})
 	let sessionResponse = JSON.stringify({})

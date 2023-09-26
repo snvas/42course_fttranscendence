@@ -2,4 +2,6 @@
 	import '../tailwind.css';
 </script>
 
-<slot />
+<div class="bg-black h-screen w-screen text-white font-anton">
+	<slot />
+</div>
