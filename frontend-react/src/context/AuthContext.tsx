@@ -1,21 +1,27 @@
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { AuthContextData } from "./interfaces/AuthContextData.ts";
 import axios from "axios";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import { FortyTwoUserDto } from "../../backend/src/user/models/forty-two-user.dto.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
 import authService from "../api/AuthService.ts";
+import { FortyTwoUserDto } from "../../../backend/dist/user/models/forty-two-user.dto";
 
 const AuthContext = createContext({});
 
-AuthContext.displayName = 'AuthContext';
+AuthContext.displayName = "AuthContext";
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
-
   const navigate: NavigateFunction = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [user, setUser] = useState<FortyTwoUserDto | null>(null);
@@ -27,14 +33,15 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   const validateUserSession = async (): Promise<void> => {
     try {
-      const response = location.pathname === "/validate-otp"
-        ? await authService.validate2FASession()
-        : await authService.validateUserSession();
+      const response =
+        location.pathname === "/validate-otp"
+          ? await authService.validate2FASession()
+          : await authService.validateUserSession();
 
       setUser(response.data);
     } catch (error) {
       setUser(null);
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -80,7 +87,13 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     return true;
   };
 
-  const contextData: AuthContextData = { user, logoutUser, enable2FA, disable2FA, validateOTP };
+  const contextData: AuthContextData = {
+    user,
+    logoutUser,
+    enable2FA,
+    disable2FA,
+    validateOTP,
+  };
 
   return (
     <AuthContext.Provider value={contextData}>

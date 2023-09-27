@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.tsx";
-import { AuthContextData } from "../../context/interfaces/AuthContextData.ts";
-import { ProfileContextData } from "../../context/interfaces/ProfileContextData.ts";
-import { useProfile } from "../../context/ProfileContext.tsx";
+import { useProfile } from "../context/ProfileContext.tsx";
+import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
+import { useAuth } from "../context/AuthContext.tsx";
+import { AuthContextData } from "../context/interfaces/AuthContextData.ts";
 
 const Header = () => {
   const { user, logoutUser } = useAuth() as AuthContextData;
@@ -11,19 +11,26 @@ const Header = () => {
   return (
     <div className="header">
       <div>
-        <a href={"/"} id="header-logo">Pong</a>
+        <a href={"/"} id="header-logo">
+          Pong
+        </a>
       </div>
 
       <div className="links--wrapper">
-        { user && profile ? (
+        {user && profile ? (
           <>
-            <Link to="/" className="header--link">Home</Link>
-            <Link to="/profile" className="header--link">Profile</Link>
-            <button onClick={logoutUser} className="btn">Logout</button>
+            <Link to="/" className="header--link">
+              Home
+            </Link>
+            <Link to="/profile" className="header--link">
+              Profile
+            </Link>
+            <button onClick={logoutUser} className="btn">
+              Logout
+            </button>
           </>
-        ): (
-          <>
-          </>
+        ) : (
+          <></>
         )}
       </div>
     </div>

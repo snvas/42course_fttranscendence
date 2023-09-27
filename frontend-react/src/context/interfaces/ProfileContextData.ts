@@ -1,4 +1,4 @@
-import { ProfileDTO } from "../../../backend/src/profile/models/profile.dto";
+import { ProfileDTO } from "../../../../backend/dist/profile/models/profile.dto";
 
 export interface ProfileContextData {
   profile: ProfileDTO | null;

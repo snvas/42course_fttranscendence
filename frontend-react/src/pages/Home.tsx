@@ -1,8 +1,8 @@
-import { useProfile } from "../../context/ProfileContext.tsx";
-import { ProfileContextData } from "../../context/interfaces/ProfileContextData.ts";
+import { useProfile } from "../context/ProfileContext.tsx";
+import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
 
 const Home = () => {
-  const { profile, avatarImageUrl} = useProfile() as ProfileContextData;
+  const { profile, avatarImageUrl } = useProfile() as ProfileContextData;
 
   return (
     <div className="container">
@@ -10,10 +10,11 @@ const Home = () => {
 
       <br></br>
       <div>
-        {avatarImageUrl
-          ? <img src={avatarImageUrl} alt="User Avatar Image" />
-          : <img src= "/default-avatar.jpeg" alt="Default Avatar Image"/>
-        }
+        {avatarImageUrl ? (
+          <img src={avatarImageUrl} alt="User Avatar Image" />
+        ) : (
+          <img src="/default-avatar.jpeg" alt="Default Avatar Image" />
+        )}
         <p>Nickname: {profile?.nickname}</p>
       </div>
       <br></br>
@@ -22,7 +23,6 @@ const Home = () => {
       <p>Loses: {profile?.losses}</p>
       <p>Ranking: Not Implement Yet</p>
     </div>
-
   );
 };
 

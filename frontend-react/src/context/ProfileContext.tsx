@@ -1,12 +1,19 @@
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { ProfileContextData } from "./interfaces/ProfileContextData";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError";
-import { ProfileDTO } from "../../backend/src/profile/models/profile.dto";
 import AuthContext from "./AuthContext";
 import { useLocation } from "react-router-dom";
 import { AuthContextData } from "./interfaces/AuthContextData.ts";
 import profileService from "../api/ProfileService.ts";
 import { AxiosResponse, isAxiosError } from "axios";
+import { ProfileDTO } from "../../../backend/dist/profile/models/profile.dto";
 
 const ProfileContext = createContext({});
 
@@ -19,7 +26,9 @@ interface ProfileProvideProps {
 export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
   const { user } = useContext(AuthContext) as AuthContextData;
   const [loading, setLoading] = useState<boolean>(true);
-  const [avatarImageUrl, setAvatarImageUrl] = useState<string | undefined>(undefined);
+  const [avatarImageUrl, setAvatarImageUrl] = useState<string | undefined>(
+    undefined
+  );
   const [profile, setProfile] = useState<ProfileDTO | null>(null);
   const throwAsyncError = useThrowAsyncError();
   const location = useLocation();
@@ -42,19 +51,22 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
     }
 
     try {
-      const response: AxiosResponse<ProfileDTO> = await profileService.getProfile();
+      const response: AxiosResponse<ProfileDTO> =
+        await profileService.getProfile();
       setProfile(response.data);
     } catch (error) {
-
       if (isAxiosError(error) && error.response?.status !== 404) {
         throwAsyncError(error);
       }
     }
   };
 
-  const updateProfile = async (PartialProfile: Partial<ProfileDTO>): Promise<void> => {
+  const updateProfile = async (
+    PartialProfile: Partial<ProfileDTO>
+  ): Promise<void> => {
     try {
-      const response: AxiosResponse<ProfileDTO> = await profileService.updateProfile(PartialProfile);
+      const response: AxiosResponse<ProfileDTO> =
+        await profileService.updateProfile(PartialProfile);
       setProfile(response.data);
     } catch (error) {
       throwAsyncError(error);
@@ -63,7 +75,8 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
 
   const createProfile = async (nickname: string): Promise<void> => {
     try {
-      const response: AxiosResponse<ProfileDTO> = await profileService.createProfile(nickname);
+      const response: AxiosResponse<ProfileDTO> =
+        await profileService.createProfile(nickname);
       setProfile(response.data);
     } catch (error) {
       throwAsyncError(error);
@@ -79,15 +92,21 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
     }
   };
 
-  const getAvatarImage = async (avatarId: number | undefined): Promise<void> => {
+  const getAvatarImage = async (
+    avatarId: number | undefined
+  ): Promise<void> => {
     if (!avatarId) {
       return;
     }
 
     try {
-      const response: AxiosResponse<Blob> = await profileService.getAvatarImage(avatarId);
+      const response: AxiosResponse<Blob> = await profileService.getAvatarImage(
+        avatarId
+      );
 
-      const blob: Blob = new Blob([response.data], { type: response.headers["content-type"] });
+      const blob: Blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
       setAvatarImageUrl(URL.createObjectURL(blob));
     } catch (error) {
       throwAsyncError(error);
@@ -101,7 +120,7 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
     } catch (error) {
       throwAsyncError(error);
     }
-  }
+  };
 
   const contextData: ProfileContextData = {
     profile,
