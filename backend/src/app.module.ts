@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 import AvatarModule from './avatar/avatar.module';
 import { dataSourceOptions } from './db/data-source-cli';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { dataSourceOptions } from './db/data-source-cli';
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     PassportModule.register({ session: true }),
+    ChatModule,
   ],
   controllers: [],
   providers: [

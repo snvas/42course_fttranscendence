@@ -163,6 +163,16 @@ export class AuthService {
     return await toDataURL(otpAuthUrl);
   }
 
+  async validateUser(id: number): Promise<FortyTwoUser> {
+    const user: UserEntity | null = await this.userService.findById(id);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return plainToClass(FortyTwoUserDto, user);
+  }
+
   public async userHasProfile(user: FortyTwoUserDto): Promise<boolean> {
     try {
       const profileDTO: ProfileDTO = await this.profileService.findByUserId(
