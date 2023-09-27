@@ -1,7 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import type { ProfileDTO } from '../../../../backend/src/profile/models/profile.dto.ts';
-import type { ProfileDeletedResponseDto } from '../../../../backend/src/profile/models/profile-delete-response.dto.ts';
+import type { ProfileDTO, ProfileDeletedResponseDto } from '$lib/dtos';
 
 export class ProfileService {
 	private axiosInstance: AxiosInstance;

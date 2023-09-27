@@ -25,30 +25,4 @@
     @apply text-2xl uppercase;
     @apply py-2 px-4;
   }
-
-  .input-primary {
-    @apply bg-[#000000] border-4;
-    @apply rounded-lg;
-    @apply w-1/4;
-    @apply text-2xl;
-    @apply py-2 px-4;
-  }
-
-  .upload-image {
-    @apply bg-[#000000] border-4;
-    @apply rounded-lg;
-    @apply w-1/5;
-    @apply text-2xl;
-    @apply py-2 px-4;
-  }
-
-  .profile-image{
-	@apply w-1/6;
-	@apply align-middle;
-  }
-  .upload{
-	@apply h-16;
-	@apply w-16;
-	@apply cursor-pointer;
-}
 }
