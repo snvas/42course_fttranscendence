@@ -13,11 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  DisableTwoFactorAuthenticationBlock,
-  FortyTwoAuthGuard,
-  Public,
-} from './index';
+import { TwoFactorAuthentication, FortyTwoAuthGuard, Public } from './index';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -53,9 +49,8 @@ export class AuthController {
   ): Promise<void> {
     const redirectUrl: string =
       this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
-      'http://localhost:5173';
+      'http://localhost:3001';
 
-    // Example: backend login redirect to specific pages based on user and profile
     // const hasProfile: boolean = await this.authService.userHasProfile(user);
     //
     // if (!hasProfile) {
@@ -90,7 +85,7 @@ export class AuthController {
     return plainToClass(FortyTwoUserDto, user);
   }
 
-  @DisableTwoFactorAuthenticationBlock()
+  @TwoFactorAuthentication()
   @Get('2fa/session')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -121,7 +116,7 @@ export class AuthController {
     return { message: 'Two-factor authentication disabled' };
   }
 
-  @DisableTwoFactorAuthenticationBlock()
+  @TwoFactorAuthentication()
   @Post('2fa/validate')
   async validate2FA(
     @Req() req: Request,
