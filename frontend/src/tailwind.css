@@ -40,7 +40,7 @@
   .input-primary {
     @apply bg-[#000000] border-4;
     @apply rounded-lg;
-    @apply w-1/4;
+    @apply w-full;
     @apply text-2xl;
     @apply py-2 px-4;
   }

@@ -3,11 +3,10 @@
 	import type { FortyTwoUserDto, ProfileDTO, ResponseMessageDto } from '$lib/dtos';
 	import { authService, profileService } from '$lib/api';
 	import { goto } from '$app/navigation';
-	import Button from "$lib/components/Button.svelte";
+	import Button from '$lib/components/Button.svelte';
+	import PongHeader from '$lib/components/PongHeader.svelte';
 
 	// [ ] se validateUserSession causa erro, vai para login
-	// [ ]
-	// [ ]
 
 	async function getProfile() {
 		try {
@@ -18,7 +17,7 @@
 				if (error.response?.status == 404) {
 					goto('/welcome');
 				} else {
-					goto('/login')
+					goto('/login');
 				}
 			}
 		}
@@ -40,14 +39,14 @@
 	let profile = getProfile();
 </script>
 
-<!-- <button class="btn-primary" on:click={validateSession}>check session</button> -->
+<PongHeader />
 <button class="btn-primary" on:click={onLogout}>logout</button>
 {#await profile}
 	Loading
 {:then profile}
 	{profile?.data.nickname}
 {/await}
-<Button tipo="stats" />
-<Button tipo="history"/>
-<Button tipo="settings"/>
-<Button tipo="play"/>
+<Button type="stats" />
+<Button type="history" />
+<Button type="settings" />
+<Button type="play" />
