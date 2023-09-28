@@ -1,14 +1,15 @@
 <script lang="ts">
 	export let tipo: 'stats' | 'history' | 'settings' | 'play' = 'stats';
 
-  const icons = {
-	stats: "fas fa-chart-line",
-	history: "fas fa-history",
-	settings: "fas fa-cog",
-	play: "fas fa-play",
+ export const icons = {
+	stats: "fa-solid fa-chart-simple",
+	history: "fa-solid fa-clock-rotate-left",
+	settings: "fa-solid fa-gear",
+	play: "fa-solid fa-play",
   };
 </script>
   <button class={tipo}>
+	<span class={icons[tipo]}></span>
 	{#if tipo === 'stats'}
 	  <!-- Coloque o ícone de Stats aqui -->
 	  <span>Stats</span>
