@@ -22,5 +22,5 @@
 		</div>
 	</div>
 
-	<button class="btn-primary w-1/4" on:click={onLogin}> Login </button>
+	<span class="btn-deleted w-1/4"> Account Deleted </span>
 </div>
