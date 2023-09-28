@@ -16,7 +16,7 @@
 
 	let avatar, fileInput;
 	let nickname = '';
-	let inputNickname = true;
+	let inputNickname = false;
 	let isLoading = false;
 
 	async function createProfile() {

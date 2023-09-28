@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-
-	let lineClass = 'bg-white h-3 w-full';
-	let chunkClass = 'flex flex-col gap-4 w-full';
+	import PongHeader from '$lib/components/PongHeader.svelte';
 
 	function onWelcome() {
 		goto('http://localhost:3001/');
@@ -18,19 +16,7 @@
 		};
 	};
 </script>
-<div class="gap-20 flex flex-col pt-10 items-center">
-	<div class="w-full flex flex-row gap-10 items-center">
-		<div class={chunkClass}>
-			<div class={lineClass} />
-			<div class={lineClass} />
-		</div>
-		<p class="text-6xl">PONG</p>
-		<div class={chunkClass}>
-			<div class={lineClass} />
-			<div class={lineClass} />
-		</div>
-	</div>
-</div>
+<PongHeader/>
 <div class="w-2/3 mx-auto">
 <div class="gap-5 flex flex-col pt-10 items-center">
 	<p class="text-3xl mt-20 mb-10">Edit Your Profile</p>

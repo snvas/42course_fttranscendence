@@ -2,10 +2,10 @@
 	export let type: 'stats' | 'history' | 'settings' | 'play' = 'stats';
 
 	export const icons = {
-		stats: 'fa-solid fa-chart-simple',
-		history: 'fa-solid fa-clock-rotate-left',
-		settings: 'fa-solid fa-gear',
-		play: 'fa-solid fa-play'
+		stats: 'fa fa-bar-chart',
+		history: 'fa fa-history',
+		settings: 'fa fa-cog',
+		play: 'fa fa-play'
 	};
 
 	const label = {
