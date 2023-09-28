@@ -33,7 +33,7 @@
 			<div class={lineClass} />
 			<div class={lineClass} />
 		</div>
-		<p class="text-6xl">PONG</p>
+		<p class="text-5xl">PONG</p>
 		<div class={chunkClass}>
 			<div class={lineClass} />
 			<div class={lineClass} />

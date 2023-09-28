@@ -1,59 +1,53 @@
 <script lang="ts">
-	import type { AxiosResponse } from "axios";
-	import type { FortyTwoUserDto } from "../../../backend/src/user/models/forty-two-user.dto";
-	import {authService} from "$lib/api"
+	import { AxiosError, type AxiosResponse } from 'axios';
+	import type { FortyTwoUserDto, ProfileDTO, ResponseMessageDto } from '$lib/dtos';
+	import { authService, profileService } from '$lib/api';
+	import { goto } from '$app/navigation';
 	import Button from "$lib/components/Button.svelte";
 
-	let logoutResponse = JSON.stringify({})
-	let sessionResponse = JSON.stringify({})
+	// [ ] se validateUserSession causa erro, vai para login
+	// [ ]
+	// [ ]
 
-	const handleLogout = async (): Promise<void>  => {
-		const response = await authService.logoutUser();
-		logoutResponse = JSON.stringify(response.data);
-	}
-
-	const handleSessionRequest = async(): Promise<void> => {
+	async function getProfile() {
 		try {
-			const response: AxiosResponse<FortyTwoUserDto> = await authService.validateUserSession();
-			sessionResponse = JSON.stringify(response.data);
+			let p = await profileService.getProfile();
+			return p;
 		} catch (error) {
-			sessionResponse = error as string;
+			if (error instanceof AxiosError) {
+				if (error.response?.status == 404) {
+					goto('/welcome');
+				} else {
+					goto('/login')
+				}
+			}
 		}
 	}
+
+	async function onValidate() {
+		try {
+			await authService.validateUserSession();
+		} catch {
+			goto('/login');
+		}
+	}
+
+	async function onLogout() {
+		await authService.logoutUser();
+		goto('/login');
+	}
+
+	let profile = getProfile();
 </script>
 
-<style lang="postcss">
-	button {
-		border: 1px solid black;
-	}
-	button:hover {
-		background-color: cadetblue;
-	}
-  a {
-    color: black;
-    text-decoration: none;
-  }
-</style>
-
-<h1>OAuth2 and 2FA</h1>
-<br>
-<hr>
-<br>
-
+<!-- <button class="btn-primary" on:click={validateSession}>check session</button> -->
+<button class="btn-primary" on:click={onLogout}>logout</button>
+{#await profile}
+	Loading
+{:then profile}
+	{profile?.data.nickname}
+{/await}
 <Button tipo="stats" />
 <Button tipo="history"/>
 <Button tipo="settings"/>
 <Button tipo="play"/>
-<button>
-  <a href="http://localhost:3000/api/auth/42/login">Login with OAuth2</a>
-</button>
-<br>
-<br>
-<button on:click={handleLogout}>Logout</button>
-{logoutResponse}
-<br>
-<br>
-<hr>
-<br>
-<button on:click={handleSessionRequest}>Get Session</button>
-{sessionResponse}

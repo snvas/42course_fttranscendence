@@ -4,9 +4,14 @@
 	let chunkClass = 'flex flex-col gap-4 w-full';
 	import Button from '$lib/components/Button.svelte';
 
-	function onLogin() {
-		goto('http://localhost:3001/api/auth/42/login');
+	let isLoading = false;
+
+	async function onLogin() {
+		isLoading = true;
+		await goto('http://localhost:3000/api/auth/42/login');
+		isLoading = false;
 	}
+	// [ ] Se o login redireciona para "/", como identifico se deve ir para "/welcome"
 </script>
 
 <div class="gap-20 flex flex-col h-full justify-center items-center pt-60">
@@ -21,6 +26,6 @@
 			<div class={lineClass} />
 		</div>
 	</div>
-		
-	<button class="btn-primary w-1/4" on:click={onLogin}> Login </button>
+
+	<button disabled={isLoading} class="btn-primary w-1/4" on:click={onLogin}> Login </button>
 </div>
