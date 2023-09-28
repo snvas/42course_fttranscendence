@@ -5,7 +5,7 @@
 	let chunkClass = 'flex flex-col gap-4 w-full';
 
 	function onWelcome() {
-		goto('http://localhost:3000/');
+		goto('http://localhost:3001/');
 	}
 
 	let avatar, fileInput;

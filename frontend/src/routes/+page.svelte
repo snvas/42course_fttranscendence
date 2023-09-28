@@ -2,6 +2,7 @@
 	import type { AxiosResponse } from "axios";
 	import type { FortyTwoUserDto } from "../../../backend/src/user/models/forty-two-user.dto";
 	import {authService} from "$lib/api"
+	import Button from "$lib/components/Button.svelte";
 
 	let logoutResponse = JSON.stringify({})
 	let sessionResponse = JSON.stringify({})
@@ -38,6 +39,11 @@
 <br>
 <hr>
 <br>
+
+<Button tipo="stats" />
+<Button tipo="history"/>
+<Button tipo="settings"/>
+<Button tipo="play"/>
 <button>
   <a href="http://localhost:3000/api/auth/42/login">Login with OAuth2</a>
 </button>

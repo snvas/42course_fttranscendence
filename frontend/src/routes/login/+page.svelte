@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-
 	let lineClass = 'bg-white h-7 w-full';
 	let chunkClass = 'flex flex-col gap-4 w-full';
+	import Button from '$lib/components/Button.svelte';
 
 	function onLogin() {
-		goto('http://localhost:3000/api/auth/42/login');
+		goto('http://localhost:3001/api/auth/42/login');
 	}
 </script>
 
@@ -21,6 +21,6 @@
 			<div class={lineClass} />
 		</div>
 	</div>
-
+		
 	<button class="btn-primary w-1/4" on:click={onLogin}> Login </button>
 </div>

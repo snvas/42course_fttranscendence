@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Image from '$lib/components/Image.svelte';
-	import Camera from '$lib/components/Camera.svelte';
 	let lineClass = 'bg-white h-3 w-full';
 	let chunkClass = 'flex flex-col gap-4 w-full';
 	
