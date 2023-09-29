@@ -1,32 +1,57 @@
 import {
-  OnGatewayConnection,
+  ConnectedSocket,
+  MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { ChatService } from './chat.service';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(80, {
+@WebSocketGateway({
   cors: {
-    origin: 'http://localhost:4200',
+    origin: '*',
   },
 })
-export class EventsGateway implements OnGatewayConnection {
+export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  // @UseGuards(AuthenticatedGuard)
-  @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    console.log(payload);
-    console.log(client.username);
-    console.log(client.request.user);
-    client.emit('answer', 'Hello client');
-    return payload;
+  constructor(private readonly chatService: ChatService) {}
+
+  @SubscribeMessage('createChat')
+  async create(
+    @MessageBody() createChatDto: CreateChatDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const chat = this.chatService.create(createChatDto, socket.id);
+
+    this.server.emit('chat', chat);
+    return chat;
   }
 
-  handleConnection(client: any, ...args: any[]) {
-    console.log(client.data.username);
-    console.log('user connected');
+  @SubscribeMessage('findAllChat')
+  findAll() {
+    return this.chatService.findAll();
+  }
+
+  @SubscribeMessage('join')
+  joinRoom(
+    @MessageBody('name') name: string,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    return this.chatService.identify(name, socket.id);
+  }
+
+  @SubscribeMessage('typing')
+  async typing(
+    @MessageBody('isTyping') isTyping: boolean,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const name = this.chatService.getClientName(socket.id);
+
+    //send to everyone expect the sender
+    socket.broadcast.emit('typing', { name, isTyping });
   }
 }
