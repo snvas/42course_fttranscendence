@@ -75,7 +75,6 @@
 			alert = imageAlerts.none;
 		}
 	};
-	$: console.log(nickname);
 </script>
 
 <PongHeader />

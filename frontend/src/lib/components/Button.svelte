@@ -8,11 +8,11 @@
 		play: 'fa fa-play'
 	};
 
-	const label = {
-		stats: 'Stats',
-		history: 'History',
-		settings: 'Settings',
-		play: 'Play'
+	const title = {
+		stats: 'show stats',
+		history: 'show history',
+		settings: 'show settings',
+		play: 'Play game!'
 	};
 
 	const style = {
@@ -20,13 +20,11 @@
 		history: 'small history',
 		settings: 'small settings',
 		play: 'play'
-
-	}
+	};
 </script>
 
-<button class={`hover:scale-110 transition-all ${style[type]}`}>
+<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]}>
 	<span class={icons[type]} />
-		
 </button>
 
 <style>
