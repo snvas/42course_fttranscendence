@@ -6,28 +6,30 @@
 	import { profileService } from '$lib/api';
 	import { isAxiosError } from 'axios';
 
-	function onWelcome() {
-		//goto('http://localhost:3001/');
-		inputNickname = false;
-	}
-
-	function avatarImage() {
-		goto('http://localhost:3001/');
-	}
-
 	const alerts = {
 		none: '',
 		alreadyExist: 'User name already exists',
 		profileExist: 'You already have a profile'
 	};
 
-	let avatar, fileInput;
+	const imageAlerts = {
+		none: '',
+		size: 'image is too big',
+		type: 'invalid type'
+	};
+
+	const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+
+	let imageFile: File | null = null;
+	let fileInput: HTMLInputElement;
 	let nickname = '';
 	let inputNickname = true;
 	let isLoading = false;
 	let alert = alerts.none;
 
-	async function createProfile() {
+	async function onCreateProfile() {
+		isLoading = true;
+		if (alert == alerts.profileExist) goto('/');
 		try {
 			await profileService.createProfile(nickname);
 			alert = alerts.none;
@@ -42,29 +44,38 @@
 				}
 			}
 		}
-	}
-
-	async function uploadImage() {
-		goto("/")
-	}
-
-	async function onSubmit() {
-		isLoading = true;
-		if (inputNickname) {
-			await createProfile();
-		} else {
-			await uploadImage();
-		}
 		isLoading = false;
 	}
 
-	const onFileSelected = (e) => {
-		let reader = new FileReader();
-		reader.readAsDataURL(image);
-		reader.onload = (e) => {
-			avatar = e.target.result;
-		};
+	async function onUploadImage() {
+		if (imageFile) {
+			try {
+				const formData = new FormData();
+				formData.append('avatar', imageFile);
+				await profileService.uploadAvatarImage(formData);
+				goto('/');
+			} catch (error) {
+				goto('/login');
+			}
+		} else {
+			goto('/');
+		}
+	}
+
+	const onFileSelected = () => {
+		let file = fileInput.files![0];
+		console.log(file.type);
+
+		if (!allowedTypes.includes(file.type)) {
+			alert = imageAlerts.type;
+		} else if (file.size > 1024 * 1024) {
+			alert = imageAlerts.size;
+		} else {
+			imageFile = file;
+			alert = imageAlerts.none;
+		}
 	};
+	$: console.log(nickname);
 </script>
 
 <PongHeader />
@@ -79,16 +90,19 @@
 			<input
 				bind:value={nickname}
 				placeholder="Choose your nickname"
-				class={`input-primary w-auto ${alert != alerts.none ? "border-red-500": ""}`}
+				class={`input-primary w-auto ${alert != alerts.none ? 'border-red-500' : ''}`}
 			/>
+			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onCreateProfile}>
+				{alert == alerts.profileExist ? 'Go to home' : 'Submit'}
+			</button>
 		{:else}
-			{#if avatar}
-				<img class="avatar" src={avatar} alt="d" />
+			{#if imageFile}
+				<img class="avatar" src={URL.createObjectURL(imageFile)} alt="d" />
 			{:else}
 				<Image />
 			{/if}
 			<div class="w-full flex flex-row gap-2 items-center justify-center">
-				<div
+				<button
 					class="cursor-pointer flex flex-row justify-center items-center"
 					on:click={() => {
 						fileInput.click();
@@ -96,22 +110,23 @@
 				>
 					<Camera />
 					Choose Image (optional)
-				</div>
+				</button>
 
 				<input
 					type="file"
 					style="display:none"
 					accept=".png, .jpeg, .jpg"
-					on:change={(e) => onFileSelected(e)}
+					on:change={onFileSelected}
 					bind:this={fileInput}
 				/>
 			</div>
 			<p class="text-xs mb-2">Send png, jpg or jpeg up to 1Mb</p>
-		{/if}
-		{#if alert == alerts.profileExist}
-			<button class="btn-primary w-1/4" on:click={() => goto('/')}> Go to home </button>
-		{:else}
-			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onSubmit}> Submit </button>
+			<p class="text-red-500">
+				{alert}
+			</p>
+			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onUploadImage}>
+				{imageFile ? 'Submit' : 'Continue'}
+			</button>
 		{/if}
 	</div>
 </div>
