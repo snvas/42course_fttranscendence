@@ -46,7 +46,3 @@
 {:then profile}
 	{profile?.data.nickname}
 {/await}
-<Button type="stats" />
-<Button type="history" />
-<Button type="settings" />
-<Button type="play" />

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import PongHeader from '$lib/components/PongHeader.svelte';
+	import Image from '$lib/components/Image.svelte';
+	import Camera from '$lib/components/Camera.svelte';
 
 	function onWelcome() {
 		goto('http://localhost:3001/');

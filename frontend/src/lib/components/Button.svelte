@@ -14,39 +14,47 @@
 		settings: 'Settings',
 		play: 'Play'
 	};
+
+	const style = {
+		stats: 'small stats',
+		history: 'small history',
+		settings: 'small settings',
+		play: 'play'
+
+	}
 </script>
 
-<button class={`hover:scale-110 transition-all ${type}`}>
+<button class={`hover:scale-110 transition-all ${style[type]}`}>
 	<span class={icons[type]} />
-		<span>{label[type]}</span>
+		
 </button>
 
 <style>
+	.small {
+		width: 50px;
+		height: 50px;
+		border-radius: 30px;
+		font-size: 2.5vh;
+		margin-left: 1%;
+		margin-right: 1%;
+	}
+
 	.stats {
 		/* Defina os estilos do botão Stats aqui */
 		background-color: blue;
 		color: white;
-		width: 50px;
-		height: 50px;
-		border-radius: 30px;
 	}
 
 	.history {
 		/* Defina os estilos do botão History aqui */
 		background-color: green;
 		color: white;
-		width: 50px;
-		height: 50px;
-		border-radius: 30px;
 	}
 
 	.settings {
 		/* Defina os estilos do botão Settings aqui */
 		background-color: yellow;
 		color: black;
-		width: 50px;
-		height: 50px;
-		border-radius: 30px;
 	}
 
 	.play {
@@ -56,5 +64,8 @@
 		width: 100px;
 		height: 100px;
 		border-radius: 60px;
+		margin-left: 1%;
+		margin-right: 1%;
+		font-size: 4vh;
 	}
 </style>
