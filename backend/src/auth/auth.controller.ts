@@ -53,7 +53,7 @@ export class AuthController {
       this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
       'http://localhost:3001';
 
-      const hasProfile: boolean = await this.authService.userHasProfile(user);
+      const hasProfile: boolean = await this.profileService.userHasProfile(user);
 
       if (!hasProfile) {
         res.redirect(redirectUrl + '/welcome');
