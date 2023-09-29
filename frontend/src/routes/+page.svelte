@@ -5,8 +5,12 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
+	import { auth } from '$lib/stores';
 
-	// [ ] se validateUserSession causa erro, vai para login
+	$: console.log($auth);
+	$: if (!$auth.loading && !$auth.loggedIn) {
+		goto('/login');
+	}
 
 	async function getProfile() {
 		try {
@@ -20,14 +24,6 @@
 					goto('/login');
 				}
 			}
-		}
-	}
-
-	async function onValidate() {
-		try {
-			await authService.validateUserSession();
-		} catch {
-			goto('/login');
 		}
 	}
 
@@ -46,3 +42,8 @@
 {:then profile}
 	{profile?.data.nickname}
 {/await}
+
+<Button type="stats" />
+<Button type="history" />
+<Button type="settings" />
+<Button type="play" />
