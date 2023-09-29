@@ -13,7 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { TwoFactorAuthentication, FortyTwoAuthGuard, Public } from './index';
+import { FortyTwoAuthGuard, Public, TwoFactorAuthentication } from './index';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -21,6 +21,7 @@ import { OneTimePasswordDto } from './models/one-time-password.dto';
 import { ResponseMessageDto } from './models/response-message.dto';
 import { ConfigService } from '@nestjs/config';
 import { plainToClass } from 'class-transformer';
+import { ProfileService } from '../profile/profile.service';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +29,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly profileService: ProfileService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -52,7 +54,9 @@ export class AuthController {
       'http://localhost:3001';
 
     if (this.configService.get<string>('APP_ENABLE_REACT_FRONT')) {
-      const hasProfile: boolean = await this.authService.userHasProfile(user);
+      const hasProfile: boolean = await this.profileService.userHasProfile(
+        user,
+      );
 
       if (!hasProfile) {
         res.redirect(redirectUrl + '/welcome');

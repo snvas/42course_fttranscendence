@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   Logger,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
@@ -22,6 +23,7 @@ import { AvatarService } from '../avatar/avatar.service';
 import { plainToClass } from 'class-transformer';
 import { ProfileDTO } from './models/profile.dto';
 import { AvatarDTO } from '../avatar/models/avatar.dto';
+import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 
 @Injectable()
 export class ProfileService {
@@ -79,12 +81,24 @@ export class ProfileService {
     profileEntity.userEntity = userEntity;
 
     let savedEntity: ProfileEntity;
+
     try {
       savedEntity = await this.profileRepository.save(profileEntity);
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
-        this.logger.error(`Profile already exists for user [${userId}]`);
-        throw new BadRequestException(`user [${userId}] already has a profile`);
+        if (await this.userHasProfile(userEntity)) {
+          this.logger.error(`Profile already exists for user [${userId}]`);
+          throw new BadRequestException(
+            `User [${userId}] already has a profile`,
+          );
+        }
+
+        this.logger.error(
+          `User [${userId}] chose a nickname ${nickname} already exists`,
+        );
+        throw new NotAcceptableException(
+          `Nickname: ${nickname} already exists`,
+        );
       }
       throw Exception;
     }
@@ -203,5 +217,20 @@ export class ProfileService {
     }
 
     return avatarDTO;
+  }
+
+  public async userHasProfile(user: FortyTwoUserDto): Promise<boolean> {
+    try {
+      const profileDTO: ProfileDTO = await this.findByUserId(user.id);
+
+      if (profileDTO) {
+        return true;
+      }
+    } catch (e) {
+      if (!(e instanceof NotFoundException)) {
+        throw e;
+      }
+    }
+    return false;
   }
 }

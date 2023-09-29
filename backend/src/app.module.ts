@@ -9,6 +9,9 @@ import { ProfileModule } from './profile/profile.module';
 import AvatarModule from './avatar/avatar.module';
 import { dataSourceOptions } from './db/data-source-cli';
 import { ChatModule } from './chat/chat.module';
+import { GameService } from './game/game.service';
+import { GameController } from './game/game.controller';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -22,8 +25,9 @@ import { ChatModule } from './chat/chat.module';
     TypeOrmModule.forRoot(dataSourceOptions),
     PassportModule.register({ session: true }),
     ChatModule,
+    GameModule,
   ],
-  controllers: [],
+  controllers: [GameController],
   providers: [
     {
       provide: 'APP_GUARD',
@@ -36,6 +40,7 @@ import { ChatModule } from './chat/chat.module';
           : null,
       inject: [ConfigService, UserAuthenticatedGuard],
     },
+    GameService,
   ],
 })
 export class AppModule {}

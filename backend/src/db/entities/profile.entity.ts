@@ -16,7 +16,7 @@ export class ProfileEntity implements Profile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   nickname: string;
 
   @Column({ nullable: true, default: 0 })

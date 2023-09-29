@@ -1,5 +1,4 @@
 import {
-  MessageBody,
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
@@ -27,7 +26,7 @@ export class EventsGateway implements OnGatewayConnection {
   }
 
   handleConnection(client: any, ...args: any[]) {
-    console.log(client.data.username); //console is showing 'test' as it suppose to
+    console.log(client.data.username);
     console.log('user connected');
   }
 }
