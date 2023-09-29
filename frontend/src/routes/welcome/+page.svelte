@@ -4,6 +4,7 @@
 	import Camera from '$lib/components/Camera.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import { profileService } from '$lib/api';
+	import { isAxiosError } from 'axios';
 
 	function onWelcome() {
 		//goto('http://localhost:3001/');
@@ -14,20 +15,45 @@
 		goto('http://localhost:3001/');
 	}
 
+	const alerts = {
+		none: '',
+		alreadyExist: 'User name already exists',
+		profileExist: 'You already have a profile'
+	};
+
 	let avatar, fileInput;
 	let nickname = '';
-	let inputNickname = false;
+	let inputNickname = true;
 	let isLoading = false;
+	let alert = alerts.none;
 
 	async function createProfile() {
-		
-		await profileService.createProfile(nickname)
+		try {
+			await profileService.createProfile(nickname);
+			alert = alerts.none;
+			inputNickname = false;
+		} catch (error) {
+			if (isAxiosError(error)) {
+				if (error.response?.status == 400) {
+					alert = alerts.profileExist;
+				}
+				if (error.response?.status == 406) {
+					alert = alerts.alreadyExist;
+				}
+			}
+		}
+	}
+
+	async function uploadImage() {
+		goto("/")
 	}
 
 	async function onSubmit() {
 		isLoading = true;
-		if(inputNickname) {
-			await createProfile()
+		if (inputNickname) {
+			await createProfile();
+		} else {
+			await uploadImage();
 		}
 		isLoading = false;
 	}
@@ -47,10 +73,13 @@
 		<p class="text-3xl mt-20 mb-10">Welcome to Pong!</p>
 
 		{#if inputNickname}
+			<p class="text-red-500">
+				{alert}
+			</p>
 			<input
 				bind:value={nickname}
 				placeholder="Choose your nickname"
-				class="input-primary w-auto"
+				class={`input-primary w-auto ${alert != alerts.none ? "border-red-500": ""}`}
 			/>
 		{:else}
 			{#if avatar}
@@ -79,6 +108,10 @@
 			</div>
 			<p class="text-xs mb-2">Send png, jpg or jpeg up to 1Mb</p>
 		{/if}
-		<button disabled={isLoading} class="btn-primary w-1/4" on:click={onSubmit}> Submit </button>
+		{#if alert == alerts.profileExist}
+			<button class="btn-primary w-1/4" on:click={() => goto('/')}> Go to home </button>
+		{:else}
+			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onSubmit}> Submit </button>
+		{/if}
 	</div>
 </div>

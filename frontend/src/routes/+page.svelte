@@ -32,11 +32,17 @@
 		goto('/login');
 	}
 
+	async function onDelete() {
+		await profileService.deleteAccount();
+		goto('/login');
+	}
+
 	let profile = getProfile();
 </script>
 
 <PongHeader />
 <button class="btn-primary" on:click={onLogout}>logout</button>
+<button class="btn-primary" on:click={onDelete}>delete account</button>
 {#await profile}
 	Loading
 {:then profile}
