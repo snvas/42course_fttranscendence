@@ -1,53 +1,76 @@
 <script lang="ts">
-	import type { AxiosResponse } from "axios";
-	import type { FortyTwoUserDto } from "../../../backend/src/user/models/forty-two-user.dto";
-	import authService from "../api/AuthService"
+	import { AxiosError, type AxiosResponse } from 'axios';
+	import type { ProfileDTO } from '$lib/dtos';
+	import { authService, profileService } from '$lib/api';
+	import { goto } from '$app/navigation';
+	import Button from '$lib/components/Button.svelte';
+	import PongHeader from '$lib/components/PongHeader.svelte';
+	import { auth } from '$lib/stores';
+	import Image from '$lib/components/Image.svelte';
 
-	let logoutResponse = JSON.stringify({})
-	let sessionResponse = JSON.stringify({})
-
-	const handleLogout = async (): Promise<void>  => {
-		const response = await authService.logoutUser();
-		logoutResponse = JSON.stringify(response.data);
+	$: if (!$auth.loading && !$auth.loggedIn) {
+		goto('/login');
 	}
 
-	const handleSessionRequest = async(): Promise<void> => {
+	async function getProfile(): Promise<AxiosResponse<ProfileDTO> | null> {
 		try {
-			const response: AxiosResponse<FortyTwoUserDto> = await authService.validateUserSession();
-			sessionResponse = JSON.stringify(response.data);
+			let p = await profileService.getProfile();
+			return p;
 		} catch (error) {
-			sessionResponse = error as string;
+			if (error instanceof AxiosError) {
+				if (error.response?.status == 404) {
+					goto('/welcome');
+				} else {
+					goto('/login');
+				}
+			}
+			return null;
 		}
 	}
+
+	async function getUserAvatar(profilePromise: Promise<AxiosResponse<ProfileDTO> | null>) {
+		try {
+			let profile = await profilePromise;
+			if (!profile?.data.avatarId) throw new Error();
+			let image = await profileService.getAvatarImage(profile.data.avatarId);
+			return image;
+		} catch {
+			return null;
+		}
+	}
+
+	async function onLogout() {
+		await authService.logoutUser();
+		goto('/login');
+	}
+
+	async function onDelete() {
+		await profileService.deleteAccount();
+		goto('/login');
+	}
+
+	let profile = getProfile();
+
+	$: avatar = getUserAvatar(profile);
 </script>
 
-<style lang="postcss">
-	button {
-		border: 1px solid black;
-	}
-	button:hover {
-		background-color: cadetblue;
-	}
-  a {
-    color: black;
-    text-decoration: none;
-  }
-</style>
+<PongHeader />
+<button class="btn-primary" on:click={onLogout}>logout</button>
+<button class="btn-primary" on:click={onDelete}>delete account</button>
+{#await profile then profile}
+	<p>Nickname: {profile?.data.nickname}</p>
+	{#await avatar}
+		<Image />
+	{:then avatar}
+		{#if avatar}
+			<img class="avatar" src={URL.createObjectURL(avatar?.data)} alt="d" />
+		{:else}
+			<Image />
+		{/if}
+	{/await}
+{/await}
 
-<h1>OAuth2 and 2FA</h1>
-<br>
-<hr>
-<br>
-<button>
-  <a href="http://localhost:3000/api/auth/42/login">Login with OAuth2</a>
-</button>
-<br>
-<br>
-<button on:click={handleLogout}>Logout</button>
-{logoutResponse}
-<br>
-<br>
-<hr>
-<br>
-<button on:click={handleSessionRequest}>Get Session</button>
-{sessionResponse}
+<Button type="stats" />
+<Button type="history" />
+<Button type="settings" />
+<Button type="play" />
