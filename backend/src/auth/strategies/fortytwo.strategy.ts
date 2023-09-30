@@ -6,6 +6,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import { FortyTwoUser } from '../index';
+import { faker } from '@faker-js/faker';
 
 //This class is used to do 42 OAuth2 authentication
 @Injectable()
@@ -38,16 +39,32 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
       otpEnabled,
       otpSecret,
     } = profile;
-    const user: FortyTwoUser = await this.authService.loginUser({
-      id,
-      username,
-      displayName,
-      profileUrl,
-      email: emails[0].value,
-      otpEnabled,
-      otpSecret,
-      otpValidated: false,
-    });
+
+    const user: FortyTwoUser =
+      this.configService.get<string>('APP_MOCK_42_USERS') === 'true'
+        ? await this.authService.loginUser(this.generateFakeUser())
+        : await this.authService.loginUser({
+            id,
+            username,
+            displayName,
+            profileUrl,
+            email: emails[0].value,
+            otpEnabled,
+            otpSecret,
+            otpValidated: false,
+          });
     return user || null;
+  }
+
+  private generateFakeUser(): FortyTwoUser {
+    return {
+      id: faker.number.int({ max: 2147483647 }),
+      username: faker.internet.userName(),
+      displayName: faker.person.fullName(),
+      profileUrl: faker.internet.url({ protocol: 'https' }),
+      email: faker.internet.email(),
+      otpEnabled: false,
+      otpValidated: false,
+    };
   }
 }

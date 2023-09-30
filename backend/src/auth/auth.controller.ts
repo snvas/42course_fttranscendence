@@ -53,15 +53,15 @@ export class AuthController {
       this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
       'http://localhost:3001';
 
-      const hasProfile: boolean = await this.profileService.userHasProfile(user);
+    const hasProfile: boolean = await this.profileService.userHasProfile(user);
 
-      if (!hasProfile) {
-        res.redirect(redirectUrl + '/welcome');
-      }
+    if (!hasProfile) {
+      res.redirect(redirectUrl + '/welcome');
+    }
 
-      if (user.otpEnabled) {
-        res.redirect(redirectUrl + '/validate-otp');
-      }
+    if (user.otpEnabled) {
+      res.redirect(redirectUrl + '/validate-otp');
+    }
 
     res.redirect(redirectUrl);
   }

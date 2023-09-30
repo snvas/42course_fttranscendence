@@ -1,11 +1,4 @@
-import {
-  createContext,
-  FC,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import { ProfileContextData } from "./interfaces/ProfileContextData";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError";
 import AuthContext from "./AuthContext";
@@ -74,13 +67,9 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
   };
 
   const createProfile = async (nickname: string): Promise<void> => {
-    try {
-      const response: AxiosResponse<ProfileDTO> =
-        await profileService.createProfile(nickname);
-      setProfile(response.data);
-    } catch (error) {
-      throwAsyncError(error);
-    }
+    const response: AxiosResponse<ProfileDTO> =
+      await profileService.createProfile(nickname);
+    setProfile(response.data);
   };
 
   const uploadAvatarImage = async (formData: FormData): Promise<void> => {
@@ -105,7 +94,7 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
       );
 
       const blob: Blob = new Blob([response.data], {
-        type: response.headers["content-type"],
+        type: response.headers["content-type"]
       });
       setAvatarImageUrl(URL.createObjectURL(blob));
     } catch (error) {
@@ -129,7 +118,7 @@ export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
     createProfile,
     updateProfile,
     uploadAvatarImage,
-    deleteAccount,
+    deleteAccount
   };
 
   return (

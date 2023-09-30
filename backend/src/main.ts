@@ -1,17 +1,12 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import session from 'express-session';
+import passport from 'passport';
 import { TypeormStore } from 'connect-typeorm';
 import { DataSource } from 'typeorm';
 import { SessionEntity } from './db/entities';
 import { ConfigService } from '@nestjs/config';
-import {
-  ClassSerializerInterceptor,
-  INestApplication,
-  Logger,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const configService: ConfigService<Record<string, any>> = new ConfigService();
@@ -44,7 +39,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(passport.initialize());
   app.use(passport.session());
-  //app.useWebSocketAdapter(new SessionAdapter(sessionMiddleware));
+  //app.useWebSocketAdapter(new EventsAdapter(app));
   await app.listen(Number(configService.get<number>('APP_PORT')) || 3000);
 
   logger.log(`### Application is running on: ${await app.getUrl()}`);
