@@ -7,8 +7,9 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import { auth } from '$lib/stores';
 	import Image from '$lib/components/Image.svelte';
+	import AvatarImage from '$lib/components/AvatarImage.svelte';
 
-	$: if (!$auth.loading && !$auth.loggedIn) {
+	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');
 	}
 
@@ -49,25 +50,32 @@
 		goto('/login');
 	}
 
+	async function onTwoFactorAuth() {
+		if (twofaDisabled) {
+			goto('/enable2fa');
+		} else {
+			await authService.disable2FA();
+			tempDisabled = true;
+		}
+	}
+
+	let tempDisabled = false;
 	let profile = getProfile();
 
 	$: avatar = getUserAvatar(profile);
+	$: console.log($auth);
+	$: twofaDisabled = !$auth.session?.otpEnabled || tempDisabled;
 </script>
 
 <PongHeader />
-<button class="btn-primary" on:click={onLogout}>logout</button>
-<button class="btn-primary" on:click={onDelete}>delete account</button>
 {#await profile then profile}
+	<button class="btn-primary" on:click={onLogout}>logout</button>
+	<button class="btn-primary" on:click={onDelete}>delete account</button>
+	<button class="btn-primary" on:click={onTwoFactorAuth}
+		>{twofaDisabled ? 'Enable' : 'Disable'} Two Factor Authentication</button
+	>
 	<p>Nickname: {profile?.data.nickname}</p>
-	{#await avatar}
-		<Image />
-	{:then avatar}
-		{#if avatar}
-			<img class="avatar" src={URL.createObjectURL(avatar?.data)} alt="d" />
-		{:else}
-			<Image />
-		{/if}
-	{/await}
+	<AvatarImage {avatar} />
 {/await}
 
 <Button type="stats" />
