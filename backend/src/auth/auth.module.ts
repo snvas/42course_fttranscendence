@@ -12,6 +12,7 @@ import entities from '../db/entities';
 import { UserService } from '../user/user.service';
 import { ProfileService } from '../profile/profile.service';
 import { AvatarService } from '../avatar/avatar.service';
+import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 
 @Module({
   controllers: [AuthController],
@@ -21,6 +22,7 @@ import { AvatarService } from '../avatar/avatar.service';
     ProfileService,
     FortyTwoStrategy,
     UserAuthenticatedGuard,
+    WsAuthenticatedGuard,
     FortyTwoAuthGuard,
     SessionSerializer,
     AuthService,

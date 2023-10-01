@@ -38,7 +38,9 @@ export class UserAuthenticatedGuard implements CanActivate {
 
     //Block if user not is authenticated.
     if (!request.isAuthenticated()) {
-      this.logger.verbose(`### User is not authenticated, blocking access`);
+      this.logger.verbose(
+        `### User is not authenticated for HTTP, blocking access`,
+      );
       return false;
     }
 

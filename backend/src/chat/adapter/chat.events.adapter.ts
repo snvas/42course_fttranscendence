@@ -1,38 +1,26 @@
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server } from 'socket.io';
-import { ConfigService } from '@nestjs/config';
-import sharedsession from './chat.socket-io.session.middleware';
+import passport from 'passport';
+import express from 'express';
 import { INestApplication } from '@nestjs/common';
 
 export class EventsAdapter extends IoAdapter {
-  private app: INestApplication;
+  private session: express.RequestHandler;
 
-  constructor(app: INestApplication) {
+  constructor(session: express.RequestHandler, app: INestApplication) {
     super(app);
-    this.app = app;
+    this.session = session;
   }
 
-  createIOServer(port: number, options?: any): any {
-    const server: Server = super.createIOServer(port, options);
-    const configService: ConfigService = this.app.get(ConfigService);
+  create(port: number, options?: any): Server {
+    const server: Server = super.create(port, options);
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const session = require('express-session')({
-      secret: configService.get('APP_SESSION_SECRET'),
-      saveUninitialized: true,
-      resave: true,
-    });
+    const wrap = (middleware: any) => (socket: any, next: any) =>
+      middleware(socket.request, {}, next);
 
-    console.log(
-      '#################### CREATING SESSION IO SERVER ####################',
-    );
-
-    this.app.use(session);
-    server.use(
-      sharedsession(session, {
-        autoSave: true,
-      }),
-    );
+    server.use(wrap(this.session));
+    server.use(wrap(passport.initialize()));
+    server.use(wrap(passport.session()));
     return server;
   }
 }

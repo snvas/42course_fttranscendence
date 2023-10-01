@@ -7,8 +7,11 @@ import { DataSource } from 'typeorm';
 import { SessionEntity } from './db/entities';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { EventsAdapter } from './chat/adapter/chat.events.adapter';
+import { config } from 'dotenv';
 
 async function bootstrap() {
+  config(); // Load .env file
   const configService: ConfigService<Record<string, any>> = new ConfigService();
   const logger: Logger = new Logger(bootstrap.name);
   const app: INestApplication = await NestFactory.create(AppModule, {
@@ -39,7 +42,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(passport.initialize());
   app.use(passport.session());
-  //app.useWebSocketAdapter(new EventsAdapter(app));
+  app.useWebSocketAdapter(new EventsAdapter(sessionMiddleware, app));
   await app.listen(Number(configService.get<number>('APP_PORT')) || 3000);
 
   logger.log(`### Application is running on: ${await app.getUrl()}`);

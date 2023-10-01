@@ -9,56 +9,39 @@ import {
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import * as cookie from 'cookie';
+import { Logger, UseGuards } from '@nestjs/common';
+import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 
-@WebSocketGateway(3001, {
+@WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.APP_CORS_ORIGIN,
     credentials: true,
   },
 })
 export class ChatGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
+
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(private readonly chatService: ChatService) {}
 
+  @UseGuards(WsAuthenticatedGuard)
   handleConnection(socket: Socket) {
     console.log(`Client connected: ${socket.id}`);
-
-    // Access cookies from the socket's request object
-    const cookies = socket.request.headers.cookie;
-    // Parse the cookies using the 'cookie' library
-
-    if (cookies) {
-      const parsedCookies = cookie.parse(cookies);
-
-      const pongSession = parsedCookies['pongSessionId'];
-
-      this.logger.verbose(`### Pong Session: ${pongSession}`);
-
-      // if (parsedCookie && parsedCookie.expires > Date.now()) {
-      //   console.log('Session is valid.');
-      // } else {
-      //   console.log('Session is expired or invalid.');
-      // }
-    }
-
-    this.logger.verbose(JSON.stringify(socket.handshake));
-    // You can also emit data to the client
-    socket.emit('connectionSuccess', 'Connected successfully!');
   }
 
+  @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('test')
   handleTest(@MessageBody() data: string, @ConnectedSocket() socket: Socket) {
     this.logger.log(
       `### Received test message: ${data} from socket: ${socket.id}`,
     );
+
     this.server.emit('test', data);
   }
 
+  @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() message: string,

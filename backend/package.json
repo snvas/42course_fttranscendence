@@ -47,6 +47,7 @@
     "dotenv": "^16.3.1",
     "express-session": "^1.17.3",
     "express-socket.io-session": "^1.3.5",
+    "fixed-fucking-express-socket.io-session": "^0.0.2",
     "i": "^0.3.7",
     "otplib": "^12.0.1",
     "passport": "^0.6.0",
