@@ -6,7 +6,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import { auth } from '$lib/stores';
-	import Image from '$lib/components/Image.svelte';
+	import Settings from '$lib/components/Settings.svelte';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
 
 	$: if (!$auth.loading && !$auth.session) {
@@ -45,40 +45,25 @@
 		goto('/login');
 	}
 
-	async function onDelete() {
-		await profileService.deleteAccount();
-		goto('/login');
-	}
-
-	async function onTwoFactorAuth() {
-		if (twofaDisabled) {
-			goto('/enable2fa');
-		} else {
-			await authService.disable2FA();
-			tempDisabled = true;
-		}
-	}
-
-	let tempDisabled = false;
 	let profile = getProfile();
 
 	$: avatar = getUserAvatar(profile);
 	$: console.log($auth);
-	$: twofaDisabled = !$auth.session?.otpEnabled || tempDisabled;
 </script>
 
 <PongHeader />
 {#await profile then profile}
-	<button class="btn-primary" on:click={onLogout}>logout</button>
-	<button class="btn-primary" on:click={onDelete}>delete account</button>
-	<button class="btn-primary" on:click={onTwoFactorAuth}
-		>{twofaDisabled ? 'Enable' : 'Disable'} Two Factor Authentication</button
-	>
-	<p>Nickname: {profile?.data.nickname}</p>
-	<AvatarImage {avatar} />
-{/await}
+	<div class="flex flex-row">
+		<Settings />
+		<div>
+			<button class="btn-primary" on:click={onLogout}>logout</button>
+			<p>Nickname: {profile?.data.nickname}</p>
+			<AvatarImage {avatar} />
 
-<Button type="stats" />
-<Button type="history" />
-<Button type="settings" />
-<Button type="play" />
+			<Button type="stats" />
+			<Button type="history" />
+			<Button type="settings" />
+			<Button type="play" />
+		</div>
+	</div>
+{/await}
