@@ -11,6 +11,9 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
+import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+
+type AuthenticatedSocket = Socket & { request: { user: FortyTwoUserDto } };
 
 @WebSocketGateway({
   cors: {
@@ -27,15 +30,24 @@ export class ChatGateway implements OnGatewayConnection {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  handleConnection(socket: Socket) {
+  handleConnection(socket: AuthenticatedSocket) {
     console.log(`Client connected: ${socket.id}`);
   }
 
   @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('test')
-  handleTest(@MessageBody() data: string, @ConnectedSocket() socket: Socket) {
+  handleTest(
+    @MessageBody() data: string,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ) {
     this.logger.log(
       `### Received test message: ${data} from socket: ${socket.id}`,
+    );
+
+    this.logger.verbose(
+      `### Sending test message: ${JSON.stringify(
+        socket.request.user,
+      )} to all clients`,
     );
 
     this.server.emit('test', data);
