@@ -24,10 +24,11 @@
 </script>
 
 <div class="w-full min-w-fit">
-<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]}>
-	<span class={icons[type]} />
-</button>
+	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
+		<span class={icons[type]} />
+	</button>
 </div>
+
 <style>
 	.small {
 		width: 40px;
