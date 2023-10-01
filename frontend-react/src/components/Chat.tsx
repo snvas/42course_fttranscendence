@@ -21,7 +21,7 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001", { withCredentials: true });
+    const newSocket = io("http://localhost:3000", { withCredentials: true });
     setSocket(newSocket);
   }, [setSocket]);
 
