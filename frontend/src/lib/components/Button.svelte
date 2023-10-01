@@ -23,14 +23,16 @@
 	};
 </script>
 
-<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]}>
-	<span class={icons[type]} />
-</button>
+<div class="w-full min-w-fit">
+	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
+		<span class={icons[type]} />
+	</button>
+</div>
 
 <style>
 	.small {
-		width: 50px;
-		height: 50px;
+		width: 40px;
+		height: 40px;
 		border-radius: 30px;
 		font-size: 2.5vh;
 		margin-left: 1%;
@@ -59,8 +61,8 @@
 		/* Defina os estilos do botão Play aqui */
 		background-color: red;
 		color: white;
-		width: 100px;
-		height: 100px;
+		width: 80px;
+		height: 80px;
 		border-radius: 60px;
 		margin-left: 1%;
 		margin-right: 1%;
