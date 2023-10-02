@@ -1,6 +1,5 @@
 import { useProfile } from "../context/ProfileContext.tsx";
 import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
-import Chat from "../components/Chat.tsx";
 
 const Home = () => {
   const { profile, avatarImageUrl } = useProfile() as ProfileContextData;
@@ -27,7 +26,12 @@ const Home = () => {
           <p>Ranking: Not Implement Yet</p>
         </div>
         <div className="chat">
-          <Chat />
+          <h1>Match History</h1>
+          <ul>
+            <li>Match 1</li>
+            <li>Match 2</li>
+            <li>Match 3</li>
+          </ul>
         </div>
       </div>
     </>

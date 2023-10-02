@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class WsAuthenticatedGuard implements CanActivate {
@@ -17,7 +18,10 @@ export class WsAuthenticatedGuard implements CanActivate {
       this.logger.verbose(
         `### User is not authenticated for WS, blocking access`,
       );
-      return false;
+
+      throw new WsException(
+        'User is not authenticated for WS, blocking access',
+      );
     }
 
     return true;

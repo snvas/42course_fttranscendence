@@ -12,6 +12,7 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import ProfileCustomization from "./pages/Customization.tsx";
 import { ProfileProvider } from "./context/ProfileContext.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
+import Chat from "./pages/Chat.tsx";
 
 function App() {
   //Todo:
@@ -41,6 +42,7 @@ function App() {
                   }
                 />
                 <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/chat" element={<Chat />} />
                 <Route path="/register-2fa" element={<Register2FA />} />
                 <Route path="/validate-otp" element={<ValidateOTP />} />
               </Route>

@@ -39,15 +39,12 @@ export class ChatGateway implements OnGatewayConnection {
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
     this.logger.log(
-      `### Received test message: ${data} from socket: ${socket.id}`,
+      `### Received test message: ${data} from socket: ${
+        socket.id
+      } and user: ${JSON.stringify(socket.request.user)}`,
     );
 
-    this.logger.verbose(
-      `### Sending test message: ${JSON.stringify(
-        socket.request.user,
-      )} to all clients`,
-    );
-
+    this.logger.verbose(`### Sending test message: ${data} to all clients`);
     this.server.emit('test', data);
   }
 
