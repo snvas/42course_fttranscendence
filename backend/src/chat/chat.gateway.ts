@@ -11,9 +11,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
-
-type AuthenticatedSocket = Socket & { request: { user: FortyTwoUserDto } };
+import { AuthenticatedSocket } from './types/authenticated-socket';
 
 @WebSocketGateway({
   cors: {
@@ -99,7 +97,7 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     const name = this.chatService.getClientName(socket.id);
 
-    //send to everyone expect the sender
+    //send to everyone except the sender
     socket.broadcast.emit('typing', { name, isTyping });
   }
 }

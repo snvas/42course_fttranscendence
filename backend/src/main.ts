@@ -7,7 +7,7 @@ import { DataSource } from 'typeorm';
 import { SessionEntity } from './db/entities';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
-import { EventsAdapter } from './chat/adapter/chat.events.adapter';
+import { EventsAdapter } from './chat/adapters/chat.events.adapter';
 import { config } from 'dotenv';
 
 async function bootstrap() {
