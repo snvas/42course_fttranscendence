@@ -9,6 +9,7 @@
 	import Profile from '$lib/components/Profile.svelte';
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
+	import Chat from '$lib/components/Chat.svelte';
 
 	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');
@@ -53,19 +54,19 @@
 	$: console.log($auth);
 	$: console.log(showing);
 </script>
-
+<div class="h-screen">
 <PongHeader />
-<div class="w-full mx-auto flex flex-row mt-10">
-	<div class="flex flex-col justify-center w-1/3 ml-8 mr-8 xs:w-full">
+<div class="w-full mx-auto flex flex-row">
+	<div class="flex flex-col justify-start w-1/3 ml-8 mr-8 xs:w-full">
 		{#if showing == 'history'}
 			<History {avatar} />
 		{:else if showing == 'settings'}
 			<Settings />
 		{/if}
 	</div>
-	<div class="gap-15 flex flex-col justify-center w-1/3 ml-4 mr-4 h-screen">
+	<div class="gap-15 flex flex-col justify-start w-1/3 ml-4 mr-4">
 		<Profile bind:profile {onLogout} {avatar} />
-		<div class=" flex flex-row items-center">
+		<div class=" flex flex-row items-center mt-10 w-3/4 justify-center ml-10">
 			<Button
 				type="stats"
 				on:click={() => {
@@ -82,7 +83,8 @@
 			<Button type="play" />
 		</div>
 	</div>
-	<div class="gap-15 flex flex-col justify-center pt-10 w-1/3 ml-8 mr-8 h-screen">
-		<p>Chat</p>
+	<div class="gap-15 flex flex-col justify-start w-1/3 ml-8 mr-8 mt-10">
+	<Chat />
 	</div>
+</div>
 </div>
