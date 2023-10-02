@@ -38,8 +38,7 @@
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
 </script>
 
-<div class="h-screen">
-	<div class="mt-10 mb-10 items-center justify-center w-full">
+	<div class="mt-10 mb-10 justify-start w-full">
 		<div class="btn-history w-1/2 mx-auto min-w-fit">History</div>
 	</div>
 
@@ -65,7 +64,6 @@
 			</div>
 		</div>
 	{/each}
-</div>
 
 <style>
 	.win-display {
