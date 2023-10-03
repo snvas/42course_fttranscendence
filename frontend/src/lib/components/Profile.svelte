@@ -12,7 +12,7 @@
 <div class="flex flex-col w-full h-full gap-10">
 	<div class="flex w-full gap-4">
 		{#await profile then profile}
-			<div class="w-40">
+			<div class="flex-initial flex-shrink-0 w-28">
 				<AvatarImage {avatar} />
 			</div>
 			<div class="flex-1 flex flex-col">
