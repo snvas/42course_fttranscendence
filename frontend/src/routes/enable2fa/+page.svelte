@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { authService } from '$lib/api';
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import { auth } from '$lib/stores';
 	import { isAxiosError } from 'axios';
 
 	let alert = '';
@@ -47,9 +46,8 @@
 <div class="w-2/3 mx-auto">
 	<div class="gap-5 flex flex-col pt-10 items-center">
 		<p class="text-xl mt-20 mb-10">Scan QR Code with an Authentication App!</p>
-
 		{#await qrcode then qrcode}
-			<img class="qrcode" src={qrcode} alt="qrcode" />
+			<img src={qrcode} alt="qrcode" />
 		{/await}
 		<input
 			placeholder="Enter the Code"
@@ -67,3 +65,10 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	img {
+		-webkit-filter: invert(1);
+		filter: invert(1);
+	}
+</style>
