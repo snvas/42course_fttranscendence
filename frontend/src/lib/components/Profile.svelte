@@ -7,22 +7,21 @@
 	export let onLogout: () => Promise<void>;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
-		
 </script>
 
-<div class="w-full min-w-fit justify-start mt-10">
-	
-	<div class="flex min-w-fit">
-		
+<div class="flex flex-col w-full h-full gap-10">
+	<div class="flex w-full gap-4">
 		{#await profile then profile}
-			<AvatarImage {avatar} />
-			<div class="flex flex-col ml-4 min-w-fit">
+			<div class="w-40">
+				<AvatarImage {avatar} />
+			</div>
+			<div class="flex-1 flex flex-col">
 				<p class="text-3xl">{profile?.data.nickname}</p>
 				<p class="text-2xl text-green-700 flex flex-col">Win: 3</p>
 				<p class="text-2xl text-red-700 flex flex-col">Lose: 3</p>
 			</div>
 		{/await}
-		<div class="relative ml-52">
+		<div class="flex-none">
 			<Button type="logout" on:click={onLogout} />
 		</div>
 	</div>

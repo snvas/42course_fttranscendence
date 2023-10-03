@@ -22,9 +22,10 @@
 	$: twofaDisabled = !$auth.session?.otpEnabled || tempDisabled;
 </script>
 
-<div>
+<div class="flex flex-col gap-4 justify-center w-full">
+	<button class="btn-primary" on:click={onDelete}>Edit your profile</button>
+	<button class="btn-primary" on:click={onTwoFactorAuth}>
+		{twofaDisabled ? 'Enable' : 'Disable'} Two Factor Authentication
+	</button>
 	<button class="btn-primary" on:click={onDelete}>delete account</button>
-	<button class="btn-primary" on:click={onTwoFactorAuth}
-		>{twofaDisabled ? 'Enable' : 'Disable'} Two Factor Authentication</button
-	>
 </div>

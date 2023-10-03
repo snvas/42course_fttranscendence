@@ -38,9 +38,10 @@
 			if (isAxiosError(error)) {
 				if (error.response?.status == 400) {
 					alert = alerts.profileExist;
-				}
-				if (error.response?.status == 406) {
+				} else if (error.response?.status == 406) {
 					alert = alerts.alreadyExist;
+				} else {
+					goto('/login');
 				}
 			}
 		}
