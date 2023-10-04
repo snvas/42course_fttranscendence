@@ -1,31 +1,46 @@
-import { Injectable } from '@nestjs/common';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { Chat } from './entities/chat.entity';
+import { Injectable, Logger } from '@nestjs/common';
+import { ChatMessage } from './entities/chat-message.entity';
+import { AuthenticatedSocket } from './types/authenticated-socket';
 
 @Injectable()
 export class ChatService {
-  chats: Chat[] = [{ name: 'Marius', message: 'heyooo' }];
-  socketToUser: { [socketId: string]: string } = {};
+  private chats: ChatMessage[] = [
+    {
+      name: 'Marius',
+      message: 'heyooo',
+      timestamp: new Date().toLocaleString(),
+    },
+  ];
+  private readonly logger: Logger = new Logger(ChatService.name);
+  private onlineUsers: Map<number, AuthenticatedSocket> = new Map();
 
-  identify(name: string, socketId: string) {
-    this.socketToUser[socketId] = name;
-    return Object.values(this.socketToUser); //online people in the chat
+  setOnlineUser(socket: AuthenticatedSocket) {
+    this.onlineUsers.set(socket.request.user.id, socket);
   }
 
-  getClientName(socketId: string) {
-    return this.socketToUser[socketId];
+  removeOnlineUser(socket: AuthenticatedSocket) {
+    this.onlineUsers.delete(socket.request.user.id);
   }
 
-  create(createChatDto: CreateChatDto, clientId: string) {
-    const chat = {
-      name: this.socketToUser[clientId],
-      message: createChatDto.message,
-    };
+  getOnlineUsers(): AuthenticatedSocket[] {
+    const onlineUsersArray: AuthenticatedSocket[] = Array.from(
+      this.onlineUsers.values(),
+    );
+
+    this.logger.verbose(
+      `Online users: ${onlineUsersArray.map(
+        (user: AuthenticatedSocket) => user.request.user.username + ',',
+      )}`,
+    );
+
+    return onlineUsersArray;
+  }
+
+  saveMessage(chat: ChatMessage): void {
     this.chats.push(chat);
-    return chat;
   }
 
-  findAll() {
+  findAll(): ChatMessage[] {
     return this.chats;
   }
 }

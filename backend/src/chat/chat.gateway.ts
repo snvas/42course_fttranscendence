@@ -2,16 +2,17 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 import { AuthenticatedSocket } from './types/authenticated-socket';
+import { ChatMessage } from './entities/chat-message.entity';
 
 @WebSocketGateway({
   cors: {
@@ -19,7 +20,7 @@ import { AuthenticatedSocket } from './types/authenticated-socket';
     credentials: true,
   },
 })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -28,73 +29,37 @@ export class ChatGateway implements OnGatewayConnection {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  handleConnection(socket: AuthenticatedSocket) {
-    console.log(`Client connected: ${socket.id}`);
+  handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
+    this.logger.log(`Client connected: ${socket.id}`);
+    this.logger.log(`User: ${JSON.stringify(socket.request.user)}`);
+    this.chatService.setOnlineUser(socket);
+    //socket.emit('onlineUsers', this.chatService.getOnlineUsers());
   }
 
-  @UseGuards(WsAuthenticatedGuard)
-  @SubscribeMessage('test')
-  handleTest(
-    @MessageBody() data: string,
-    @ConnectedSocket() socket: AuthenticatedSocket,
-  ) {
-    this.logger.log(
-      `### Received test message: ${data} from socket: ${
-        socket.id
-      } and user: ${JSON.stringify(socket.request.user)}`,
-    );
-
-    this.logger.verbose(`### Sending test message: ${data} to all clients`);
-    this.server.emit('test', data);
+  handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
+    this.logger.log(`Client disconnected: ${socket.id}`);
+    this.chatService.removeOnlineUser(socket);
+    //socket.emit('onlineUsers', this.chatService.getOnlineUsers());
   }
 
-  @UseGuards(WsAuthenticatedGuard)
+  //@UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() message: string,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    const name = this.chatService.getClientName(socket.id);
-    const chat = {
-      name,
+    const chat: ChatMessage = {
+      name: socket.request.user.username,
       message,
+      timestamp: new Date().toLocaleString(),
     };
-    this.server.emit('chat', chat);
-    return chat;
+    this.chatService.saveMessage(chat);
+    this.server.emit('message', chat);
   }
 
-  @SubscribeMessage('createChat')
-  async create(
-    @MessageBody() createChatDto: CreateChatDto,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const chat = this.chatService.create(createChatDto, socket.id);
-
-    this.server.emit('chat', chat);
-    return chat;
-  }
-
-  @SubscribeMessage('findAllChat')
+  //Salvar e pegar no banco de dados depois
+  @SubscribeMessage('chatHistory')
   findAll() {
     return this.chatService.findAll();
-  }
-
-  @SubscribeMessage('join')
-  joinRoom(
-    @MessageBody('name') name: string,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    return this.chatService.identify(name, socket.id);
-  }
-
-  @SubscribeMessage('typing')
-  async typing(
-    @MessageBody('isTyping') isTyping: boolean,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const name = this.chatService.getClientName(socket.id);
-
-    //send to everyone except the sender
-    socket.broadcast.emit('typing', { name, isTyping });
   }
 }

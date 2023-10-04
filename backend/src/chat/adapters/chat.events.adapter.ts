@@ -5,7 +5,7 @@ import express from 'express';
 import { INestApplication } from '@nestjs/common';
 
 export class EventsAdapter extends IoAdapter {
-  private session: express.RequestHandler;
+  private readonly session: express.RequestHandler;
 
   constructor(session: express.RequestHandler, app: INestApplication) {
     super(app);

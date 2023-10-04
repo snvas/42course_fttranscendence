@@ -1,9 +1,11 @@
-const Messages = ({ messages }: { messages: string[] }) => {
+import { ChatMessageDto } from "../../../backend/src/chat/dto/chat-message.dto.ts";
+
+const Messages = ({ messages }: { messages: ChatMessageDto[] }) => {
 
   return (
     <div>
       {messages.map((message, index) =>
-        <div key={index}>{message}</div>)
+        <div key={index}>{JSON.stringify(message)}</div>)
       }
     </div>
   );
