@@ -22,7 +22,7 @@ export class ChatService {
     this.onlineUsers.delete(socket.request.user.id);
   }
 
-  getOnlineUsers(): AuthenticatedSocket[] {
+  getOnlineUsers(): string[] {
     const onlineUsersArray: AuthenticatedSocket[] = Array.from(
       this.onlineUsers.values(),
     );
@@ -33,7 +33,9 @@ export class ChatService {
       )}`,
     );
 
-    return onlineUsersArray;
+    return onlineUsersArray.map(
+      (user: AuthenticatedSocket) => user.request.user.username,
+    );
   }
 
   saveMessage(chat: ChatMessage): void {

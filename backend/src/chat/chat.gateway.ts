@@ -10,9 +10,9 @@ import {
 import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
-import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 import { AuthenticatedSocket } from './types/authenticated-socket';
 import { ChatMessage } from './entities/chat-message.entity';
+import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 
 @WebSocketGateway({
   cors: {
@@ -33,16 +33,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client connected: ${socket.id}`);
     this.logger.log(`User: ${JSON.stringify(socket.request.user)}`);
     this.chatService.setOnlineUser(socket);
-    //socket.emit('onlineUsers', this.chatService.getOnlineUsers());
+
+    this.server.emit('onlineUsers', this.chatService.getOnlineUsers());
   }
 
+  @UseGuards(WsAuthenticatedGuard)
   handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`Client disconnected: ${socket.id}`);
     this.chatService.removeOnlineUser(socket);
-    //socket.emit('onlineUsers', this.chatService.getOnlineUsers());
+
+    socket.broadcast.emit('onlineUsers', this.chatService.getOnlineUsers());
   }
 
-  //@UseGuards(WsAuthenticatedGuard)
+  @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() message: string,

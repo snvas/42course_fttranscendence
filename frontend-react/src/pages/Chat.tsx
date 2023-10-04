@@ -11,6 +11,7 @@ const Chat = () => {
   // const { profile } = useProfile() as ProfileContextData;
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const navigate: NavigateFunction = useNavigate();
 
   const send = (value: string) => {
@@ -29,9 +30,29 @@ const Chat = () => {
     navigate("/login");
   };
 
+  const onlineUsersListener = (onlineUsers: string[]) => {
+    console.log(`received online users ${onlineUsers}`);
+
+    setOnlineUsers(onlineUsers);
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.connect();
+    }
+    return () => {
+      console.log("disconnecting...");
+      if (socket) {
+        socket.disconnect();
+        console.log("disconnected successfully");
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const newSocket = io("http://localhost:3000", { withCredentials: true });
     setSocket(newSocket);
+
   }, [setSocket]);
 
   useEffect(() => {
@@ -50,16 +71,33 @@ const Chat = () => {
         socket.off("exception", errorListener);
       };
     }
-
   }, [errorListener]);
 
+  useEffect(() => {
+    if (socket) {
+      socket.on("onlineUsers", onlineUsersListener);
+      return () => {
+        socket.off("onlineUsers", onlineUsersListener);
+      };
+    }
+
+  }, [onlineUsersListener, onlineUsers]);
 
   return (
-    <div>
-      {" "}
-      <h1>Chat</h1>
-      <Messages messages={messages} />
-      <MessageInput send={send} />
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <div style={{ flex: 2 }}>
+        <h1>Chat</h1>
+        <Messages messages={messages} />
+        <MessageInput send={send} />
+      </div>
+      <div style={{ flex: 1, marginRight: "20px" }}>
+        <h1>Online Users</h1>
+        <ul>
+          {onlineUsers.map((user: string, index: number) => (
+            <li key={index}>{user}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
