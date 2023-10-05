@@ -18,7 +18,6 @@ function App() {
   //Todo:
   // Adicionar as rotas em um arquivo Routes.tsx
   // Fazer página profile/:id para buscar por profiles de outros usuários
-  // Fazer página para o chat
   // Fazer página para o game
 
   return (

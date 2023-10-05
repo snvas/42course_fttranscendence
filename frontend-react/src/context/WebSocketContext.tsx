@@ -29,27 +29,27 @@ export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
     socket.connect();
 
     const onConnect = () => {
-      console.log("connected to server via websocket");
+      console.log("### connected to server via websocket");
     };
 
     const onException = (message: string) => {
-      console.log(`# received error message ${JSON.stringify(message)}`);
+      console.log(`### received error message ${JSON.stringify(message)}`);
       navigate("/login");
     };
 
     const onUnauthorized = (message: string) => {
-      console.log(`# received unauthorized message ${JSON.stringify(message)}`);
+      console.log(`### received unauthorized message ${JSON.stringify(message)}`);
       navigate("/login");
     };
 
     const onMessage = (message: ChatMessageDto) => {
-      console.log(`received message ${JSON.stringify(message)}`);
+      console.log(`### received chat message ${JSON.stringify(message)}`);
 
       setMessages((messages: ChatMessageDto[]) => [...messages, message]);
     };
 
     const onOnlineUsers = (onlineUsers: string[]) => {
-      console.log(`received online users ${onlineUsers}`);
+      console.log(`### received online users ${onlineUsers}`);
 
       setOnlineUsers(onlineUsers);
     };
@@ -59,7 +59,6 @@ export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
     socket.on("unauthorized", onUnauthorized);
     socket.on("message", onMessage);
     socket.on("onlineUsers", onOnlineUsers);
-
 
     return () => {
       socket.off("connect");
