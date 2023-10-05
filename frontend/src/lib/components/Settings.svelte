@@ -5,6 +5,10 @@
 
 	let auth = useAuth();
 
+	async function onEditProfile() {
+		goto('/edit-profile');
+	}
+
 	async function onDelete() {
 		await profileService.deleteAccount();
 		goto('/login');
@@ -16,7 +20,7 @@
 		} else {
 			await authService.disable2FA();
 			message = 'Two Factor Authentication disabled!';
-			auth = useAuth()
+			auth = useAuth();
 		}
 	}
 
@@ -28,7 +32,7 @@
 	<div class="h-12 text-green-500">
 		{message}
 	</div>
-	<button class="btn-primary" on:click={onDelete}>Edit your profile</button>
+	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>

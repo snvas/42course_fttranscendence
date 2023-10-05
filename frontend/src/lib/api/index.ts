@@ -1,2 +1,2 @@
-export * from './AuthService'
-export * from './ProfileService'
+export * from "./services"
+export * from "./profile"
