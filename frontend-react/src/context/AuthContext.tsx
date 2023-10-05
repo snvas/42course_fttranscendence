@@ -1,16 +1,9 @@
-import {
-  createContext,
-  FC,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import { AuthContextData } from "./interfaces/AuthContextData.ts";
 import axios from "axios";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
-import authService from "../api/AuthService.ts";
+import authService from "../api/http/AuthService.ts";
 import { FortyTwoUserDto } from "../../../backend/dist/user/models/forty-two-user.dto";
 
 const AuthContext = createContext({});
@@ -92,7 +85,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     logoutUser,
     enable2FA,
     disable2FA,
-    validateOTP,
+    validateOTP
   };
 
   return (

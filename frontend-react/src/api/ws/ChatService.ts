@@ -1,10 +1,10 @@
 import { io, Socket } from "socket.io-client";
 
-class WebSocketService {
+class ChatService {
   private readonly socket: Socket;
 
   constructor(baseURL: string) {
-    this.socket = io(baseURL, { withCredentials: true, autoConnect: false });
+    this.socket = io(`${baseURL}/chat`, { withCredentials: true, autoConnect: false });
   }
 
   connect(): void {
@@ -24,7 +24,7 @@ class WebSocketService {
   }
 }
 
-const webSocketService: WebSocketService = new WebSocketService(
+const webSocketService: ChatService = new ChatService(
   "http://localhost:3000"
 );
 

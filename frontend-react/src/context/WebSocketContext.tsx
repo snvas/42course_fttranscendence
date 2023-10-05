@@ -1,7 +1,7 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import { WebSocketContextData } from "./interfaces/WebSocketContextData.ts";
 import { Socket } from "socket.io-client";
-import webSocketService from "../api/WebSocketService.ts";
+import webSocketService from "../api/ws/ChatService.ts";
 import { ChatMessageDto } from "../../../backend/src/chat/dto/chat-message.dto.ts";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 

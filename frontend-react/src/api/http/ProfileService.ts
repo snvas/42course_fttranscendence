@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { ProfileDTO } from "../../../backend/dist/profile/models/profile.dto";
-import { ProfileDeletedResponseDto } from "../../../backend/dist/profile/models/profile-delete-response.dto";
+import { ProfileDTO } from "../../../../backend/src/profile/models/profile.dto.ts";
+import { ProfileDeletedResponseDto } from "../../../../backend/src/profile/models/profile-delete-response.dto.ts";
 
 class ProfileService {
   private axiosInstance: AxiosInstance;
@@ -8,7 +8,7 @@ class ProfileService {
   constructor(baseURL: string) {
     this.axiosInstance = axios.create({
       baseURL,
-      withCredentials: true,
+      withCredentials: true
     });
   }
 
@@ -18,7 +18,7 @@ class ProfileService {
 
   public async getAvatarImage(avatarId: number): Promise<AxiosResponse<Blob>> {
     return this.axiosInstance.get(`/avatar/${avatarId}`, {
-      responseType: "blob",
+      responseType: "blob"
     });
   }
 
@@ -33,8 +33,8 @@ class ProfileService {
   ): Promise<AxiosResponse<ProfileDTO>> {
     return this.axiosInstance.post("/avatar", formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
-      },
+        "Content-Type": "multipart/form-data"
+      }
     });
   }
 

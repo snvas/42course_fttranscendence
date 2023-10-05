@@ -19,6 +19,7 @@ import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
     origin: process.env.APP_CORS_ORIGIN,
     credentials: true,
   },
+  namespace: 'chat',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

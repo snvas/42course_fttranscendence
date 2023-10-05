@@ -1,8 +1,7 @@
-import axios, { AxiosInstance } from "axios";
-import { AxiosResponse } from "axios";
-import { ResponseMessageDto } from "../../../backend/dist/auth/models/response-message.dto";
-import { FortyTwoUserDto } from "../../../backend/dist/user/models/forty-two-user.dto";
-import { OneTimePasswordDto } from "../../../backend/dist/auth/models/one-time-password.dto";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { ResponseMessageDto } from "../../../../backend/src/auth/models/response-message.dto.ts";
+import { FortyTwoUserDto } from "../../../../backend/src/user/models/forty-two-user.dto.ts";
+import { OneTimePasswordDto } from "../../../../backend/src/auth/models/one-time-password.dto.ts";
 
 class AuthService {
   private axiosInstance: AxiosInstance;
@@ -10,7 +9,7 @@ class AuthService {
   constructor(baseURL: string) {
     this.axiosInstance = axios.create({
       baseURL,
-      withCredentials: true,
+      withCredentials: true
     });
   }
 
@@ -30,7 +29,7 @@ class AuthService {
     code: string
   ): Promise<AxiosResponse<ResponseMessageDto>> {
     return this.axiosInstance.post("/2fa/turn-on", {
-      code,
+      code
     } as OneTimePasswordDto);
   }
 

@@ -4,7 +4,7 @@ import useThrowAsyncError from "../utils/hooks/useThrowAsyncError";
 import AuthContext from "./AuthContext";
 import { useLocation } from "react-router-dom";
 import { AuthContextData } from "./interfaces/AuthContextData.ts";
-import profileService from "../api/ProfileService.ts";
+import profileService from "../api/http/ProfileService.ts";
 import { AxiosResponse, isAxiosError } from "axios";
 import { ProfileDTO } from "../../../backend/dist/profile/models/profile.dto";
 

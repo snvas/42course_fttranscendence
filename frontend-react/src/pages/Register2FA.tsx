@@ -1,7 +1,7 @@
 import { FormEvent, MutableRefObject, useRef, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { AxiosResponse } from "axios";
-import authService from "../api/AuthService.ts";
+import authService from "../api/http/AuthService.ts";
 import { useAuth } from "../context/AuthContext.tsx";
 import { AuthContextData } from "../context/interfaces/AuthContextData.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
