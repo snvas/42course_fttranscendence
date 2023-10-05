@@ -76,8 +76,6 @@
 			alert = imageAlerts.none;
 		}
 	};
-
-	$: console.log(imageFile);
 </script>
 
 <PongHeader />

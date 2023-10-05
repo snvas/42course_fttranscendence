@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { useAuth } from '$lib/stores';
 	import { authService, getProfile, getUserAvatar } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -9,22 +8,15 @@
 	import History from '$lib/components/History.svelte';
 	import Chat from '$lib/components/Chat.svelte';
 
-	let auth = useAuth();
-
-	$: if (!$auth.loading && !$auth.session) {
-		goto('/login');
-	}
-
 	async function onLogout() {
 		await authService.logoutUser();
 		goto('/login');
 	}
 
-	let profile = getProfile();
+	$: profile = getProfile();
 	let showing: 'stats' | 'history' | 'settings' = 'history';
 
 	$: avatar = getUserAvatar(profile);
-	$: console.log($auth);
 </script>
 
 <div class="h-screen w-screen flex flex-col">

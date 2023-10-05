@@ -46,10 +46,11 @@
 		originAvatar = avatar;
 	});
 
-	let tempProfile: ProfileDTO;
+	let tempProfile: Partial<ProfileDTO> = {};
 	profile.then((value) => {
 		if (value) {
-			tempProfile = value?.data;
+			// all fields in profile editor must be here
+			tempProfile.nickname = value?.data.nickname;
 		} else {
 			// TODO: adicionar verificação
 		}
@@ -106,6 +107,8 @@
 
 	$: tempProfile, resetAlerts();
 	$: avatar, resetAlerts();
+
+	$: console.log(tempProfile);
 </script>
 
 <PongHeader />
