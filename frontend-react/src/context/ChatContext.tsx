@@ -1,19 +1,19 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
-import { WebSocketContextData } from "./interfaces/WebSocketContextData.ts";
+import { ChatContextData } from "./interfaces/ChatContextData.ts";
 import { Socket } from "socket.io-client";
-import webSocketService from "../api/ws/ChatService.ts";
 import { ChatMessageDto } from "../../../backend/src/chat/dto/chat-message.dto.ts";
 import { NavigateFunction, useNavigate } from "react-router-dom";
+import chatService from "../api/ws/ChatService.ts";
 
-const WebSocketContext = createContext({});
+const ChatContext = createContext({});
 
-WebSocketContext.displayName = "WebSocketContext";
+ChatContext.displayName = "ChatContext";
 
 interface WebSocketProviderProps {
   children: ReactNode;
 }
 
-export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
+export const ChatProvider: FC<WebSocketProviderProps> = ({ children }) => {
   // const { user } = useContext(AuthContext) as AuthContextData;
   // const { profile } = useProfile() as ProfileContextData;
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
@@ -21,11 +21,11 @@ export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
   const navigate: NavigateFunction = useNavigate();
 
   const sendMessage = (message: string) => {
-    webSocketService.emitMessage(message);
+    chatService.emitMessage(message);
   };
 
   useEffect(() => {
-    const socket: Socket = webSocketService.getSocket();
+    const socket: Socket = chatService.getSocket();
     socket.connect();
 
     const onConnect = () => {
@@ -69,13 +69,13 @@ export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
   }, []);
 
 
-  const contextData: WebSocketContextData = {
+  const contextData: ChatContextData = {
     sendMessage,
     messages,
     onlineUsers
   };
 
-  return <WebSocketContext.Provider value={contextData}>{children}</WebSocketContext.Provider>;
+  return <ChatContext.Provider value={contextData}>{children}</ChatContext.Provider>;
 };
 
-export const useWebSocket = (): unknown => useContext(WebSocketContext);
+export const useChat = (): unknown => useContext(ChatContext);

@@ -2,13 +2,13 @@
 // import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
 import MessageInput from "../components/MessageInput.tsx";
 import Messages from "../components/Messages.tsx";
-import { WebSocketContextData } from "../context/interfaces/WebSocketContextData.ts";
-import { useWebSocket } from "../context/WebSocketContext.tsx";
+import { ChatContextData } from "../context/interfaces/ChatContextData.ts";
+import { useChat } from "../context/ChatContext.tsx";
 import { useEffect, useState } from "react";
 import { ChatMessageDto } from "../../../backend/src/chat/dto/chat-message.dto.ts";
 
 const Chat = () => {
-  const { sendMessage, messages, onlineUsers } = useWebSocket() as WebSocketContextData;
+  const { sendMessage, messages, onlineUsers } = useChat() as ChatContextData;
   const [msg, setMgs] = useState<ChatMessageDto[]>([]);
   const [online, setOnline] = useState<string[]>([]);
 

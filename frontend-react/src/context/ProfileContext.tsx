@@ -130,4 +130,4 @@ export const ProfileProvider: FC<ProfileProviderProps> = ({ children }) => {
 
 export const useProfile = (): unknown => useContext(ProfileContext);
 
-export default AuthContext;
+export default ProfileContext;

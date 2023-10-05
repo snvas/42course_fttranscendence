@@ -24,8 +24,8 @@ class ChatService {
   }
 }
 
-const webSocketService: ChatService = new ChatService(
+const chatService: ChatService = new ChatService(
   "http://localhost:3000"
 );
 
-export default webSocketService;
+export default chatService;
