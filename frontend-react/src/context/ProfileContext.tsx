@@ -12,11 +12,11 @@ const ProfileContext = createContext({});
 
 ProfileContext.displayName = "ProfileContext";
 
-interface ProfileProvideProps {
+interface ProfileProviderProps {
   children: ReactNode;
 }
 
-export const ProfileProvider: FC<ProfileProvideProps> = ({ children }) => {
+export const ProfileProvider: FC<ProfileProviderProps> = ({ children }) => {
   const { user } = useContext(AuthContext) as AuthContextData;
   const [loading, setLoading] = useState<boolean>(true);
   const [avatarImageUrl, setAvatarImageUrl] = useState<string | undefined>(

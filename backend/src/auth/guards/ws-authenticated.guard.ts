@@ -4,24 +4,24 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { WsException } from '@nestjs/websockets';
+import { AuthenticatedSocket } from '../../chat/types/authenticated-socket';
 
 @Injectable()
 export class WsAuthenticatedGuard implements CanActivate {
-  private readonly logger = new Logger(WsAuthenticatedGuard.name);
+  private readonly logger: Logger = new Logger(WsAuthenticatedGuard.name);
 
   async canActivate(context: ExecutionContext) {
     const client = context.switchToWs().getClient();
-    const request = client.request;
+    const socket: AuthenticatedSocket = client as AuthenticatedSocket;
 
-    if (!request.isAuthenticated()) {
+    if (!client.request.isAuthenticated()) {
       this.logger.verbose(
-        `### User is not authenticated for WS, blocking access`,
+        `### User is not authenticated for WS, blocking access - socket id: ${socket.id}`,
       );
 
-      throw new WsException(
-        'User is not authenticated for WS, blocking access',
-      );
+      socket.emit('unauthorized', 'User not authenticated');
+
+      return false;
     }
 
     return true;

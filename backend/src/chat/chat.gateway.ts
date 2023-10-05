@@ -30,8 +30,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(WsAuthenticatedGuard)
   handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
-    this.logger.log(`Client connected: ${socket.id}`);
-    this.logger.log(`User: ${JSON.stringify(socket.request.user)}`);
+    this.logger.log(`### Client connected: ${socket.id}`);
+
+    if (!socket.request.user) {
+      this.logger.log(`### User not authenticated: ${socket.id}`);
+      socket.emit('unauthorized', 'User not authenticated');
+    }
+
+    this.logger.verbose(
+      `Authenticated user: ${JSON.stringify(socket.request.user)}`,
+    );
     this.chatService.setOnlineUser(socket);
 
     this.server.emit('onlineUsers', this.chatService.getOnlineUsers());
