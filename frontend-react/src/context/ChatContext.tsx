@@ -4,6 +4,7 @@ import { Socket } from "socket.io-client";
 import { ChatMessageDto } from "../../../backend/src/chat/dto/chat-message.dto.ts";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import chatService from "../api/ws/ChatService.ts";
+import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
 
 const ChatContext = createContext({});
 
@@ -19,6 +20,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessageDto[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const navigate: NavigateFunction = useNavigate();
+  const throwAsyncError = useThrowAsyncError();
 
   const sendMessage = (message: string) => {
     chatService.emitMessage(message);
@@ -34,11 +36,12 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({ children }) => {
 
     const onException = (message: string) => {
       console.log(`### received error message ${JSON.stringify(message)}`);
-      navigate("/login");
+      throwAsyncError(message);
     };
 
     const onUnauthorized = (message: string) => {
       console.log(`### received unauthorized message ${JSON.stringify(message)}`);
+      socket.disconnect();
       navigate("/login");
     };
 
