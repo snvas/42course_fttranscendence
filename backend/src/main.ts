@@ -43,6 +43,7 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
   app.useWebSocketAdapter(new EventsAdapter(sessionMiddleware, app));
+
   await app.listen(Number(configService.get<number>('APP_PORT')) || 3000);
 
   logger.log(`### Application is running on: ${await app.getUrl()}`);

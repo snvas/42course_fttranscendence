@@ -34,7 +34,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`### Client connected: ${socket.id}`);
 
     if (!socket.request.user) {
-      this.logger.log(`### User not authenticated: ${socket.id}`);
+      this.logger.warn(`### User not authenticated: ${socket.id}`);
       socket.emit('unauthorized', 'User not authenticated');
     }
 

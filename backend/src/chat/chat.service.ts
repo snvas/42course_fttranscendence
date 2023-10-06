@@ -49,12 +49,12 @@ export class ChatService {
       message,
     });
 
-    const chatDb: ChatMessageEntity = await this.chatMessageRepository.save(
+    const chatEntity: ChatMessageEntity = await this.chatMessageRepository.save(
       messageEntity,
     );
 
-    this.logger.verbose(`### Event message: ${JSON.stringify(chatDb)}`);
+    this.logger.verbose(`### Event message: ${JSON.stringify(chatEntity)}`);
 
-    return plainToClass(ChatMessageDto, chatDb);
+    return plainToClass(ChatMessageDto, chatEntity);
   }
 }

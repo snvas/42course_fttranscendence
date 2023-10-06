@@ -76,9 +76,10 @@ export class ProfileService {
       throw new NotFoundException(`User [${userId}] not found`);
     }
 
-    const profileEntity: ProfileEntity = new ProfileEntity();
-    profileEntity.nickname = nickname;
-    profileEntity.userEntity = userEntity;
+    const profileEntity: ProfileEntity = this.profileRepository.create({
+      nickname,
+      userEntity,
+    });
 
     let savedEntity: ProfileEntity;
 
