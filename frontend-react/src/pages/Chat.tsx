@@ -48,7 +48,6 @@ const Chat = () => {
           <ul>
             {online.map((user: string, index: number) => (
               <div style={{ display: "flex" }}>
-                { /* If admin, paint name in red*/}
                 <li style={{ marginRight: "20px" }} key={index}>{user} {/*Add label Owner, Admin, User*/}</li>
                 <div>
                   {/* <Create actions for these buttons */}
