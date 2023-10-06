@@ -1,7 +1,13 @@
 <script lang="ts">
-	import { auth } from '$lib/stores';
+	import { useAuth } from '$lib/stores';
 	import { authService, profileService } from '$lib/api';
 	import { goto } from '$app/navigation';
+
+	let auth = useAuth();
+
+	async function onEditProfile() {
+		goto('/edit-profile');
+	}
 
 	async function onDelete() {
 		await profileService.deleteAccount();
@@ -9,23 +15,26 @@
 	}
 
 	async function onTwoFactorAuth() {
-		if (twofaDisabled) {
+		if (!tfaEnabled) {
 			goto('/enable2fa');
 		} else {
 			await authService.disable2FA();
-			tempDisabled = true;
+			message = 'Two Factor Authentication disabled!';
+			auth = useAuth();
 		}
 	}
 
-	let tempDisabled = false;
-
-	$: twofaDisabled = !$auth.session?.otpEnabled || tempDisabled;
+	let message = '';
+	$: tfaEnabled = $auth.session?.otpEnabled;
 </script>
 
-<div class="flex flex-col gap-4 justify-center w-full">
-	<button class="btn-primary" on:click={onDelete}>Edit your profile</button>
+<div class="flex flex-col gap-4 justify-center w-full items-center">
+	<div class="h-12 text-green-500">
+		{message}
+	</div>
+	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
-		{twofaDisabled ? 'Enable' : 'Disable'} Two Factor Authentication
+		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
 	<button class="btn-primary" on:click={onDelete}>delete account</button>
 </div>

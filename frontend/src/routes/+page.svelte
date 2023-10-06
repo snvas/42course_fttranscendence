@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import { auth } from '$lib/stores';
+	import { useAuth } from '$lib/stores';
+
+	let auth = useAuth()
 
 	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');

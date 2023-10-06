@@ -14,9 +14,8 @@ let authState: AuthState = {
 };
 
 // ??? como fazer a requisição se repetir e manter o
-export let auth = readable<AuthState>( 
-	authState, 
-	(set) => {
+export function useAuth(): Readable<AuthState> {
+	let auth = readable<AuthState>(authState, (set) => {
 		set({
 			loading: true,
 			session: authState.session
@@ -37,5 +36,6 @@ export let auth = readable<AuthState>(
 				};
 				set(authState);
 			});
-	}
-);
+	});
+	return auth;
+}
