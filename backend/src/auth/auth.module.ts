@@ -28,6 +28,6 @@ import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
     AuthService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserAuthenticatedGuard],
+  exports: [UserAuthenticatedGuard, WsAuthenticatedGuard],
 })
 export class AuthModule {}

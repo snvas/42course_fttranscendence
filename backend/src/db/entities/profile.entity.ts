@@ -44,4 +44,13 @@ export class ProfileEntity implements Profile {
   })
   @JoinColumn()
   userEntity: UserEntity;
+
+  // @CreateDateColumn()
+  // createdAt: Date;
+  //
+  // @UpdateDateColumn()
+  // updatedAt: Date;
+  //
+  // @DeleteDateColumn()
+  // deletedAt?: Date;
 }

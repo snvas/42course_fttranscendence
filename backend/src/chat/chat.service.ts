@@ -1,18 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ChatMessage } from './entities/chat-message.entity';
 import { AuthenticatedSocket } from './types/authenticated-socket';
+import { ChatMessageDto } from './dto/chat-message.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ChatMessageEntity } from '../db/entities';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ChatService {
-  private chats: ChatMessage[] = [
-    {
-      name: 'Marius',
-      message: 'heyooo',
-      timestamp: new Date().toLocaleString(),
-    },
-  ];
   private readonly logger: Logger = new Logger(ChatService.name);
   private onlineUsers: Map<number, AuthenticatedSocket> = new Map();
+
+  constructor(
+    @InjectRepository(ChatMessageEntity)
+    private readonly chatMessageRepository: Repository<ChatMessageEntity>,
+  ) {}
 
   setOnlineUser(socket: AuthenticatedSocket) {
     this.onlineUsers.set(socket.request.user.id, socket);
@@ -28,7 +30,7 @@ export class ChatService {
     );
 
     this.logger.verbose(
-      `Online users: ${onlineUsersArray.map(
+      `### Online users: ${onlineUsersArray.map(
         (user: AuthenticatedSocket) => user.request.user.username + ',',
       )}`,
     );
@@ -38,11 +40,21 @@ export class ChatService {
     );
   }
 
-  saveMessage(chat: ChatMessage): void {
-    this.chats.push(chat);
-  }
+  async saveMessage(
+    socket: AuthenticatedSocket,
+    message: string,
+  ): Promise<ChatMessageDto> {
+    const messageEntity: ChatMessageEntity = this.chatMessageRepository.create({
+      name: socket.request.user.username,
+      message,
+    });
 
-  findAll(): ChatMessage[] {
-    return this.chats;
+    const chatDb: ChatMessageEntity = await this.chatMessageRepository.save(
+      messageEntity,
+    );
+
+    this.logger.verbose(`### Event message: ${JSON.stringify(chatDb)}`);
+
+    return plainToClass(ChatMessageDto, chatDb);
   }
 }

@@ -11,8 +11,8 @@ import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
-import { ChatMessage } from './entities/chat-message.entity';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
+import { ChatMessageDto } from './dto/chat-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -56,22 +56,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage('message')
-  handleMessage(
+  async handleMessage(
     @MessageBody() message: string,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    const chat: ChatMessage = {
-      name: socket.request.user.username,
+    const messageDto: ChatMessageDto = await this.chatService.saveMessage(
+      socket,
       message,
-      timestamp: new Date().toLocaleString(),
-    };
-    this.chatService.saveMessage(chat);
-    this.server.emit('message', chat);
-  }
+    );
 
-  //Salvar e pegar no banco de dados depois
-  @SubscribeMessage('chatHistory')
-  findAll() {
-    return this.chatService.findAll();
+    this.server.emit('message', messageDto);
   }
 }
