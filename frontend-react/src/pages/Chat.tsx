@@ -29,22 +29,45 @@ const Chat = () => {
 
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
-      <div style={{ flex: 2 }}>
-        <h1>Chat</h1>
-        <Messages messages={msg} />
-        <MessageInput send={sendMessage} />
+    <div>
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <h1 style={{ marginRight: "20px" }}>Chat Rooms</h1>
+
+        <button className="btn-chan">General</button>
+        <button className="btn-chan">Random</button>
       </div>
-      <div style={{ flex: 1, marginRight: "20px" }}>
-        <h1>Online Users</h1>
-        <ul>
-          {online.map((user: string, index: number) => (
-            <li key={index}>{user}</li>
-          ))}
-        </ul>
+      <hr></hr>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ flex: 2, overflowY: "auto", maxHeight: "700px" }}>
+          <h1>Chat</h1> {/* Add channel name here */}
+          <Messages messages={msg} />
+          <MessageInput send={sendMessage} />
+        </div>
+        <div style={{ flex: 1, marginRight: "20px", overflowY: "auto", maxHeight: "700px" }}>
+          <h1>Online Users</h1>
+          <ul>
+            {online.map((user: string, index: number) => (
+              <div style={{ display: "flex" }}>
+                { /* If admin, paint name in red*/}
+                <li style={{ marginRight: "20px" }} key={index}>{user} {/*Add label Owner, Admin, User*/}</li>
+                <div>
+                  {/* <Create actions for these buttons */}
+                  <button className="btn-hover">DM</button>
+                  <button className="btn-hover">X1</button>
+                  {/*  */}
+                  <button className="btn-hover">Block</button>
+                  <button className="btn-hover">Mute</button>
+                  <button className="btn-hover">Kick</button>
+                  <button className="btn-hover">Ban</button>
+                </div>
+              </div>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
+
 };
 
 export default Chat;
