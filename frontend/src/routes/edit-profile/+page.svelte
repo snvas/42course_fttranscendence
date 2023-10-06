@@ -6,7 +6,8 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import Image from '$lib/components/Image.svelte';
 	import Camera from '$lib/components/Camera.svelte';
-	import type { ProfileDTO } from '../../../../backend/src/profile/models/profile.dto';
+	import type { ProfileDTO } from '$lib/dtos';
+	import { isAxiosError } from 'axios';
 
 	let auth = useAuth();
 
@@ -30,6 +31,7 @@
 
 	const profileAlerts = {
 		none: '',
+		unavaliable: 'nickname is unavaliable!',
 		error: 'unknown error'
 	};
 
@@ -96,7 +98,14 @@
 			await profileService.updateProfile(tempProfile);
 			profileAlert = profileSuccess.update;
 		} catch (error) {
-			profileAlert = profileAlerts.error;
+			if (isAxiosError(error)) {
+				console.log(error);
+				if (error.response?.status == 406) {
+					profileAlert = profileAlerts.unavaliable;
+				}
+			} else {
+				profileAlert = profileAlerts.error;
+			}
 		}
 	}
 
@@ -107,8 +116,6 @@
 
 	$: tempProfile, resetAlerts();
 	$: avatar, resetAlerts();
-
-	$: console.log(tempProfile);
 </script>
 
 <PongHeader />
@@ -158,7 +165,11 @@
 <div class="border-4 m-10 mx-20 p-10 rounded-lg flex flex-col justify-center items-center gap-10">
 	{#await profile then}
 		<p class="text-3xl">Edit Your Profile</p>
-		<div class="flex flex-col items-start w-full">
+		<div
+			class={`flex flex-col items-start w-full ${
+				profileAlert == profileAlerts.unavaliable ? 'text-red-500 border-red-500' : ''
+			}`}
+		>
 			nickname
 			<input class="input-primary" bind:value={tempProfile.nickname} on:change={resetAlerts} />
 		</div>
