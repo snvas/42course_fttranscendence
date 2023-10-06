@@ -5,31 +5,26 @@ import { authService } from './api';
 
 type AuthState = {
 	loading: boolean;
-	loggedIn: boolean;
-	session?: FortyTwoUserDto;
+	session: FortyTwoUserDto | null;
 };
 
 let authState: AuthState = {
 	loading: false,
-	loggedIn: false
+	session: null
 };
-// ??? como fazer a requisição se repetir e manter o 
-export let auth = readable(
-	{
-		loading: false,
-		loggedIn: false
-	},
-	(set) => {
+
+// ??? como fazer a requisição se repetir e manter o
+export function useAuth(): Readable<AuthState> {
+	let auth = readable<AuthState>(authState, (set) => {
 		set({
 			loading: true,
-			loggedIn: authState.loggedIn
+			session: authState.session
 		});
 		authService
 			.validateUserSession()
 			.then((session) => {
 				authState = {
 					loading: false,
-					loggedIn: true,
 					session: session.data
 				};
 				set(authState);
@@ -37,9 +32,10 @@ export let auth = readable(
 			.catch(() => {
 				authState = {
 					loading: false,
-					loggedIn: false
+					session: null
 				};
 				set(authState);
 			});
-	},
-);
+	});
+	return auth;
+}

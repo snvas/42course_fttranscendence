@@ -1,40 +1,45 @@
 <script lang="ts">
-	export let type: 'stats' | 'history' | 'settings' | 'play' = 'stats';
+	export let type: 'logout' | 'stats' | 'history' | 'settings' | 'play' = 'stats';
 
 	export const icons = {
 		stats: 'fa fa-bar-chart',
 		history: 'fa fa-history',
 		settings: 'fa fa-cog',
-		play: 'fa fa-play'
+		play: 'fa fa-play',
+		logout: 'fa fa-sign-out'
 	};
 
 	const title = {
 		stats: 'show stats',
 		history: 'show history',
 		settings: 'show settings',
-		play: 'Play game!'
+		play: 'Play game!',
+		logout: 'show logout'
 	};
 
 	const style = {
 		stats: 'small stats',
 		history: 'small history',
 		settings: 'small settings',
-		play: 'play'
+		play: 'play',
+		logout: 'small logout'
 	};
 </script>
 
-<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]}>
-	<span class={icons[type]} />
-</button>
+<div class="w-full min-w-fit">
+	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
+		<span class={icons[type]} />
+	</button>
+</div>
 
 <style>
 	.small {
-		width: 50px;
-		height: 50px;
+		width: 60px;
+		height: 60px;
 		border-radius: 30px;
 		font-size: 2.5vh;
-		margin-left: 1%;
-		margin-right: 1%;
+		margin-left: 0.5%;
+		margin-right: 0.5%;
 	}
 
 	.stats {
@@ -55,6 +60,12 @@
 		color: black;
 	}
 
+	.logout {
+		background-color: rgb(34, 34, 34);
+		color: white;
+		font-size: 3.5vh;
+	}
+
 	.play {
 		/* Defina os estilos do botão Play aqui */
 		background-color: red;
@@ -62,8 +73,8 @@
 		width: 100px;
 		height: 100px;
 		border-radius: 60px;
-		margin-left: 1%;
-		margin-right: 1%;
+		margin-left: 0.5%;
+		margin-right: 0.5%;
 		font-size: 4vh;
 	}
 </style>

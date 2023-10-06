@@ -38,9 +38,10 @@
 			if (isAxiosError(error)) {
 				if (error.response?.status == 400) {
 					alert = alerts.profileExist;
-				}
-				if (error.response?.status == 406) {
+				} else if (error.response?.status == 406) {
 					alert = alerts.alreadyExist;
+				} else {
+					goto('/login');
 				}
 			}
 		}
@@ -95,11 +96,13 @@
 				{alert == alerts.profileExist ? 'Go to home' : 'Submit'}
 			</button>
 		{:else}
-			{#if imageFile}
-				<img class="avatar" src={URL.createObjectURL(imageFile)} alt="d" />
-			{:else}
-				<Image />
-			{/if}
+			<div class="w-48">
+				{#if imageFile}
+					<img class="avatar" src={URL.createObjectURL(imageFile)} alt="avatar" />
+				{:else}
+					<Image />
+				{/if}
+			</div>
 			<div class="w-full flex flex-row gap-2 items-center justify-center">
 				<button
 					class="cursor-pointer flex flex-row justify-center items-center"

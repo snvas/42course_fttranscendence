@@ -3,7 +3,7 @@
 	let chunkClass = 'flex flex-col gap-4 w-full';
 </script>
 
-<div class="gap-20 flex flex-col pt-10 items-center">
+<div class="gap-20 flex flex-col pt-10 items-center mb-4">
 	<div class="w-full flex flex-row gap-10 items-center">
 		<div class={chunkClass}>
 			<div class={lineClass} />

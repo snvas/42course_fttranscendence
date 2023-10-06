@@ -72,7 +72,7 @@ export class ProfileController {
   async updateProfile(
     @Req() { user }: { user: FortyTwoUserDto },
     @Body() profile: Partial<ProfileDTO>,
-  ): Promise<ProfileUpdatedResponseDto> {
+  ): Promise<Partial<ProfileUpdatedResponseDto>> {
     return await this.profileService.update(user.id, profile);
   }
 

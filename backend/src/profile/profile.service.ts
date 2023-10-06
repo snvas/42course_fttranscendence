@@ -67,6 +67,19 @@ export class ProfileService {
     return plainToClass(ProfileDTO, profileEntity);
   }
 
+  async isNicknameExist(nickname: string): Promise<boolean> {
+    const profileEntity: ProfileEntity | null =
+      await this.profileRepository.findOneBy({
+        nickname,
+      });
+
+    if (profileEntity) {
+      return true;
+    }
+
+    return false;
+  }
+
   async create(userId: number, nickname: string): Promise<ProfileDTO> {
     const userEntity: UserEntity | null = await this.userService.findById(
       userId,
@@ -111,24 +124,37 @@ export class ProfileService {
   async update(
     userId: number,
     profile: Partial<Profile>,
-  ): Promise<ProfileUpdatedResponseDto> {
-    const updateResult: UpdateResult = await this.profileRepository.update(
-      { userEntity: { id: userId } },
-      profile,
-    );
+  ): Promise<Partial<ProfileUpdatedResponseDto>> {
+    await this.findByUserId(userId);
 
-    if (!updateResult.affected) {
-      this.logger.error(
-        `Profile not found for user [${userId}], nothing to update`,
+    try {
+      const updateResult = await this.profileRepository.update(
+        { userEntity: { id: userId } },
+        profile,
       );
-      throw new NotFoundException(`User [${userId}] not found`);
-    }
 
-    this.logger.log(`Profile updated for user [${userId}]`);
-    return {
-      updated: updateResult.affected > 0,
-      affected: updateResult.affected,
-    };
+      this.logger.log(`Profile updated for user [${userId}]`);
+      return updateResult.affected
+        ? {
+            updated: updateResult.affected > 0,
+            affected: updateResult.affected,
+          }
+        : {};
+    } catch (Exception) {
+      if (
+        Exception instanceof QueryFailedError &&
+        profile.nickname != null &&
+        (await this.isNicknameExist(profile.nickname))
+      ) {
+        this.logger.error(
+          `User [${userId}] chose a nickname ${profile.nickname} already exists`,
+        );
+        throw new NotAcceptableException(
+          `Nickname: ${profile.nickname} already exists`,
+        );
+      }
+      throw Exception;
+    }
   }
 
   async delete(userId: number): Promise<ProfileDeletedResponseDto> {
