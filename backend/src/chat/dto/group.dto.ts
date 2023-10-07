@@ -1,16 +1,22 @@
+import { Group } from '../interfaces/group.interface';
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import ChatMessage from '../interfaces/chat-message.interface';
 
-export class ChatMessageDto implements ChatMessage {
+export class GroupDto implements Group {
   @IsNotEmpty()
   @IsNumber()
   id: number;
+  @IsNotEmpty()
+  @IsNumber()
+  owner_id: number;
   @IsString()
   @IsNotEmpty()
   name: string;
   @IsString()
   @IsNotEmpty()
-  message: string;
+  visibility: string;
+  @IsString()
+  @IsNotEmpty()
+  password: string;
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;

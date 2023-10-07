@@ -14,7 +14,6 @@ import {
   QueryFailedError,
   QueryRunner,
   Repository,
-  UpdateResult,
 } from 'typeorm';
 import { Profile } from './interfaces/profile.interface';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
@@ -195,6 +194,14 @@ export class ProfileService {
       deleted: userDeleteResult.affected > 0 && avatarDeleteResult.affected > 0,
       affected: userDeleteResult.affected + avatarDeleteResult.affected,
     };
+  }
+
+  async findByUserIds(userIds: number[]): Promise<ProfileEntity[]> {
+    return await this.profileRepository
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.userEntity', 'user')
+      .andWhere('user.id IN (:...userIds)', { userIds })
+      .getMany();
   }
 
   async uploadAvatar(

@@ -1,60 +1,77 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
-import { ChatMessageDto } from './dto/chat-message.dto';
+import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ChatMessageEntity } from '../db/entities';
+import { GroupMessageEntity, ProfileEntity } from '../db/entities';
 import { plainToClass } from 'class-transformer';
+import { ProfileService } from '../profile/profile.service';
+import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { ProfileDTO } from '../profile/models/profile.dto';
 
 @Injectable()
 export class ChatService {
   private readonly logger: Logger = new Logger(ChatService.name);
-  private onlineUsers: Map<number, AuthenticatedSocket> = new Map();
+  private authenticatedSockets: Map<number, AuthenticatedSocket> = new Map();
 
   constructor(
-    @InjectRepository(ChatMessageEntity)
-    private readonly chatMessageRepository: Repository<ChatMessageEntity>,
+    private readonly profileService: ProfileService,
+    @InjectRepository(GroupMessageEntity)
+    private readonly chatMessageRepository: Repository<GroupMessageEntity>,
   ) {}
 
-  setOnlineUser(socket: AuthenticatedSocket) {
-    this.onlineUsers.set(socket.request.user.id, socket);
+  async setOnlineUser(socket: AuthenticatedSocket) {
+    this.authenticatedSockets.set(socket.request.user.id, socket);
   }
 
   removeOnlineUser(socket: AuthenticatedSocket) {
-    this.onlineUsers.delete(socket.request.user.id);
+    this.authenticatedSockets.delete(socket.request.user.id);
   }
 
-  getOnlineUsers(): string[] {
-    const onlineUsersArray: AuthenticatedSocket[] = Array.from(
-      this.onlineUsers.values(),
+  async getOnlineUsers(): Promise<string[]> {
+    const authenticatedSockets: AuthenticatedSocket[] = Array.from(
+      this.authenticatedSockets.values(),
     );
 
-    this.logger.verbose(
-      `### Online users: ${onlineUsersArray.map(
-        (user: AuthenticatedSocket) => user.request.user.username + ',',
-      )}`,
+    const usersFromSockets: number[] = authenticatedSockets.map(
+      (user: AuthenticatedSocket) => user.request.user.id,
     );
 
-    return onlineUsersArray.map(
-      (user: AuthenticatedSocket) => user.request.user.username,
+    const onlineProfiles: ProfileEntity[] =
+      await this.profileService.findByUserIds(usersFromSockets);
+
+    const onlineNicknames: string[] = onlineProfiles.map(
+      (p: ProfileEntity) => p.nickname,
     );
+
+    this.logger.debug(`### Online users nicknames: ${onlineNicknames}`);
+
+    return onlineNicknames;
   }
 
-  async saveMessage(
+  async handleGroupMessage(
     socket: AuthenticatedSocket,
     message: string,
-  ): Promise<ChatMessageDto> {
-    const messageEntity: ChatMessageEntity = this.chatMessageRepository.create({
-      name: socket.request.user.username,
-      message,
-    });
+  ): Promise<GroupMessageDto> {
+    const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
+    const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
 
-    const chatEntity: ChatMessageEntity = await this.chatMessageRepository.save(
-      messageEntity,
+    const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
+      {
+        group_id: 1,
+        sender_id: profile.id,
+        sender_name: profile.nickname,
+        message,
+      },
     );
 
-    this.logger.verbose(`### Event message: ${JSON.stringify(chatEntity)}`);
+    const groupMessageEntity: GroupMessageEntity =
+      await this.chatMessageRepository.save(messageEntity);
 
-    return plainToClass(ChatMessageDto, chatEntity);
+    this.logger.verbose(
+      `### Event message: ${JSON.stringify(groupMessageEntity)}`,
+    );
+
+    return plainToClass(GroupMessageDto, groupMessageEntity);
   }
 }

@@ -12,7 +12,7 @@ import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
-import { ChatMessageDto } from './dto/chat-message.dto';
+import { GroupMessageDto } from './dto/group-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -30,7 +30,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`### Client connected: ${socket.id}`);
 
     if (!socket.request.user) {
@@ -41,17 +41,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.verbose(
       `Authenticated user: ${JSON.stringify(socket.request.user)}`,
     );
-    this.chatService.setOnlineUser(socket);
 
-    this.server.emit('onlineUsers', this.chatService.getOnlineUsers());
+    await this.chatService.setOnlineUser(socket);
+
+    this.server.emit('onlineUsers', await this.chatService.getOnlineUsers());
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`Client disconnected: ${socket.id}`);
     this.chatService.removeOnlineUser(socket);
 
-    socket.broadcast.emit('onlineUsers', this.chatService.getOnlineUsers());
+    socket.broadcast.emit(
+      'onlineUsers',
+      await this.chatService.getOnlineUsers(),
+    );
   }
 
   @UseGuards(WsAuthenticatedGuard)
@@ -60,10 +64,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: string,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    const messageDto: ChatMessageDto = await this.chatService.saveMessage(
-      socket,
-      message,
-    );
+    const messageDto: GroupMessageDto =
+      await this.chatService.handleGroupMessage(socket, message);
 
     this.server.emit('message', messageDto);
   }
