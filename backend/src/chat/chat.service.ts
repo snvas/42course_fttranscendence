@@ -37,6 +37,10 @@ export class ChatService {
       (user: AuthenticatedSocket) => user.request.user.id,
     );
 
+    if (usersFromSockets.length === 0) {
+      return [];
+    }
+
     const onlineProfiles: ProfileEntity[] =
       await this.profileService.findByUserIds(usersFromSockets);
 
