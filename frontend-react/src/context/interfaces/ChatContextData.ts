@@ -1,7 +1,8 @@
-import { ChatMessageDto } from "../../../../backend/src/chat/dto/chat-message.dto.ts";
+import {GroupMessageDto} from "../../../../backend/src/chat/dto/group-message.dto.ts";
 
 export interface ChatContextData {
-  sendMessage: (message: string) => void;
-  messages: ChatMessageDto[];
-  onlineUsers: string[];
+    sendMessage: (message: string) => void;
+    disconnect: () => void;
+    messages: GroupMessageDto[];
+    onlineUsers: string[];
 }

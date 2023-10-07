@@ -1,31 +1,31 @@
-import { io, Socket } from "socket.io-client";
+import {io, Socket} from "socket.io-client";
 
 class ChatService {
-  private readonly socket: Socket;
+    private readonly socket: Socket;
 
-  constructor(baseURL: string) {
-    this.socket = io(`${baseURL}/chat`, { withCredentials: true, autoConnect: false });
-  }
+    constructor(baseURL: string) {
+        this.socket = io(`${baseURL}/chat`, {withCredentials: true, autoConnect: false});
+    }
 
-  connect(): void {
-    this.socket.connect();
-  }
+    public connect(): void {
+        this.socket.connect();
+    }
 
-  getSocket(): Socket {
-    return this.socket;
-  }
+    public getSocket(): Socket {
+        return this.socket;
+    }
 
-  emitMessage(message: string): void {
-    this.socket?.emit("message", message);
-  }
+    public emitMessage(message: string): void {
+        this.socket?.emit("message", message);
+    }
 
-  disconnect(): void {
-    this.socket?.disconnect();
-  }
+    public disconnect(): void {
+        this.socket?.disconnect();
+    }
 }
 
 const chatService: ChatService = new ChatService(
-  "http://localhost:3000"
+    "http://localhost:3000"
 );
 
 export default chatService;
