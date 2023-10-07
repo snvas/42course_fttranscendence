@@ -8,9 +8,12 @@ import {
 import { Profile } from '../interfaces/profile.interface';
 import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { Type } from 'class-transformer';
-import { AvatarEntity } from 'src/db/entities';
-import { GroupChatEntity } from 'src/db/entities/group-chat.entity';
-import { GroupMemberEntity } from 'src/db/entities/group-member.entity';
+import {
+  AvatarEntity,
+  GroupChatEntity,
+  GroupMemberEntity,
+  PrivateMessageEntity,
+} from 'src/db/entities';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
@@ -37,6 +40,10 @@ export class ProfileDTO implements Profile {
   groupMemberships: GroupMemberEntity[];
   @ValidateNested()
   ownedGroupChats: GroupChatEntity[];
+  @ValidateNested()
+  receivedPrivateMessages: PrivateMessageEntity[];
+  @ValidateNested()
+  sentPrivateMessages: PrivateMessageEntity[];
 
   constructor(partial: Partial<ProfileDTO>) {
     Object.assign(this, partial);

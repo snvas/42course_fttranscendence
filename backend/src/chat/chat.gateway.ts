@@ -12,7 +12,6 @@ import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
-import { GroupMessageDto } from './dto/group-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -64,9 +63,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: string,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    const messageDto: GroupMessageDto =
-      await this.chatService.handleGroupMessage(socket, message);
+    // const messageDto: GroupMessageDto =
+    //  messageDto await this.chatService.handleGroupMessage(socket, message);
 
-    this.server.emit('message', messageDto);
+    this.server.emit('message', message);
   }
 }

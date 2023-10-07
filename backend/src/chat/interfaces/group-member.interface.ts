@@ -1,5 +1,4 @@
-import { ProfileEntity } from '../../db/entities';
-import { GroupChatEntity } from '../../db/entities/group-chat.entity';
+import { GroupChatEntity, ProfileEntity } from '../../db/entities';
 
 export interface GroupMember {
   id: number;
