@@ -62,9 +62,6 @@ export class ChatService {
 
     const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
       {
-        group_id: 1,
-        sender_id: profile.id,
-        sender_name: profile.nickname,
         message,
       },
     );
