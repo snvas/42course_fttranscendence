@@ -17,9 +17,6 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: 'user' })
   role: string;
 
-  @Column()
-  status: string;
-
   @ManyToOne(() => GroupChatEntity, (chat) => chat.members)
   groupChat: GroupChatEntity;
 

@@ -3,7 +3,13 @@ import { AuthenticatedSocket } from './types/authenticated-socket';
 import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GroupMessageEntity, ProfileEntity } from '../db/entities';
+import {
+  GroupChatEntity,
+  GroupMemberEntity,
+  GroupMessageEntity,
+  PrivateMessageEntity,
+  ProfileEntity,
+} from '../db/entities';
 import { plainToClass } from 'class-transformer';
 import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -18,6 +24,14 @@ export class ChatService {
     private readonly profileService: ProfileService,
     @InjectRepository(GroupMessageEntity)
     private readonly chatMessageRepository: Repository<GroupMessageEntity>,
+    @InjectRepository(GroupChatEntity)
+    private readonly groupChatRepository: Repository<GroupChatEntity>,
+    @InjectRepository(GroupMessageEntity)
+    private readonly groupMessageRepository: Repository<GroupMessageEntity>,
+    @InjectRepository(GroupMemberEntity)
+    private readonly groupMemberRepository: Repository<GroupMemberEntity>,
+    @InjectRepository(PrivateMessageEntity)
+    private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
 
   async setOnlineUser(socket: AuthenticatedSocket) {
@@ -74,5 +88,108 @@ export class ChatService {
     );
 
     return plainToClass(GroupMessageDto, groupMessageEntity);
+  }
+
+  //async handlePrivateMessage() {}
+
+  async createGroupChat(
+    name: string,
+    owner: ProfileEntity,
+  ): Promise<GroupChatEntity> {
+    const groupChat: GroupChatEntity = this.groupChatRepository.create({
+      name,
+      owner,
+    });
+
+    return await this.groupChatRepository.save(groupChat);
+  }
+
+  async addMemberToGroupChat(
+    groupChat: GroupChatEntity,
+    profile: ProfileEntity,
+  ): Promise<GroupMemberEntity> {
+    const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
+      groupChat,
+      profile,
+    });
+    groupMember.groupChat = groupChat;
+    groupMember.profile = profile;
+
+    return await this.groupMemberRepository.save(groupMember);
+  }
+
+  async saveGroupMessage(
+    groupChat: GroupChatEntity,
+    sender: ProfileEntity,
+    message: string,
+  ): Promise<GroupMessageEntity> {
+    const groupMessageEntity: GroupMessageEntity =
+      this.groupMessageRepository.create({
+        message,
+        groupChat,
+        sender,
+      });
+
+    return await this.groupMessageRepository.save(groupMessageEntity);
+  }
+
+  async savePrivateMessage(
+    sender: ProfileEntity,
+    receiver: ProfileEntity,
+    message: string,
+  ): Promise<PrivateMessageEntity> {
+    const privateMessageEntity: PrivateMessageEntity =
+      this.privateMessageRepository.create({
+        sender,
+        receiver,
+        message,
+      });
+
+    return await this.privateMessageRepository.save(privateMessageEntity);
+  }
+
+  async getGroupMessages(
+    groupChat: GroupChatEntity,
+  ): Promise<GroupMessageEntity[]> {
+    return await this.groupMessageRepository.find({
+      relations: {
+        groupChat: true,
+      },
+      where: {
+        groupChat: {
+          id: groupChat.id,
+        },
+      },
+      order: { createdAt: 'ASC' },
+      take: 500,
+    });
+  }
+
+  async getPrivateMessages(
+    profile1: ProfileEntity,
+    profile2: ProfileEntity,
+  ): Promise<PrivateMessageEntity[]> {
+    return await this.privateMessageRepository.find({
+      where: [
+        {
+          sender: {
+            id: profile1.id,
+          },
+          receiver: {
+            id: profile2.id,
+          },
+        },
+        {
+          sender: {
+            id: profile2.id,
+          },
+          receiver: {
+            id: profile1.id,
+          },
+        },
+      ],
+      order: { createdAt: 'ASC' },
+      take: 200,
+    });
   }
 }

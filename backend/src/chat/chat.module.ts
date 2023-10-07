@@ -6,8 +6,10 @@ import entities from '../db/entities';
 import { ProfileService } from '../profile/profile.service';
 import { UserService } from '../user/user.service';
 import { AvatarService } from '../avatar/avatar.service';
+import { ChatController } from './chat.controller';
 
 @Module({
+  controllers: [ChatController],
   providers: [
     ChatGateway,
     ChatService,
