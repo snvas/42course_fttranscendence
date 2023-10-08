@@ -9,7 +9,7 @@ import { GroupMember } from '../../chat/interfaces/group-member.interface';
 import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
-@Entity('group_members')
+@Entity({ name: 'group_members' })
 export class GroupMemberEntity implements GroupMember {
   @PrimaryGeneratedColumn()
   id: number;

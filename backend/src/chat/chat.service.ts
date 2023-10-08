@@ -76,6 +76,7 @@ export class ChatService {
     return onlineNicknames;
   }
 
+  //TODO: Implement
   public async handleGroupMessage(
     socket: AuthenticatedSocket,
     message: string,
@@ -99,6 +100,7 @@ export class ChatService {
     return plainToClass(GroupMessageDto, groupMessageEntity);
   }
 
+  //TODO: Implement
   //async handlePrivateMessage() {}
 
   async createGroupChat(
@@ -128,6 +130,9 @@ export class ChatService {
 
       await this.addMemberToGroupChat(groupChatEntity.id, profile.id, roleDto);
 
+      this.logger.debug(
+        `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
+      );
       return groupChatEntity;
     } catch (exception) {
       if (
@@ -163,6 +168,9 @@ export class ChatService {
     groupMember.groupChat = groupChat;
     groupMember.profile = profile;
 
+    this.logger.debug(
+      `### Profile: ${profile.nickname} with role: ${groupMember.role} added to group chat: ${groupChat.name}`,
+    );
     return await this.groupMemberRepository.save(groupMember);
   }
 
@@ -181,6 +189,10 @@ export class ChatService {
         sender: profile,
       });
 
+    this.logger.verbose(
+      `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
+    );
+
     return await this.groupMessageRepository.save(groupMessageEntity);
   }
 
@@ -189,10 +201,6 @@ export class ChatService {
     receiverProfileId: number,
     message: ChatMessageDto,
   ): Promise<PrivateMessageEntity> {
-    this.logger.debug(
-      `### savePrivateMessage: message ${JSON.stringify(message)}`,
-    );
-
     const sender: ProfileDTO = await this.profileService.findByUserId(
       senderUserId,
     );
@@ -207,10 +215,16 @@ export class ChatService {
         message: message.message,
       });
 
+    this.logger.debug(
+      `### Saving private message by: ${sender.nickname} to ${receiver.nickname}`,
+    );
+
     return await this.privateMessageRepository.save(privateMessageEntity);
   }
 
   public async getGroupMessages(chatId: number): Promise<GroupMessageEntity[]> {
+    this.logger.verbose(`### Getting group messages for chat: ${chatId}`);
+
     return await this.groupMessageRepository.find({
       relations: {
         groupChat: true,
@@ -230,6 +244,8 @@ export class ChatService {
     withProfileId: number,
   ): Promise<PrivateMessageEntity[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    this.logger.verbose(`### Getting private messages for user: [${userId}]`);
 
     return await this.privateMessageRepository.find({
       where: [
@@ -258,6 +274,8 @@ export class ChatService {
   public async getUserGroupChats(userId: number): Promise<GroupChatEntity[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
+    this.logger.verbose(`### Getting group chats for user: [${userId}]`);
+
     const groupMemberships: GroupMemberEntity[] =
       await this.groupMemberRepository.find({
         relations: {
@@ -271,13 +289,10 @@ export class ChatService {
       });
 
     return groupMemberships.map((membership: GroupMemberEntity) => {
-      if (membership.groupChat.visibility === 'private') {
-        return {
-          ...membership.groupChat,
-          password: undefined,
-        };
-      }
-      return membership.groupChat;
+      return {
+        ...membership.groupChat,
+        password: undefined,
+      };
     });
   }
 
@@ -285,6 +300,10 @@ export class ChatService {
     userId: number,
   ): Promise<ProfileEntity[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    this.logger.verbose(
+      `### Getting private profiles for: [${userId}] messages`,
+    );
 
     const privateMessagesSent: PrivateMessageEntity[] =
       await this.privateMessageRepository.find({
@@ -328,6 +347,8 @@ export class ChatService {
   }
 
   public async getGroupChatById(id: number): Promise<GroupChatEntity> {
+    this.logger.verbose(`### Getting group chat by id: ${id}`);
+
     const groupChat: GroupChatEntity | null =
       await this.groupChatRepository.findOne({
         where: {

@@ -8,7 +8,7 @@ import {
 import { ProfileEntity } from './profile.entity';
 import { PrivateMessage } from '../../chat/interfaces/private-message.interface';
 
-@Entity('private_messages')
+@Entity({ name: 'private_messages' })
 export class PrivateMessageEntity implements PrivateMessage {
   @PrimaryGeneratedColumn()
   id: number;
