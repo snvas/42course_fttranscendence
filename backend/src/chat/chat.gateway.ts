@@ -20,10 +20,10 @@ import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
   },
   namespace: 'chat',
 })
+// @UseGuards(WsAuthenticatedGuard) - Testar
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
-
+  private readonly server: Server;
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(private readonly chatService: ChatService) {}
@@ -41,7 +41,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Authenticated user: ${JSON.stringify(socket.request.user)}`,
     );
 
-    await this.chatService.setOnlineUser(socket);
+    this.chatService.setOnlineUser(socket);
 
     this.server.emit('onlineUsers', await this.chatService.getOnlineUsers());
   }

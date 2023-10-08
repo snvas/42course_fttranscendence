@@ -6,8 +6,11 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { GroupMemberEntity } from '../../db/entities/group-member.entity';
-import { GroupMessageEntity, ProfileEntity } from '../../db/entities';
+import {
+  GroupMemberEntity,
+  GroupMessageEntity,
+  ProfileEntity,
+} from '../../db/entities';
 
 export class GroupChatDto implements GroupChat {
   @IsNotEmpty()

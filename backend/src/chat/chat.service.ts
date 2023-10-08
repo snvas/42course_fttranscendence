@@ -34,15 +34,15 @@ export class ChatService {
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
 
-  async setOnlineUser(socket: AuthenticatedSocket) {
+  setOnlineUser(socket: AuthenticatedSocket): void {
     this.authenticatedSockets.set(socket.request.user.id, socket);
   }
 
-  removeOnlineUser(socket: AuthenticatedSocket) {
+  removeOnlineUser(socket: AuthenticatedSocket): void {
     this.authenticatedSockets.delete(socket.request.user.id);
   }
 
-  async getOnlineUsers(): Promise<string[]> {
+  public async getOnlineUsers(): Promise<string[]> {
     const authenticatedSockets: AuthenticatedSocket[] = Array.from(
       this.authenticatedSockets.values(),
     );
@@ -67,7 +67,7 @@ export class ChatService {
     return onlineNicknames;
   }
 
-  async handleGroupMessage(
+  public async handleGroupMessage(
     socket: AuthenticatedSocket,
     message: string,
   ): Promise<GroupMessageDto> {
@@ -148,16 +148,14 @@ export class ChatService {
     return await this.privateMessageRepository.save(privateMessageEntity);
   }
 
-  async getGroupMessages(
-    groupChat: GroupChatEntity,
-  ): Promise<GroupMessageEntity[]> {
+  public async getGroupMessages(chatId: number): Promise<GroupMessageEntity[]> {
     return await this.groupMessageRepository.find({
       relations: {
         groupChat: true,
       },
       where: {
         groupChat: {
-          id: groupChat.id,
+          id: chatId,
         },
       },
       order: { createdAt: 'ASC' },
@@ -165,31 +163,92 @@ export class ChatService {
     });
   }
 
-  async getPrivateMessages(
-    profile1: ProfileEntity,
-    profile2: ProfileEntity,
+  public async getPrivateMessages(
+    userId: number,
+    withProfileId: number,
   ): Promise<PrivateMessageEntity[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
     return await this.privateMessageRepository.find({
       where: [
         {
           sender: {
-            id: profile1.id,
+            id: profile.id,
           },
           receiver: {
-            id: profile2.id,
+            id: withProfileId,
           },
         },
         {
           sender: {
-            id: profile2.id,
+            id: withProfileId,
           },
           receiver: {
-            id: profile1.id,
+            id: profile.id,
           },
         },
       ],
       order: { createdAt: 'ASC' },
       take: 200,
     });
+  }
+
+  public async getAllGroupChats(userId: number): Promise<GroupChatEntity[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    const groupMemberships: GroupMemberEntity[] =
+      await this.groupMemberRepository.find({
+        relations: {
+          groupChat: true,
+        },
+        where: {
+          profile: {
+            id: profile.id,
+          },
+        },
+      });
+
+    return groupMemberships.map(
+      (membership: GroupMemberEntity) => membership.groupChat,
+    );
+  }
+
+  public async getPrivateMessagesProfiles(
+    userId: number,
+  ): Promise<ProfileEntity[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    const privateMessagesSent: PrivateMessageEntity[] =
+      await this.privateMessageRepository.find({
+        relations: { receiver: true },
+        where: {
+          sender: {
+            id: profile.id,
+          },
+        },
+      });
+
+    const privateMessagesReceived: PrivateMessageEntity[] =
+      await this.privateMessageRepository.find({
+        relations: { sender: true },
+        where: {
+          receiver: {
+            id: profile.id,
+          },
+        },
+      });
+
+    const profilesWithConversations: ProfileEntity[] = [
+      ...privateMessagesSent.map(
+        (message: PrivateMessageEntity) => message.receiver,
+      ),
+      ...privateMessagesReceived.map(
+        (message: PrivateMessageEntity) => message.sender,
+      ),
+    ];
+
+    return Array.from(new Set(profilesWithConversations)).filter(
+      (p: ProfileEntity): boolean => p.id !== profile.id,
+    );
   }
 }
