@@ -8,6 +8,7 @@
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
 	import Chat from '$lib/components/Chat.svelte';
+	import DirectMessages from '$lib/components/DirectMessages.svelte';
 
 
 	async function onLogout() {
