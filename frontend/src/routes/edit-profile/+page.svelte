@@ -133,6 +133,7 @@
 	$: tempProfile, resetAlerts();
 	$: avatar, resetAlerts();
 </script>
+<div class="w-screen h-full min-h-screen">
 <PongHeader />
 <div class="flex flex-col justify-end items-end">
 	<a href="/dashboard"><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></a>
@@ -219,6 +220,7 @@
 </div>
 <div class="h-12 text-green-500 text-2xl text-center w-full">
 	{message}
+</div>
 </div>
 <style>
 	.icon-link{

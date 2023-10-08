@@ -41,12 +41,12 @@
 		code = 'Two Factor Autentication Enabled!';
 	}
 </script>
-
+<div class="h-full min-h-screen w-screen">
 <PongHeader />
 <div class="flex flex-col justify-end items-end">
 	<a href="/dashboard"><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></a>
 </div>
-<div class="w-2/3 mx-auto h-screen">
+<div class="w-2/3 mx-auto">
 	<div class="gap-5 flex flex-col items-center">
 		<p class="text-xl mt-20 mb-10 text-center">Scan QR Code with an Authentication App!</p>
 		{#await qrcode then qrcode}
@@ -68,7 +68,7 @@
 		</button>
 	</div>
 </div>
-
+</div>
 <style>
 	img {
 		-webkit-filter: invert(1);

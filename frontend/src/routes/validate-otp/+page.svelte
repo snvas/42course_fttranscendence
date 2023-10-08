@@ -21,9 +21,10 @@
 	let alert = '';
 	$: code, (alert = '');
 </script>
+<div class="w-screen h-full min-h-screen">
 
 <PongHeader />
-<div class="md:w-2/3 mx-auto h-full md:h-screen w-3/4 pt-20">
+<div class="md:w-2/3 mx-auto w-3/4 pt-20">
 	<div class="flex flex-col items-center gap-10">
 		<p class="text-3xl text-center">Validate One Time Password</p>
 		<input
@@ -36,4 +37,5 @@
 		</p>
 		<button class="btn-primary md:w-1/4 w-3/4 min-w-fit " on:click={onSubmit}> Validate </button>
 	</div>
+</div>
 </div>

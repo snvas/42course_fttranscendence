@@ -77,9 +77,9 @@
 		}
 	};
 </script>
-
+<div class="w-screen h-full min-h-screen">
 <PongHeader />
-<div class="w-2/3 mx-auto h-screen">
+<div class="w-2/3 mx-auto">
 	<div class="flex flex-col items-center gap-10 mt-20">
 		<p class="text-3xl">Welcome to Pong!</p>
 
@@ -131,4 +131,5 @@
 			</button>
 		{/if}
 	</div>
+</div>
 </div>

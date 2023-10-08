@@ -15,6 +15,12 @@
 		goto('/login');
 	}
 
+	async function onChat() {
+		
+		goto('/chat');
+	}
+
+
 	$: profile = getProfile();
 	let showing: 'chat' | 'history' | 'settings' = 'history';
 
@@ -39,9 +45,7 @@
 			<div class="flex flex-row items-center h-full">
 				<Button
 					type="chat"
-					on:click={() => {
-						showing = 'chat';
-					}}
+					on:click={onChat}
 				/>
 				
 				<Button
