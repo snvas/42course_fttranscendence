@@ -106,12 +106,20 @@ export class ChatService {
       password: groupCreationDto.password, //TODO: encrypt password, remove from return
     });
 
-    return await this.groupChatRepository.save(groupChat);
+    const groupChatEntity: GroupChatEntity =
+      await this.groupChatRepository.save(groupChat);
+
+    await this.addMemberToGroupChat(groupChatEntity.id, profile.id, {
+      role: 'admin',
+    });
+
+    return groupChatEntity;
   }
 
   async addMemberToGroupChat(
     chatId: number,
     profileId: number,
+    role?: { role: string },
   ): Promise<GroupMemberEntity> {
     const profile: ProfileDTO = await this.profileService.findByProfileId(
       profileId,
@@ -122,6 +130,7 @@ export class ChatService {
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
       profile,
+      role: role?.role || 'user',
     });
     groupMember.groupChat = groupChat;
     groupMember.profile = profile;
@@ -132,14 +141,14 @@ export class ChatService {
   async saveGroupMessage(
     chatId: number,
     userId: number,
-    message: string,
+    message: { content: string },
   ): Promise<GroupMessageEntity> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const groupMessageEntity: GroupMessageEntity =
       this.groupMessageRepository.create({
-        message,
+        message: message.content,
         groupChat,
         sender: profile,
       });
@@ -188,7 +197,7 @@ export class ChatService {
     });
   }
 
-  public async getPrivateMessages(
+  public async getUserPrivateMessages(
     userId: number,
     withProfileId: number,
   ): Promise<PrivateMessageEntity[]> {
@@ -218,7 +227,7 @@ export class ChatService {
     });
   }
 
-  public async getAllGroupChats(userId: number): Promise<GroupChatEntity[]> {
+  public async getUserGroupChats(userId: number): Promise<GroupChatEntity[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
     const groupMemberships: GroupMemberEntity[] =
@@ -238,7 +247,7 @@ export class ChatService {
     );
   }
 
-  public async getPrivateMessagesProfiles(
+  public async getUserPrivateMessagesProfiles(
     userId: number,
   ): Promise<ProfileEntity[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);

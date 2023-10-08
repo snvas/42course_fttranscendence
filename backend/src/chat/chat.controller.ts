@@ -18,12 +18,13 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Get('group/chats')
-  async getAllGroupChats(
+  async getUserGroupChats(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatEntity[]> {
-    return this.chatService.getAllGroupChats(user.id);
+    return this.chatService.getUserGroupChats(user.id);
   }
 
+  //TODO: FIX
   @Get('group/messages/:chatId')
   async getGroupMessages(
     @Param('chatId') chatId: number,
@@ -45,23 +46,24 @@ export class ChatController {
   async addMemberToGroupChat(
     @Param('chatId') chatId: number,
     @Param('profileId') profileId: number,
+    @Body() role: { role: string },
   ): Promise<GroupMemberEntity> {
-    return await this.chatService.addMemberToGroupChat(chatId, profileId);
+    return await this.chatService.addMemberToGroupChat(chatId, profileId, role);
   }
 
   @Get('private/messages/profiles')
-  async getPrivateMessagesProfiles(
+  async getUserPrivateMessagesProfiles(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<ProfileEntity[]> {
-    return await this.chatService.getPrivateMessagesProfiles(user.id);
+    return await this.chatService.getUserPrivateMessagesProfiles(user.id);
   }
 
   @Get('private/messages/:profileId')
-  async getPrivateMessages(
+  async getUserPrivateMessages(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('profileId') profileId: number,
   ): Promise<PrivateMessageEntity[]> {
-    return await this.chatService.getPrivateMessages(user.id, profileId);
+    return await this.chatService.getUserPrivateMessages(user.id, profileId);
   }
 
   //Debug Routes
@@ -69,7 +71,7 @@ export class ChatController {
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId') chatId: number,
-    @Body() message: string,
+    @Body() message: { content: string },
   ): Promise<GroupMessageEntity> {
     return await this.chatService.saveGroupMessage(chatId, user.id, message);
   }

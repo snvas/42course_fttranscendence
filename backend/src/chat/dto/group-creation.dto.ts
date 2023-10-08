@@ -6,8 +6,8 @@ export class GroupCreationDto implements GroupCreation {
   @IsNotEmpty()
   name: string;
   @IsString()
-  @IsNotEmpty()
-  visibility: string;
+  @IsOptional()
+  visibility?: string;
   @IsString()
   @IsOptional()
   password?: string;

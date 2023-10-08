@@ -1,5 +1,5 @@
 export interface GroupCreation {
   name: string;
-  visibility: string;
+  visibility?: string;
   password?: string;
 }
