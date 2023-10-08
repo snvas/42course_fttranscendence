@@ -16,7 +16,7 @@
 	}
 
 	$: profile = getProfile();
-	let showing: 'stats' | 'history' | 'settings' = 'history';
+	let showing: 'chat' | 'history' | 'settings' = 'history';
 
 	$: avatar = getUserAvatar(profile);
 	
@@ -27,7 +27,7 @@
 		<PongHeader />
 	</div>
 	<div class="flex-1 first-letter:w-full flex h-0 md:flex-row flex-col gap-10 p-10">
-		<div class="flex md:w-1/3 w-full h-full md:order-first order-1">
+		<div class="flex md:w-1/3 w-full h-full md:order-first order-last">
 			{#if showing == 'history'}
 				<History {avatar} />
 			{:else if showing == 'settings'}
@@ -36,13 +36,14 @@
 		</div>
 		<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
 			<Profile bind:profile {onLogout} {avatar} />
-			<div class="flex flex-row items-center justify-center h-full">
+			<div class="flex flex-row items-center h-full">
 				<Button
-					type="stats"
+					type="chat"
 					on:click={() => {
-						showing = 'stats';
+						showing = 'chat';
 					}}
 				/>
+				
 				<Button
 					type="history"
 					on:click={() => {
@@ -53,7 +54,7 @@
 				<Button type="play" />
 			</div>
 		</div>
-		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full order-last">
+		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
 			<Chat />
 		</div>
 	</div>
