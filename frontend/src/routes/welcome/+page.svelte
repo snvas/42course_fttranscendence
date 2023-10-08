@@ -79,9 +79,9 @@
 </script>
 
 <PongHeader />
-<div class="w-2/3 mx-auto">
-	<div class="gap-5 flex flex-col pt-10 items-center">
-		<p class="text-3xl mt-20 mb-10">Welcome to Pong!</p>
+<div class="w-2/3 mx-auto h-screen">
+	<div class="flex flex-col items-center gap-10 mt-20">
+		<p class="text-3xl">Welcome to Pong!</p>
 
 		{#if inputNickname}
 			<p class="text-red-500">
@@ -92,11 +92,11 @@
 				placeholder="Choose your nickname"
 				class={`input-primary w-auto ${alert != alerts.none ? 'border-red-500' : ''}`}
 			/>
-			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onCreateProfile}>
+			<button disabled={isLoading} class="btn-primary w-1/4 min-w-fit" on:click={onCreateProfile}>
 				{alert == alerts.profileExist ? 'Go to home' : 'Submit'}
 			</button>
 		{:else}
-			<div class="w-48">
+			<div class="md:w-48 w-24">
 				{#if imageFile}
 					<img class="avatar" src={URL.createObjectURL(imageFile)} alt="avatar" />
 				{:else}
@@ -122,11 +122,11 @@
 					bind:this={fileInput}
 				/>
 			</div>
-			<p class="text-xs mb-2">Send png, jpg or jpeg up to 1Mb</p>
+			<p class="text-xs">Send png, jpg or jpeg up to 1Mb</p>
 			<p class="text-red-500">
 				{alert}
 			</p>
-			<button disabled={isLoading} class="btn-primary w-1/4" on:click={onUploadImage}>
+			<button disabled={isLoading} class="btn-primary w-1/4 min-w-fit" on:click={onUploadImage}>
 				{imageFile ? 'Submit' : 'Continue'}
 			</button>
 		{/if}

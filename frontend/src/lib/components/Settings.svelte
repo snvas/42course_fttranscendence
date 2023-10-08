@@ -29,12 +29,12 @@
 </script>
 
 <div class="flex flex-col gap-4 justify-center w-full items-center">
-	<div class="h-12 text-green-500">
+	<div class="h-12 text-green-500 text-2xl text-center pb-10">
 		{message}
 	</div>
 	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
-	<button class="btn-primary" on:click={onDelete}>delete account</button>
+	<button class="btn-deleted" on:click={onDelete}>delete account</button>
 </div>

@@ -43,9 +43,12 @@
 </script>
 
 <PongHeader />
-<div class="w-2/3 mx-auto">
-	<div class="gap-5 flex flex-col pt-10 items-center">
-		<p class="text-xl mt-20 mb-10">Scan QR Code with an Authentication App!</p>
+<div class="flex flex-col justify-end items-end">
+	<a href="/dashboard"><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></a>
+</div>
+<div class="w-2/3 mx-auto h-screen">
+	<div class="gap-5 flex flex-col items-center">
+		<p class="text-xl mt-20 mb-10 text-center">Scan QR Code with an Authentication App!</p>
 		{#await qrcode then qrcode}
 			<img src={qrcode} alt="qrcode" />
 		{/await}
@@ -60,7 +63,7 @@
 		<p class="text-red-500">
 			{alert}
 		</p>
-		<button class="btn-primary w-1/4" on:click={onEnable}>
+		<button class="btn-primary w-1/4 min-w-fit" on:click={onEnable}>
 			{success ? 'Go to home' : 'Register'}
 		</button>
 	</div>
@@ -70,5 +73,8 @@
 	img {
 		-webkit-filter: invert(1);
 		filter: invert(1);
+	}
+	.icon-link{
+		color: whitesmoke;
 	}
 </style>

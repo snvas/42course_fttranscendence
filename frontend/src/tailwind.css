@@ -17,7 +17,7 @@
 	}
 	body {
 		@apply text-white font-anton;
-		@apply bg-gradient-to-r from-black from-10% via-gray-900 via-30% to-black to-95%;
+		@apply h-full bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-slate-900 via-black to-slate-950 bg-no-repeat;
 	}
 }
 
