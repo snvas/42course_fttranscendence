@@ -12,6 +12,7 @@ import {
   AvatarEntity,
   GroupChatEntity,
   GroupMemberEntity,
+  GroupMessageEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
 
@@ -44,6 +45,8 @@ export class ProfileDTO implements Profile {
   receivedPrivateMessages: PrivateMessageEntity[];
   @ValidateNested()
   sentPrivateMessages: PrivateMessageEntity[];
+  @ValidateNested()
+  groupMessages: GroupMessageEntity[];
 
   constructor(partial: Partial<ProfileDTO>) {
     Object.assign(this, partial);
