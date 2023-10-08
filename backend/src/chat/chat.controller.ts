@@ -9,9 +9,8 @@ import {
 } from '../db/entities';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
-
-//TODO:
-//Fazer métodos handleGroupMessage and handlePrivate message salvar no db e emitir eventos para os grupos corretos, usuários corretos
+import { ChatMessageDto } from './dto/chat-message.dto';
+import { GroupRoleDto } from './dto/group-role.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -24,7 +23,6 @@ export class ChatController {
     return this.chatService.getUserGroupChats(user.id);
   }
 
-  //TODO: FIX
   @Get('group/messages/:chatId')
   async getGroupMessages(
     @Param('chatId') chatId: number,
@@ -46,9 +44,13 @@ export class ChatController {
   async addMemberToGroupChat(
     @Param('chatId') chatId: number,
     @Param('profileId') profileId: number,
-    @Body() role: { role: string },
+    @Body() roleDto: GroupRoleDto,
   ): Promise<GroupMemberEntity> {
-    return await this.chatService.addMemberToGroupChat(chatId, profileId, role);
+    return await this.chatService.addMemberToGroupChat(
+      chatId,
+      profileId,
+      roleDto,
+    );
   }
 
   @Get('private/messages/profiles')
@@ -71,21 +73,21 @@ export class ChatController {
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId') chatId: number,
-    @Body() message: { content: string },
+    @Body() messageDto: ChatMessageDto,
   ): Promise<GroupMessageEntity> {
-    return await this.chatService.saveGroupMessage(chatId, user.id, message);
+    return await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
   }
 
   @Post('private/:profileId/message')
   async savePrivateMessage(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('profileId') profileId: number,
-    @Body() message: { content: string },
+    @Body() messageDto: ChatMessageDto,
   ): Promise<PrivateMessageEntity> {
     return await this.chatService.savePrivateMessage(
       user.id,
       profileId,
-      message,
+      messageDto,
     );
   }
 }

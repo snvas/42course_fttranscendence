@@ -1,8 +1,13 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
 import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import {
   GroupChatEntity,
   GroupMemberEntity,
@@ -15,6 +20,8 @@ import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
+import { ChatMessageDto } from './dto/chat-message.dto';
+import { GroupRoleDto } from './dto/group-role.dto';
 
 @Injectable()
 export class ChatService {
@@ -106,20 +113,36 @@ export class ChatService {
       password: groupCreationDto.password, //TODO: encrypt password, remove from return
     });
 
-    const groupChatEntity: GroupChatEntity =
-      await this.groupChatRepository.save(groupChat);
+    try {
+      const groupChatEntity: GroupChatEntity =
+        await this.groupChatRepository.save(groupChat);
 
-    await this.addMemberToGroupChat(groupChatEntity.id, profile.id, {
-      role: 'admin',
-    });
+      const roleDto: GroupRoleDto = {
+        role: 'admin',
+      };
 
-    return groupChatEntity;
+      await this.addMemberToGroupChat(groupChatEntity.id, profile.id, roleDto);
+
+      return groupChatEntity;
+    } catch (exception) {
+      if (
+        exception instanceof QueryFailedError &&
+        (await this.isGroupNameExist(groupCreationDto.name))
+      ) {
+        throw new NotAcceptableException(
+          `Group chat with name ${groupCreationDto.name} already exists`,
+        );
+      }
+
+      this.logger.error(exception);
+      throw exception;
+    }
   }
 
   async addMemberToGroupChat(
     chatId: number,
     profileId: number,
-    role?: { role: string },
+    roleDto?: GroupRoleDto,
   ): Promise<GroupMemberEntity> {
     const profile: ProfileDTO = await this.profileService.findByProfileId(
       profileId,
@@ -130,7 +153,7 @@ export class ChatService {
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
       profile,
-      role: role?.role || 'user',
+      role: roleDto?.role || 'user',
     });
     groupMember.groupChat = groupChat;
     groupMember.profile = profile;
@@ -141,14 +164,14 @@ export class ChatService {
   async saveGroupMessage(
     chatId: number,
     userId: number,
-    message: { content: string },
+    message: ChatMessageDto,
   ): Promise<GroupMessageEntity> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const groupMessageEntity: GroupMessageEntity =
       this.groupMessageRepository.create({
-        message: message.content,
+        message: message.message,
         groupChat,
         sender: profile,
       });
@@ -159,7 +182,7 @@ export class ChatService {
   async savePrivateMessage(
     senderUserId: number,
     receiverProfileId: number,
-    message: { content: string },
+    message: ChatMessageDto,
   ): Promise<PrivateMessageEntity> {
     this.logger.debug(
       `### savePrivateMessage: message ${JSON.stringify(message)}`,
@@ -176,7 +199,7 @@ export class ChatService {
       this.privateMessageRepository.create({
         sender,
         receiver,
-        message: message.content,
+        message: message.message,
       });
 
     return await this.privateMessageRepository.save(privateMessageEntity);
@@ -306,5 +329,14 @@ export class ChatService {
     }
 
     return groupChat;
+  }
+
+  private async isGroupNameExist(name: string): Promise<boolean> {
+    const groupChatEntity: GroupChatEntity | null =
+      await this.groupChatRepository.findOneBy({
+        name,
+      });
+
+    return !!groupChatEntity;
   }
 }

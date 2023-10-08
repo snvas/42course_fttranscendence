@@ -72,11 +72,7 @@ export class ProfileService {
         nickname,
       });
 
-    if (profileEntity) {
-      return true;
-    }
-
-    return false;
+    return !!profileEntity;
   }
 
   async create(userId: number, nickname: string): Promise<ProfileDTO> {
