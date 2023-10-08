@@ -115,7 +115,7 @@
 	}
 	async function onDelete() {
 		await profileService.deleteAccount();
-		goto('/login');
+		goto('/deleted');
 	}
 
 	async function onTwoFactorAuth() {
