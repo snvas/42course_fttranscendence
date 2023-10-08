@@ -22,6 +22,7 @@ import { ProfileDTO } from '../profile/models/profile.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
 import { GroupRoleDto } from './dto/group-role.dto';
+import { hashPassword } from '../utils/bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -106,11 +107,15 @@ export class ChatService {
   ): Promise<GroupChatEntity> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
+    const password: string | undefined = groupCreationDto.password
+      ? hashPassword(groupCreationDto.password)
+      : undefined;
+
     const groupChat: GroupChatEntity = this.groupChatRepository.create({
       name: groupCreationDto.name,
       owner: profile,
       visibility: groupCreationDto.visibility,
-      password: groupCreationDto.password, //TODO: encrypt password, remove from return
+      password: password,
     });
 
     try {
@@ -265,9 +270,15 @@ export class ChatService {
         },
       });
 
-    return groupMemberships.map(
-      (membership: GroupMemberEntity) => membership.groupChat,
-    );
+    return groupMemberships.map((membership: GroupMemberEntity) => {
+      if (membership.groupChat.visibility === 'private') {
+        return {
+          ...membership.groupChat,
+          password: undefined,
+        };
+      }
+      return membership.groupChat;
+    });
   }
 
   public async getUserPrivateMessagesProfiles(
