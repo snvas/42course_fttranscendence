@@ -26,7 +26,7 @@
 	};
 </script>
 
-<div class="w-full min-w-fit">
+<div class="w-full min-w-fit flex">
 	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
 		<span class={icons[type]} />
 	</button>
@@ -38,8 +38,6 @@
 		height: 60px;
 		border-radius: 30px;
 		font-size: 2.5vh;
-		margin-left: 0.5%;
-		margin-right: 0.5%;
 	}
 
 	.stats {
@@ -73,8 +71,6 @@
 		width: 100px;
 		height: 100px;
 		border-radius: 60px;
-		margin-left: 0.5%;
-		margin-right: 0.5%;
 		font-size: 4vh;
 	}
 </style>

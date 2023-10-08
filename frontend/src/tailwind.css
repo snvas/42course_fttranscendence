@@ -16,13 +16,14 @@
 		@apply text-blue-600 underline;
 	}
 	body {
-		@apply bg-black text-white font-anton;
+		@apply text-white font-anton;
+		@apply bg-gradient-to-r from-black from-10% via-gray-900 via-30% to-black to-95%;
 	}
 }
 
 @layer components {
 	.btn-primary {
-		@apply bg-[#38761d] border-4 hover:bg-[#5bbd30];
+		@apply bg-[#38761d] border-4 hover:bg-[#5bb72b];
 		@apply rounded-lg;
 		@apply w-full;
 		@apply text-2xl uppercase;
@@ -32,7 +33,7 @@
 	}
 
 	.btn-deleted {
-		@apply bg-[#000000] border-4;
+		@apply bg-[#000000] border-4 hover:bg-[#b91c1c];
 		@apply rounded-lg;
 		@apply w-full;
 		@apply text-2xl uppercase;
