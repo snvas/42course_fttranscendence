@@ -12,7 +12,7 @@
 	}
 </script>
 
-<div class="gap-20 flex flex-col h-screen justify-center items-center pt-10 md:pt-20 w-screen">
+<div class="gap-12 flex flex-col h-screen justify-center items-center pt-10 md:pt-20">
 	<div class="w-full flex flex-row gap-10 items-center">
 		<div class={chunkClass}>
 			<div class={lineClass} />
@@ -25,5 +25,7 @@
 		</div>
 	</div>
 
+	<span class="btn-deleted md:w-2/4 w-1/4 min-w-fit hover:bg-black"> Account Sucessfully Deleted </span>
+	<p class="text-2xl">You are always Welcome Back!</p>
 	<button disabled={isLoading} class="btn-primary md:w-1/4 w-3/4" on:click={onLogin}> Login </button>
 </div>

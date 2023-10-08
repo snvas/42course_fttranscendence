@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { AxiosResponse } from 'axios';
-	import Image from './Image.svelte';
 	import AvatarImage from './AvatarImage.svelte';
 
 	type Match = {
