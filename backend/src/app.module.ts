@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
@@ -11,6 +11,7 @@ import { dataSourceOptions } from './db/data-source-cli';
 import { ChatModule } from './chat/chat.module';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,6 +30,10 @@ import { GameModule } from './game/game.module';
   ],
   controllers: [GameController],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
     {
       provide: 'APP_GUARD',
       useFactory: async (

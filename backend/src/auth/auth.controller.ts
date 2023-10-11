@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
@@ -11,7 +10,6 @@ import {
   Res,
   Session,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FortyTwoAuthGuard, Public, TwoFactorAuthentication } from './index';
 import { AuthService } from './auth.service';
@@ -78,7 +76,6 @@ export class AuthController {
 
   @Get('session')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
   async session(
     @Req() { user }: { user: FortyTwoUserDto },
     @Session() session: Record<string, any>,
@@ -90,7 +87,6 @@ export class AuthController {
   @TwoFactorAuthentication()
   @Get('2fa/session')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
   async session2fa(
     @Req() { user }: { user: FortyTwoUserDto },
     @Session() session: Record<string, any>,

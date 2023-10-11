@@ -4,17 +4,24 @@ import {
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
-  PrivateMessageEntity,
-  ProfileEntity,
 } from '../db/entities';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
 import { GroupRoleDto } from './dto/group-role.dto';
+import { PrivateMessageDto } from './dto/private-message.dto';
+import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  @Get('private/messages/history')
+  async getUserPrivateMessagesHistory(
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<PrivateMessageHistoryDto[]> {
+    return await this.chatService.getUserPrivateMessagesHistory(user.id);
+  }
 
   @Get('group/chats')
   async getUserGroupChats(
@@ -53,22 +60,6 @@ export class ChatController {
     );
   }
 
-  @Get('private/messages/profiles')
-  async getUserPrivateMessagesProfiles(
-    @Req() { user }: { user: FortyTwoUserDto },
-  ): Promise<ProfileEntity[]> {
-    return await this.chatService.getUserPrivateMessagesProfiles(user.id);
-  }
-
-  @Get('private/messages/:profileId')
-  async getUserPrivateMessages(
-    @Req() { user }: { user: FortyTwoUserDto },
-    @Param('profileId') profileId: number,
-  ): Promise<PrivateMessageEntity[]> {
-    return await this.chatService.getUserPrivateMessages(user.id, profileId);
-  }
-
-  //Debug Routes
   @Post('group/:chatId/message')
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -83,7 +74,7 @@ export class ChatController {
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('profileId') profileId: number,
     @Body() messageDto: ChatMessageDto,
-  ): Promise<PrivateMessageEntity> {
+  ): Promise<PrivateMessageDto> {
     return await this.chatService.savePrivateMessage(
       user.id,
       profileId,
