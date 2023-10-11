@@ -146,6 +146,16 @@ export class ChatService {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
+    if (
+      groupChat.members.filter(
+        (m: GroupMemberEntity): boolean => m.profile.id === profile.id,
+      ).length === 0
+    ) {
+      throw new UnauthorizedException(
+        `Only members of group chat can send messages`,
+      );
+    }
+
     const groupMessageEntity: GroupMessageEntity =
       this.groupMessageRepository.create({
         message: message.message,
@@ -213,7 +223,7 @@ export class ChatService {
       });
 
     const groupChats: GroupChatEntity[] = groupMemberships.map(
-      (membership: GroupMemberEntity) => {
+      (membership: GroupMemberEntity): GroupChatEntity => {
         return {
           ...membership.groupChat,
         };
@@ -227,8 +237,8 @@ export class ChatService {
         visibility: groupChat.visibility,
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
-        messages: groupChat.messages.map(
-          (message: GroupMessageEntity): ConversationDto => {
+        messages: groupChat.messages
+          .map((message: GroupMessageEntity): ConversationDto => {
             return {
               id: message.id,
               message: message.message,
@@ -238,8 +248,10 @@ export class ChatService {
                 nickname: message.sender.nickname,
               },
             };
-          },
-        ),
+          })
+          .sort((a: ConversationDto, b: ConversationDto) => {
+            return a.createdAt.getTime() - b.createdAt.getTime();
+          }),
       };
     });
   }
@@ -353,6 +365,9 @@ export class ChatService {
         },
         relations: {
           owner: true,
+          members: {
+            profile: true,
+          },
         },
       });
 
@@ -392,7 +407,6 @@ export class ChatService {
           },
         ],
         order: { createdAt: 'ASC' },
-        take: 200,
         relations: {
           sender: true,
         },
