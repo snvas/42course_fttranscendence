@@ -1,57 +1,80 @@
 <script lang="ts">
-	type Match = {
+	type User = {
 		//oponentID: string;
-		openentNick: string;
-		oponentAvatar: string | null;
-		mineScore: number;
-		oponentScore: number;
-		status: string;
+		nickname: string;
+		id: string;
+		avatar: string | null;
+		status: 'Online' | 'Offline' | 'Playing';
+		friend: boolean;
+		blocked: boolean;
 	};
-	const matchs: Match[] = [
+	const users: User[] = [
 		{
-			openentNick: 'Fulano',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5,
-			status: 'Online'
+			nickname: 'Fulano',
+			id: '1',
+			avatar: '../../hackathon.png',
+			status: 'Online',
+			friend: false,
+			blocked: false
 		},
 		{
-			openentNick: 'Sicrano',
-			oponentAvatar: '../../palavra-chave.png',
-			oponentScore: 3,
-			mineScore: 5,
-			status: 'Offline'
+			nickname: 'Sicrano',
+			id: '12',
+			avatar: '../../palavra-chave.png',
+			status: 'Offline',
+			friend: true,
+			blocked: false
 		},
 		{
-			openentNick: 'Beltrano',
-			oponentAvatar: '../../rapido.png',
-			oponentScore: 2,
-			mineScore: 4,
-			status: 'Jogando'
+			nickname: 'Beltrano',
+			id: '13',
+			avatar: '../../rapido.png',
+			status: 'Playing',
+			friend: false,
+			blocked: true
 		},
 		{
-			openentNick: 'Colega',
-			oponentAvatar: '../../camera.png',
-			oponentScore: 2,
-			mineScore: 1,
-			status: 'Jogando'
+			nickname: 'Colega',
+			id: '14',
+			avatar: '../../camera.png',
+			status: 'Playing',
+			friend: false,
+			blocked: false
 		}
 	];
 </script>
 
-{#each matchs as match, i}
-	<div class="flex flex-col">
-		<div class="border-b-2 border-x-white h-12 m-2 flex flex-row">
+{#each users as user, i}
+	<div
+		class="w-full border-b border-opacity-20 border-white flex flex-row p-2 gap-4 justify-between"
+	>
+		<div class="flex flex-row gap-4">
 			<img
-				class="avatar max-w-sm aspect-square w-10 h-10 m-2"
-				src={match.oponentAvatar}
-				alt={match.openentNick}
-				title={match.openentNick}
+				class="avatar max-w-sm aspect-square w-10 h-10"
+				src={user.avatar}
+				alt={user.nickname}
+				title={user.nickname}
 			/>
-			<div class="flex flex-col ml-3">
-				<p class="flex flex-col">{match.openentNick}</p>
-				<p class="flex flex-col text-green-600">{match.status}</p>
+			<div class="flex flex-col">
+				<p class="flex flex-col">{user.nickname}</p>
+				<div class="flex gap-2">
+					<p class=" text-green-600">{user.status}</p>
+					{#if user.friend}
+						<div class="text-gray-600">|</div>
+						<div class="text-gray-600">Friend</div>
+					{/if}
+					{#if user.blocked}
+						<div class="text-gray-600">|</div>
+						<div class="text-red-800">Blocked</div>
+					{/if}
+				</div>
 			</div>
+		</div>
+		<div>
+			<button> FRIEND </button>
+			<button> CHAT </button>
+			<button> BLOCK </button>
+			<button> PLAY </button>
 		</div>
 	</div>
 {/each}
