@@ -1,8 +1,15 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import FriendStatus from '$lib/components/FriendStatus.svelte';
 	import DirectMessages from '$lib/components/DirectMessages.svelte';
 	import GroupMessages from '$lib/components/GroupMessages.svelte';
+	import { useAuth } from '$lib/stores';
+	import { goto } from '$app/navigation';
+
+	const auth = useAuth();
+
+	$: if (!$auth.loading && !$auth.session) {
+		goto('/login');
+	}
 
 	type Message = {
 		name: string;
@@ -32,12 +39,10 @@
 	type GroupBase = {
 		id: string;
 		name: string;
-		visibility: 'public' | 'private' | 'protected';
+		visibility: 'public' | 'private';
 	};
 
-	type GroupPreview = GroupBase & {
-		membersLength: number;
-	};
+	type GroupPreview = GroupBase;
 
 	type Group = GroupBase & {
 		members: GroupMember[];
@@ -198,20 +203,17 @@
 		{
 			id: '401',
 			name: 'Grupo de Trabalho',
-			visibility: 'public',
-			membersLength: 3
+			visibility: 'public'
 		},
 		{
 			id: '402',
 			name: 'Grupo de Estudo',
-			visibility: 'private',
-			membersLength: 3
+			visibility: 'private'
 		},
 		{
 			id: '403',
 			name: 'Grupo de Amigos',
-			visibility: 'protected',
-			membersLength: 3
+			visibility: 'private'
 		}
 	];
 
@@ -315,7 +317,7 @@
 		{
 			id: '403',
 			name: 'Grupo de Amigos',
-			visibility: 'protected',
+			visibility: 'private',
 			members: [
 				{
 					id: '205',
@@ -447,10 +449,6 @@
 											{group.visibility}
 										</p>
 									</div>
-
-									<p class=" text-gray-500">
-										{group.membersLength} Members
-									</p>
 								</div>
 							</button>
 						{/each}
