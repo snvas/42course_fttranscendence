@@ -11,6 +11,7 @@ import { ChatMessageDto } from './dto/chat-message.dto';
 import { GroupRoleDto } from './dto/group-role.dto';
 import { PrivateMessageDto } from './dto/private-message.dto';
 import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
+import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -23,18 +24,11 @@ export class ChatController {
     return await this.chatService.getUserPrivateMessagesHistory(user.id);
   }
 
-  @Get('group/chats')
-  async getUserGroupChats(
+  @Get('group/chats/history')
+  async getUserGroupChatsHistory(
     @Req() { user }: { user: FortyTwoUserDto },
-  ): Promise<GroupChatEntity[]> {
-    return this.chatService.getUserGroupChats(user.id);
-  }
-
-  @Get('group/messages/:chatId')
-  async getGroupMessages(
-    @Param('chatId') chatId: number,
-  ): Promise<GroupMessageEntity[]> {
-    return await this.chatService.getGroupMessages(chatId);
+  ): Promise<GroupChatHistoryDto[]> {
+    return await this.chatService.getUserGroupChatsHistory(user.id);
   }
 
   @Post('group/create')
@@ -45,21 +39,22 @@ export class ChatController {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
   }
 
-  //Todo: Validar se o usuário que chamou tem role admin
-  //@UseGuards(ChatAdminGuard)
   @Post('group/:chatId/member/:profileId')
   async addMemberToGroupChat(
+    @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId') chatId: number,
     @Param('profileId') profileId: number,
     @Body() roleDto: GroupRoleDto,
   ): Promise<GroupMemberEntity> {
     return await this.chatService.addMemberToGroupChat(
+      user.id,
       chatId,
       profileId,
       roleDto,
     );
   }
 
+  //Debug routes
   @Post('group/:chatId/message')
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },

@@ -7,7 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { PrivateConversationDto } from './private-conversation.dto';
+import { ConversationDto } from './conversation.dto';
 
 export class PrivateMessageHistoryDto implements PrivateMessageHistory {
   @IsNumber()
@@ -19,5 +19,5 @@ export class PrivateMessageHistoryDto implements PrivateMessageHistory {
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
-  messages: PrivateConversationDto[];
+  messages: ConversationDto[];
 }

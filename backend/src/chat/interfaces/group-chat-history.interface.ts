@@ -1,7 +1,10 @@
 import { Conversation } from './private-conversation.interface';
 
-export interface PrivateMessageHistory {
+export interface GroupChatHistory {
   id: number;
-  nickname: string;
+  name: string;
+  owner: string;
+  visibility: string;
+  createdAt: Date;
   messages: Conversation[];
 }

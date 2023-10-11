@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,6 +11,7 @@ import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
 @Entity({ name: 'group_members' })
+@Index(['profile', 'groupChat'], { unique: true })
 export class GroupMemberEntity implements GroupMember {
   @PrimaryGeneratedColumn()
   id: number;

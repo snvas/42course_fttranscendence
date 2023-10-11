@@ -1,4 +1,4 @@
-import { PrivateConversation } from '../interfaces/private-conversation.interface';
+import { Conversation } from '../interfaces/private-conversation.interface';
 import {
   IsDate,
   IsNotEmpty,
@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { MessageProfileDto } from './message-profile.dto';
 
-export class PrivateConversationDto implements PrivateConversation {
+export class ConversationDto implements Conversation {
   @IsNumber()
   @IsNotEmpty()
   id: number;
@@ -22,7 +22,4 @@ export class PrivateConversationDto implements PrivateConversation {
   @IsNotEmptyObject()
   @ValidateNested()
   sender: MessageProfileDto;
-  @IsNotEmptyObject()
-  @ValidateNested()
-  receiver: MessageProfileDto;
 }

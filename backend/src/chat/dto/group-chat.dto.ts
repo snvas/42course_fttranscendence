@@ -11,6 +11,7 @@ import {
   GroupMessageEntity,
   ProfileEntity,
 } from '../../db/entities';
+import { Exclude } from 'class-transformer';
 
 export class GroupChatDto implements GroupChat {
   @IsNotEmpty()
@@ -27,6 +28,7 @@ export class GroupChatDto implements GroupChat {
   visibility: string;
   @IsString()
   @IsNotEmpty()
+  @Exclude()
   password: string;
   @IsString({ each: true })
   onlineUsers: string[];

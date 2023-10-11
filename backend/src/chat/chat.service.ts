@@ -3,6 +3,7 @@ import {
   Logger,
   NotAcceptableException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket';
 import { GroupMessageDto } from './dto/group-message.dto';
@@ -20,13 +21,14 @@ import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
-import { PrivateConversation } from './interfaces/private-conversation.interface';
+import { Conversation } from './interfaces/private-conversation.interface';
 import { GroupCreationDto } from './dto/group-creation.dto';
 import { hashPassword } from '../utils/bcrypt';
 import { GroupRoleDto } from './dto/group-role.dto';
 import { PrivateMessageDto } from './dto/private-message.dto';
 import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
-import { PrivateConversationDto } from './dto/private-conversation.dto';
+import { ConversationDto } from './dto/conversation.dto';
+import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
 
 @Injectable()
 export class ChatService {
@@ -136,6 +138,28 @@ export class ChatService {
     );
   }
 
+  async saveGroupMessage(
+    chatId: number,
+    userId: number,
+    message: ChatMessageDto,
+  ): Promise<GroupMessageEntity> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+
+    const groupMessageEntity: GroupMessageEntity =
+      this.groupMessageRepository.create({
+        message: message.message,
+        groupChat,
+        sender: profile,
+      });
+
+    this.logger.verbose(
+      `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
+    );
+
+    return await this.groupMessageRepository.save(groupMessageEntity);
+  }
+
   public async getUserPrivateMessagesHistory(
     userId: number,
   ): Promise<PrivateMessageHistoryDto[]> {
@@ -146,8 +170,10 @@ export class ChatService {
     const privateMessagesPromises: Promise<PrivateMessageHistoryDto>[] =
       profiles.map(
         async (profile: ProfileDTO): Promise<PrivateMessageHistoryDto> => {
-          const messages: PrivateConversationDto[] =
-            await this.getUserPrivateMessages(userId, profile.id);
+          const messages: ConversationDto[] = await this.getUserPrivateMessages(
+            userId,
+            profile.id,
+          );
           return {
             id: profile.id,
             nickname: profile.nickname,
@@ -160,6 +186,62 @@ export class ChatService {
       PrivateMessageHistoryDto,
       await Promise.all(privateMessagesPromises),
     );
+  }
+
+  public async getUserGroupChatsHistory(
+    userId: number,
+  ): Promise<GroupChatHistoryDto[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    this.logger.verbose(`### Getting group chats for user: [${userId}]`);
+
+    const groupMemberships: GroupMemberEntity[] =
+      await this.groupMemberRepository.find({
+        relations: {
+          groupChat: {
+            owner: true,
+            messages: {
+              sender: true,
+            },
+          },
+        },
+        where: {
+          profile: {
+            id: profile.id,
+          },
+        },
+      });
+
+    const groupChats: GroupChatEntity[] = groupMemberships.map(
+      (membership: GroupMemberEntity) => {
+        return {
+          ...membership.groupChat,
+        };
+      },
+    );
+
+    return groupChats.map((groupChat: GroupChatEntity): GroupChatHistoryDto => {
+      return {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: groupChat.owner.nickname,
+        createdAt: groupChat.createdAt,
+        messages: groupChat.messages.map(
+          (message: GroupMessageEntity): ConversationDto => {
+            return {
+              id: message.id,
+              message: message.message,
+              createdAt: message.createdAt,
+              sender: {
+                id: message.sender.id,
+                nickname: message.sender.nickname,
+              },
+            };
+          },
+        ),
+      };
+    });
   }
 
   async createGroupChat(
@@ -187,7 +269,12 @@ export class ChatService {
         role: 'admin',
       };
 
-      await this.addMemberToGroupChat(groupChatEntity.id, profile.id, roleDto);
+      await this.addMemberToGroupChat(
+        userId,
+        groupChatEntity.id,
+        profile.id,
+        roleDto,
+      );
 
       this.logger.debug(
         `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
@@ -209,92 +296,51 @@ export class ChatService {
   }
 
   async addMemberToGroupChat(
+    userId: number,
     chatId: number,
-    profileId: number,
+    newMemberProfileId: number,
     roleDto?: GroupRoleDto,
   ): Promise<GroupMemberEntity> {
-    const profile: ProfileDTO = await this.profileService.findByProfileId(
-      profileId,
-    );
+    if (roleDto?.role === 'admin') {
+      const userProfile: ProfileDTO = await this.profileService.findByUserId(
+        userId,
+      );
+
+      const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+
+      if (groupChat.owner.id !== userProfile.id) {
+        throw new UnauthorizedException(
+          `Only owner of group chat can add admin members`,
+        );
+      }
+    }
+
+    const newMemberProfile: ProfileDTO =
+      await this.profileService.findByProfileId(newMemberProfileId);
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
-      profile,
+      profile: newMemberProfile,
       role: roleDto?.role || 'user',
     });
     groupMember.groupChat = groupChat;
-    groupMember.profile = profile;
+    groupMember.profile = newMemberProfile;
 
     this.logger.debug(
-      `### Profile: ${profile.nickname} with role: ${groupMember.role} added to group chat: ${groupChat.name}`,
+      `### Adding profile: ${newMemberProfile.nickname} with role: ${groupMember.role} to group chat: ${groupChat.name}`,
     );
-    return await this.groupMemberRepository.save(groupMember);
-  }
-
-  async saveGroupMessage(
-    chatId: number,
-    userId: number,
-    message: ChatMessageDto,
-  ): Promise<GroupMessageEntity> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
-
-    const groupMessageEntity: GroupMessageEntity =
-      this.groupMessageRepository.create({
-        message: message.message,
-        groupChat,
-        sender: profile,
-      });
-
-    this.logger.verbose(
-      `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
-    );
-
-    return await this.groupMessageRepository.save(groupMessageEntity);
-  }
-
-  public async getGroupMessages(chatId: number): Promise<GroupMessageEntity[]> {
-    this.logger.verbose(`### Getting group messages for chat: ${chatId}`);
-
-    return await this.groupMessageRepository.find({
-      relations: {
-        groupChat: true,
-      },
-      where: {
-        groupChat: {
-          id: chatId,
-        },
-      },
-      order: { createdAt: 'ASC' },
-      take: 500,
-    });
-  }
-
-  public async getUserGroupChats(userId: number): Promise<GroupChatEntity[]> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    this.logger.verbose(`### Getting group chats for user: [${userId}]`);
-
-    const groupMemberships: GroupMemberEntity[] =
-      await this.groupMemberRepository.find({
-        relations: {
-          groupChat: true,
-        },
-        where: {
-          profile: {
-            id: profile.id,
-          },
-        },
-      });
-
-    return groupMemberships.map((membership: GroupMemberEntity) => {
-      return {
-        ...membership.groupChat,
-        password: undefined,
-      };
-    });
+    try {
+      return await this.groupMemberRepository.save(groupMember);
+    } catch (Exception) {
+      if (Exception instanceof QueryFailedError) {
+        throw new NotAcceptableException(
+          `Profile ${newMemberProfile.nickname} is already a member of group chat ${groupChat.name}`,
+        );
+      }
+      throw Exception;
+    }
   }
 
   public async getGroupChatById(id: number): Promise<GroupChatEntity> {
@@ -304,6 +350,9 @@ export class ChatService {
       await this.groupChatRepository.findOne({
         where: {
           id,
+        },
+        relations: {
+          owner: true,
         },
       });
 
@@ -317,7 +366,7 @@ export class ChatService {
   private async getUserPrivateMessages(
     userId: number,
     withProfileId: number,
-  ): Promise<PrivateConversationDto[]> {
+  ): Promise<ConversationDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
     this.logger.verbose(`### Getting private messages for user: [${userId}]`);
@@ -346,27 +395,20 @@ export class ChatService {
         take: 200,
         relations: {
           sender: true,
-          receiver: true,
         },
       });
 
-    return messages.map(
-      (message: PrivateMessageEntity): PrivateConversation => {
-        return {
-          id: message.id,
-          message: message.message,
-          createdAt: message.createdAt,
-          sender: {
-            id: message.sender.id,
-            nickname: message.sender.nickname,
-          },
-          receiver: {
-            id: message.receiver.id,
-            nickname: message.receiver.nickname,
-          },
-        };
-      },
-    );
+    return messages.map((message: PrivateMessageEntity): Conversation => {
+      return {
+        id: message.id,
+        message: message.message,
+        createdAt: message.createdAt,
+        sender: {
+          id: message.sender.id,
+          nickname: message.sender.nickname,
+        },
+      };
+    });
   }
 
   private async getUserPrivateMessagesProfiles(
