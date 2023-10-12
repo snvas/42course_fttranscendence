@@ -7,9 +7,13 @@
 	import Profile from '$lib/components/Profile.svelte';
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
-	import Chat from '$lib/components/Chat.svelte';
-	import DirectMessages from '$lib/components/DirectMessages.svelte';
+	import UsersList from '$lib/components/UsersList.svelte';
 
+	const auth = useAuth();
+
+	$: if (!$auth.loading && !$auth.session) {
+		goto('/login');
+	}
 
 	async function onLogout() {
 		await authService.logoutUser();
@@ -17,16 +21,13 @@
 	}
 
 	async function onChat() {
-		
 		goto('/chat');
 	}
-
 
 	$: profile = getProfile();
 	let showing: 'chat' | 'history' | 'settings' = 'history';
 
 	$: avatar = getUserAvatar(profile);
-	
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen">
@@ -44,11 +45,8 @@
 		<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
 			<Profile bind:profile {onLogout} {avatar} />
 			<div class="flex flex-row items-center h-full">
-				<Button
-					type="chat"
-					on:click={onChat}
-				/>
-				
+				<Button type="chat" on:click={onChat} />
+
 				<Button
 					type="history"
 					on:click={() => {
@@ -60,10 +58,7 @@
 			</div>
 		</div>
 		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-			<Chat />
+			<UsersList />
 		</div>
 	</div>
-	
 </div>
-
-
