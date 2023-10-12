@@ -11,6 +11,11 @@ import { GroupChatDto } from './dto/group-chat.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { GroupMessageDto } from './dto/group-message.dto';
 
+//TODO:
+//Delete group chat
+//Remove member from group chat
+//Change member role in group chat
+
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}

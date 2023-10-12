@@ -1,11 +1,11 @@
-import {GroupMessageDto} from "../../../backend/src/chat/dto/group-message.dto.ts";
-
-const Messages = ({messages}: { messages: GroupMessageDto[] }) => {
+const Messages = ({messages}: { messages: string[] }) => {
 
     return (
         <div>
-            {messages.map((message, index) =>
-                <div key={index}>{JSON.stringify(message)}</div>)
+            {messages.map((message: string, index) =>
+                <div key={index} style={{marginLeft: "10px"}}>
+                    {message}
+                </div>)
             }
         </div>
     );

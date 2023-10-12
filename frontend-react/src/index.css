@@ -154,12 +154,11 @@ body {
     color: #fff;
     padding: 0.5em 1em;
     transition: 0.3s;
-    border: 1px solid #000;
+    border: 1px solid #fff;
     text-decoration: none;
     line-height: normal;
     font-weight: 400;
     font-family: 'Orbitron', sans-serif;
-    max-width: 200px;
     max-height: 100px;
     text-align: center;
 }
