@@ -3,13 +3,18 @@ import MessageInput from "./MessageInput.tsx";
 import {useEffect, useState} from "react";
 import {ProfileContextData} from "../context/interfaces/ProfileContextData.ts";
 import {useProfile} from "../context/ProfileContext.tsx";
+import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
+import {v4 as uuidV4} from 'uuid';
+import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
+
 
 export const DirectChat = () => {
-    const [msg, setMgs] = useState<string[]>([]);
+    const [msg, setMgs] = useState<ComponentMessage[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>("");
     const {profile} = useProfile() as ProfileContextData;
 
-    const messageHistory = [
+    const messageHistory: PrivateMessageHistoryDto[] = [
         {
             "id": 2,
             "nickname": "Rods",
@@ -17,10 +22,10 @@ export const DirectChat = () => {
                 {
                     "id": 1,
                     "message": "my message",
-                    "createdAt": "2023-10-12T03:09:26.089Z",
+                    "createdAt": new Date("2023-10-12T03:09:26.089Z"),
                     "sender": {
                         "id": 4,
-                        "nickname": "euu"
+                        "nickname": "rods"
                     }
                 }
             ]
@@ -32,7 +37,7 @@ export const DirectChat = () => {
                 {
                     "id": 2,
                     "message": "my message 2",
-                    "createdAt": "2023-10-12T03:09:31.810Z",
+                    "createdAt": new Date("2023-10-12T03:09:37.750Z"),
                     "sender": {
                         "id": 4,
                         "nickname": "ccc"
@@ -41,25 +46,35 @@ export const DirectChat = () => {
                 {
                     "id": 3,
                     "message": "my message 3",
-                    "createdAt": "2023-10-12T03:09:37.750Z",
+                    "createdAt": new Date("2023-10-12T03:09:37.750Z"),
                     "sender": {
                         "id": 4,
-                        "nickname": "euu"
+                        "nickname": "rods"
                     }
                 }
             ]
+        },
+        {
+            "id": 99,
+            "nickname": "Teste",
+            "messages": []
         }
     ];
 
     useEffect(() => {
+        const selectedHistory: PrivateMessageHistoryDto | undefined =
+            messageHistory.find((message: PrivateMessageHistoryDto): boolean => selectedUser === message.nickname);
 
-        const selectedHistory = messageHistory.find((message) => selectedUser === message.nickname);
+        const messagesFromHistory: ComponentMessage[] | undefined =
+            selectedHistory?.messages.map((message: ConversationDto): ComponentMessage => {
 
-        const messagesFromHistory = selectedHistory?.messages.map((message) => {
-
-
-            return `${profile?.nickname == message.sender.nickname ? "me" : message.sender.nickname}: ${message.message}`;
-        });
+                return {
+                    message: message.message,
+                    createdAt: message.createdAt,
+                    nickname: message.sender.nickname == profile?.nickname ? "me" : message.sender.nickname,
+                    uuid: uuidV4()
+                };
+            });
 
 
         setMgs(messagesFromHistory || []);
@@ -72,9 +87,19 @@ export const DirectChat = () => {
         console.log("Selected User: ", nickname);
     }
 
+    // Para resolver isso:
+    //  Enviar para o backend a mensagem com um UUID que o frontend gerou
+    //  Receber do backend o UUID da mensagem que foi enviada com sucesso no callback e fazer o tick
+    // ou
+    // Receber do backend a mensagem direto e se não receber é porque deu erro
     const sendMessage = (message: string) => {
-
-        setMgs([...msg, `me: ${message}`])
+        const componentMessage: ComponentMessage = {
+            message: message,
+            createdAt: new Date(),
+            nickname: "me",
+            uuid: uuidV4()
+        }
+        setMgs([...msg, componentMessage]);
         console.log("Message: ", message);
     }
 
@@ -91,8 +116,15 @@ export const DirectChat = () => {
                     {messageHistory.map((message, index) => {
                         return (
                             <div key={index}>
-                                <button style={{width: "100%"}}
-                                        onClick={handleSelectedUser(message.nickname)}>{message.nickname}</button>
+                                <button
+                                    style={{
+                                        width: "100%",
+                                        backgroundColor: selectedUser === message.nickname ? "black" : "white",
+                                        color: selectedUser === message.nickname ? "white" : "black"
+                                    }}
+                                    onClick={handleSelectedUser(message.nickname)}>
+                                    {message.nickname}
+                                </button>
                             </div>
                         )
                     })}

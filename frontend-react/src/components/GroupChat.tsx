@@ -3,22 +3,44 @@ import MessageInput from "./MessageInput.tsx";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 import {useEffect, useState} from "react";
+import {v4 as uuidV4} from 'uuid';
+import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
 import {GroupMessageDto} from "../../../backend/src/chat/dto/group-message.dto.ts";
 
+//TODO: Para funcionar precisa refatorar o backend para enviar as mensagens no novo formato
 export const GroupChat = () => {
     const {sendMessage, messages, onlineUsers} = useChat() as ChatContextData;
-    const [msg, setMgs] = useState<GroupMessageDto[]>([]);
+    const [msg, setMgs] = useState<ComponentMessage[]>([]);
     const [online, setOnline] = useState<string[]>([]);
 
     useEffect(() => {
         console.log("Messages", messages);
         console.log("Online", onlineUsers);
         setOnline(onlineUsers);
-        setMgs(messages);
+
+        const componentMessages: ComponentMessage[] = messages.map((message: GroupMessageDto) => {
+            return {
+                uuid: uuidV4(),
+                nickname: message.sender.nickname,
+                message: message.message,
+                createdAt: message.createdAt,
+            }
+        });
+
+        setMgs(componentMessages);
     }, []);
 
     useEffect(() => {
-        setMgs(messages);
+        const componentMessages: ComponentMessage[] = messages.map((message: GroupMessageDto) => {
+            return {
+                uuid: uuidV4(),
+                nickname: message.sender.nickname,
+                message: message.message,
+                createdAt: message.createdAt,
+            }
+        });
+
+        setMgs(componentMessages);
     }, [messages]);
 
     useEffect(() => {

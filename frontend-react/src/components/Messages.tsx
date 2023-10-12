@@ -1,12 +1,23 @@
-const Messages = ({messages}: { messages: string[] }) => {
+import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
+
+const Messages = ({messages}: { messages: ComponentMessage[] }) => {
 
     return (
         <div>
-            {messages.map((message: string, index) =>
-                <div key={index} style={{marginLeft: "10px"}}>
-                    {message}
-                </div>)
-            }
+            <div>
+                {messages.map((conversation: ComponentMessage) =>
+
+                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                        <div key={conversation.uuid} style={{marginLeft: "10px"}}>
+                            {`${conversation.nickname}: ${conversation.message}`}
+                        </div>
+                        <div style={{marginRight: "10px"}}>
+                            {conversation.createdAt.toLocaleString()}
+                        </div>
+                    </div>
+                )}
+            </div>
+
         </div>
     );
 };
