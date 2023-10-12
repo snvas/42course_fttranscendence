@@ -2,7 +2,7 @@ import {createContext, FC, ReactNode, useContext, useEffect, useState} from "rea
 import {ChatContextData} from "./interfaces/ChatContextData.ts";
 import {Socket} from "socket.io-client";
 import {NavigateFunction, useNavigate} from "react-router-dom";
-import chatService from "../api/ws/ChatService.ts";
+import chatService from "../api/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";

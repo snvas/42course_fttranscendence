@@ -7,13 +7,13 @@ const Messages = ({messages}: {
     return (
         <div>
             <div>
-                {messages.map((conversation: ComponentMessage, index: number) =>
+                {messages.map((conversation: ComponentMessage) =>
 
-                    <div style={{display: "flex", justifyContent: "space-between"}}>
-                        <div key={conversation.uuid} style={{marginLeft: "10px"}}>
+                    <div key={conversation.uuid} style={{display: "flex", justifyContent: "space-between"}}>
+                        <div style={{marginLeft: "10px"}}>
                             {`${conversation.nickname}: ${conversation.message}`}
                         </div>
-                        <div style={{marginRight: "10px"}} key={index}>
+                        <div style={{marginRight: "10px"}}>
                             {conversation.createdAt.toLocaleString()}
                         </div>
                     </div>
