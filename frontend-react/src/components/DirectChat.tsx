@@ -113,7 +113,7 @@ export const DirectChat = () => {
             }}>
                 <div style={{flex: "30%", border: "1px solid black", marginLeft: "10px"}}>
                     <h1 style={{textAlign: "center"}}>Direct Chat</h1>
-                    {messageHistory.map((message, index) => {
+                    {messageHistory.map((message: PrivateMessageHistoryDto, index: number) => {
                         return (
                             <div key={index}>
                                 <button

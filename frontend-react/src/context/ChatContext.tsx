@@ -5,6 +5,7 @@ import {GroupMessageDto} from "../../../backend/src/chat/dto/group-message.dto.t
 import {NavigateFunction, useNavigate} from "react-router-dom";
 import chatService from "../api/ws/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -18,7 +19,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     // const { user } = useContext(AuthContext) as AuthContextData;
     // const { profile } = useProfile() as ProfileContextData;
     const [messages, setMessages] = useState<GroupMessageDto[]>([]);
-    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+    const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
     const throwAsyncError = useThrowAsyncError();
 
@@ -55,23 +56,23 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             setMessages((messages: GroupMessageDto[]) => [...messages, message]);
         };
 
-        const onOnlineUsers = (onlineUsers: string[]) => {
+        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]) => {
             console.log(`### received online users ${onlineUsers}`);
 
-            setOnlineUsers(onlineUsers);
+            setPlayersStatus(onlineUsers);
         };
 
         socket.on("connect", onConnect);
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
         socket.on("message", onMessage);
-        socket.on("onlineUsers", onOnlineUsers);
+        socket.on("playersStatus", onPlayersStatus);
 
         return () => {
             socket.off("connect");
             socket.off("error");
             socket.off("message");
-            socket.off("onlineUsers");
+            socket.off("playersStatus");
             socket.disconnect();
         };
     }, []);
@@ -81,7 +82,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         sendMessage,
         disconnect,
         messages,
-        onlineUsers
+        playersStatus: playersStatus
     };
 
     return <ChatContext.Provider value={contextData}>{children}</ChatContext.Provider>;
