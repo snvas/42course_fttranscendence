@@ -4,7 +4,7 @@
 
 <div class="border-4 border-white min-w-fit w-full h-full flex flex-col rounded-3xl">
 	<div class="flex-none flex justify-center p-3">
-		<h2>USERS</h2>
+		<div class="w-full mx-auto min-w-fit mb-4 rounded-xl btn-users">USERS</div>
 	</div>
 	<div class="flex-1 w-full">
 		<FriendStatus />

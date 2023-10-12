@@ -52,6 +52,17 @@
 		@apply text-yellow-600
 	}
 
+	.btn-users {
+		@apply border-4 border-white;
+		@apply rounded-lg;
+		@apply w-full;
+		@apply text-2xl uppercase;
+		@apply py-2 px-4;
+		@apply text-center;
+		@apply text-2xl;
+		@apply text-white
+	}
+
 	.input-primary {
 		@apply bg-[#000000] border-4;
 		@apply rounded-lg;

@@ -82,7 +82,7 @@
 			</div>
 		{/if}
 	</div>
-	<div class="border-4 border-white h-full flex flex-col flex-none w-1/3">
+	<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 rounded-xl">
 		MEMBERS
 		{#if group}
 			{#each group.members as member}

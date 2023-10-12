@@ -393,11 +393,11 @@
 	</div>
 	<div class="flex flex-col md:flex-row gap-10 p-10 h-full">
 		<div class="gap-15 flex flex-col md:w-1/4 flex-none w-full h-full">
-			<div class="border-4 border-white min-w-fit w-full flex flex-col h-full">
+			<div class="border-4 border-white min-w-fit w-full flex flex-col h-full rounded-3xl">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
 					<!-- TODO: padronizar botões e estilo baseado na variável "showingMessages" -->
 					<button
-						class="border-2 border-white h-10 flex-1 items-center justify-center"
+						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl"
 						on:click={() => {
 							panel = 'direct';
 						}}
@@ -405,7 +405,7 @@
 						<p class="text-center">Direct Messages</p>
 					</button>
 					<button
-						class="border-2 border-white h-10 flex-1 items-center justify-center"
+						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl"
 						on:click={() => {
 							panel = 'groups';
 						}}
@@ -436,7 +436,7 @@
 						</button>
 					{/each}
 				{:else}
-					<div class="h-full w-full flex flex-col">
+					<div class="h-full w-full flex flex-col ">
 						{#each groupsPreview as group, i}
 							<button
 								on:click={() => showGroup(i)}

@@ -25,7 +25,7 @@
 			<Button type="logout" on:click={onLogout} />
 		</div>
 	</div>
-	<div class="w-full min-w-fit flex border-4 border-white justify-center items-center">
+	<div class="w-full min-w-fit flex border-4 border-white justify-center items-center rounded-md h-10">
 		<p class="">LEVEL 2 - 23%</p>
 	</div>
 	<div class="flex flex-row w-full min-w-fit">
@@ -33,17 +33,17 @@
 	</div>
 	<div class="flex flex-row h-20 w-full min-w-fit gap-5">
 		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center"
+			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
 		>
 			<p class="">8 Wins</p>
 		</div>
 		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center"
+			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
 		>
 			<p class="">4 Lose</p>
 		</div>
 		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center"
+			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
 		>
 			<p class="">12 Matchs</p>
 		</div>
