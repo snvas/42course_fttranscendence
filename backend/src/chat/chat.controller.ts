@@ -1,10 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import {
-  GroupChatEntity,
-  GroupMemberEntity,
-  GroupMessageEntity,
-} from '../db/entities';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
@@ -12,6 +7,9 @@ import { GroupRoleDto } from './dto/group-role.dto';
 import { PrivateMessageDto } from './dto/private-message.dto';
 import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
 import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
+import { GroupChatDto } from './dto/group-chat.dto';
+import { GroupMemberDto } from './dto/group-member.dto';
+import { GroupMessageDto } from './dto/group-message.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -35,7 +33,7 @@ export class ChatController {
   async createGroupChat(
     @Req() { user }: { user: FortyTwoUserDto },
     @Body() groupCreationDto: GroupCreationDto,
-  ): Promise<GroupChatEntity> {
+  ): Promise<GroupChatDto> {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
   }
 
@@ -45,7 +43,7 @@ export class ChatController {
     @Param('chatId') chatId: number,
     @Param('profileId') profileId: number,
     @Body() roleDto: GroupRoleDto,
-  ): Promise<GroupMemberEntity> {
+  ): Promise<GroupMemberDto> {
     return await this.chatService.addMemberToGroupChat(
       user.id,
       chatId,
@@ -60,7 +58,7 @@ export class ChatController {
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId') chatId: number,
     @Body() messageDto: ChatMessageDto,
-  ): Promise<GroupMessageEntity> {
+  ): Promise<GroupMessageDto> {
     return await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
   }
 

@@ -29,6 +29,8 @@ import { PrivateMessageDto } from './dto/private-message.dto';
 import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
 import { ConversationDto } from './dto/conversation.dto';
 import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
+import { GroupChatDto } from './dto/group-chat.dto';
+import { GroupMemberDto } from './dto/group-member.dto';
 
 @Injectable()
 export class ChatService {
@@ -142,9 +144,9 @@ export class ChatService {
     chatId: number,
     userId: number,
     message: ChatMessageDto,
-  ): Promise<GroupMessageEntity> {
+  ): Promise<GroupMessageDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
 
     if (
       groupChat.members.filter(
@@ -167,7 +169,10 @@ export class ChatService {
       `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
     );
 
-    return await this.groupMessageRepository.save(groupMessageEntity);
+    return plainToClass(
+      GroupMessageDto,
+      await this.groupMessageRepository.save(groupMessageEntity),
+    );
   }
 
   public async getUserPrivateMessagesHistory(
@@ -259,7 +264,7 @@ export class ChatService {
   async createGroupChat(
     groupCreationDto: GroupCreationDto,
     userId: number,
-  ): Promise<GroupChatEntity> {
+  ): Promise<GroupChatDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
     const password: string | undefined = groupCreationDto.password
@@ -291,7 +296,7 @@ export class ChatService {
       this.logger.debug(
         `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
       );
-      return groupChatEntity;
+      return plainToClass(GroupChatDto, groupChatEntity);
     } catch (exception) {
       if (
         exception instanceof QueryFailedError &&
@@ -312,13 +317,13 @@ export class ChatService {
     chatId: number,
     newMemberProfileId: number,
     roleDto?: GroupRoleDto,
-  ): Promise<GroupMemberEntity> {
+  ): Promise<GroupMemberDto> {
+    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+
     if (roleDto?.role === 'admin') {
       const userProfile: ProfileDTO = await this.profileService.findByUserId(
         userId,
       );
-
-      const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
       if (groupChat.owner.id !== userProfile.id) {
         throw new UnauthorizedException(
@@ -329,8 +334,6 @@ export class ChatService {
 
     const newMemberProfile: ProfileDTO =
       await this.profileService.findByProfileId(newMemberProfileId);
-
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
@@ -344,7 +347,10 @@ export class ChatService {
       `### Adding profile: ${newMemberProfile.nickname} with role: ${groupMember.role} to group chat: ${groupChat.name}`,
     );
     try {
-      return await this.groupMemberRepository.save(groupMember);
+      return plainToClass(
+        GroupMemberDto,
+        await this.groupMemberRepository.save(groupMember),
+      );
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
         throw new NotAcceptableException(
@@ -355,7 +361,7 @@ export class ChatService {
     }
   }
 
-  public async getGroupChatById(id: number): Promise<GroupChatEntity> {
+  public async getGroupChatById(id: number): Promise<GroupChatDto> {
     this.logger.verbose(`### Getting group chat by id: ${id}`);
 
     const groupChat: GroupChatEntity | null =
@@ -375,7 +381,7 @@ export class ChatService {
       throw new NotFoundException(`Group chat with id ${id} not found`);
     }
 
-    return groupChat;
+    return plainToClass(GroupChatDto, groupChat);
   }
 
   private async getUserPrivateMessages(
