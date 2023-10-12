@@ -7,59 +7,77 @@ import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
 import {v4 as uuidV4} from 'uuid';
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
+import {useLocation} from "react-router-dom";
 
 
 export const DirectChat = () => {
     const [msg, setMgs] = useState<ComponentMessage[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>("");
+    const [messageHistory, setMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const {profile} = useProfile() as ProfileContextData;
+    const {state} = useLocation();
+    const {id, nickname} = state;
 
-    const messageHistory: PrivateMessageHistoryDto[] = [
-        {
-            "id": 2,
-            "nickname": "Rods",
-            "messages": [
-                {
-                    "id": 1,
-                    "message": "my message",
-                    "createdAt": new Date("2023-10-12T03:09:26.089Z"),
-                    "sender": {
-                        "id": 4,
-                        "nickname": "rods"
+
+    useEffect(() => {
+        const history: PrivateMessageHistoryDto[] = [
+            {
+                "id": 2,
+                "nickname": "Rods",
+                "messages": [
+                    {
+                        "id": 1,
+                        "message": "my message",
+                        "createdAt": new Date("2023-10-12T03:09:26.089Z"),
+                        "sender": {
+                            "id": 4,
+                            "nickname": "rods"
+                        }
                     }
-                }
-            ]
-        },
-        {
-            "id": 3,
-            "nickname": "roh",
-            "messages": [
-                {
-                    "id": 2,
-                    "message": "my message 2",
-                    "createdAt": new Date("2023-10-12T03:09:37.750Z"),
-                    "sender": {
-                        "id": 4,
-                        "nickname": "ccc"
+                ]
+            },
+            {
+                "id": 3,
+                "nickname": "roh",
+                "messages": [
+                    {
+                        "id": 2,
+                        "message": "my message 2",
+                        "createdAt": new Date("2023-10-12T03:09:37.750Z"),
+                        "sender": {
+                            "id": 4,
+                            "nickname": "ccc"
+                        }
+                    },
+                    {
+                        "id": 3,
+                        "message": "my message 3",
+                        "createdAt": new Date("2023-10-12T03:09:37.750Z"),
+                        "sender": {
+                            "id": 4,
+                            "nickname": "rods"
+                        }
                     }
-                },
-                {
-                    "id": 3,
-                    "message": "my message 3",
-                    "createdAt": new Date("2023-10-12T03:09:37.750Z"),
-                    "sender": {
-                        "id": 4,
-                        "nickname": "rods"
-                    }
-                }
-            ]
-        },
-        {
-            "id": 99,
-            "nickname": "Teste",
-            "messages": []
+                ]
+            },
+            {
+                "id": 99,
+                "nickname": "Teste",
+                "messages": []
+            }
+        ];
+
+        if (nickname && id) {
+            history.push({
+                id: id,
+                nickname: nickname,
+                messages: []
+            })
         }
-    ];
+
+        setMessageHistory(history);
+        setSelectedUser(nickname);
+    }, []);
 
     useEffect(() => {
         const selectedHistory: PrivateMessageHistoryDto | undefined =

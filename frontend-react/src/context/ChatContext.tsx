@@ -1,7 +1,6 @@
 import {createContext, FC, ReactNode, useContext, useEffect, useState} from "react";
 import {ChatContextData} from "./interfaces/ChatContextData.ts";
 import {Socket} from "socket.io-client";
-import {GroupMessageDto} from "../../../backend/src/chat/dto/group-message.dto.ts";
 import {NavigateFunction, useNavigate} from "react-router-dom";
 import chatService from "../api/ws/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
@@ -51,7 +50,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             navigate("/login");
         };
 
-        const onMessage = (message: GroupMessageDto) => {
+        const onMessage = (message: ConversationDto) => {
             console.log(`### received chat message ${JSON.stringify(message)}`);
 
             setMessages((messages: ConversationDto[]) => [...messages, message]);

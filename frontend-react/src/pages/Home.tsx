@@ -4,12 +4,13 @@ import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.t
 import {useEffect, useState} from "react";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
+import {NavigateFunction, useNavigate} from "react-router-dom";
 
 const Home = () => {
     const {profile, avatarImageUrl} = useProfile() as ProfileContextData;
-
     const {playersStatus} = useChat() as ChatContextData;
     const [status, setStatus] = useState<PlayerStatusDto[]>([]);
+    const navigate: NavigateFunction = useNavigate();
 
     useEffect(() => {
         setStatus(playersStatus);
@@ -18,6 +19,12 @@ const Home = () => {
     useEffect(() => {
         setStatus(playersStatus);
     }, []);
+
+    //Start conversation in backend
+    const handleDM = (id: number, nickname: string) => {
+        console.log("DM", nickname)
+        navigate('/chat', {state: {nickname: nickname, id: id}});
+    }
 
     return (
         <>
@@ -57,12 +64,18 @@ const Home = () => {
                         {status.map((player: PlayerStatusDto, index: number) => (
                             <div style={{display: "flex"}}>
                                 <li style={{marginRight: "20px"}}
-                                    key={index}>{player.nickname}-{player.status} {/*Add label Owner, Admin, User*/}</li>
-                                <div>
-                                    {/* <Create actions for these buttons */}
-                                    <button className="btn-hover">DM</button>
-                                    <button className="btn-hover">X1</button>
-                                </div>
+                                    key={index}>{player.nickname} | {player.status} |
+                                </li>
+                                {profile?.nickname === player.nickname ? (
+                                    <p>(You)</p>
+                                ) : (
+                                    <>
+                                        <button className="btn-hover"
+                                                onClick={() => handleDM(player.id, player.nickname)}>DM
+                                        </button>
+                                        <button className="btn-hover">X1</button>
+                                    </>
+                                )}
                             </div>
                         ))}
                     </ul>
