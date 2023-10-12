@@ -98,7 +98,7 @@ export const DirectChat = () => {
                     })}
                 </div>
                 <div style={{flex: "70%", border: "1px solid black", margin: "0 10px 0 10px"}}>
-                    <h1 style={{textAlign: "center"}}>Name</h1>
+                    <h1 style={{textAlign: "center"}}>{!selectedUser ? "Choose a user" : selectedUser}</h1>
                     <Messages messages={msg}/>
                 </div>
 
