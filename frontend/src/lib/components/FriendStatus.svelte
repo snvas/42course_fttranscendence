@@ -1,4 +1,6 @@
 <script lang="ts">
+		import { goto } from '$app/navigation';
+
 	type User = {
 		//oponentID: string;
 		nickname: string;
@@ -42,6 +44,9 @@
 			blocked: false
 		}
 	];
+	async function onChat() {
+		goto('/chat');
+	}
 </script>
 
 {#each users as user, i}
@@ -72,7 +77,7 @@
 		</div>
 			<div class="flex flex-row items-center gap-4 text-center text-xs ml-10 justify-end">
 				<button class="w-10"> <img src="/adicionar-usuario.png" alt="add friend" width="90%"/><p class="text-center"> FRIEND</p></button>
-				<button class="w-10"> <img src="/bate-papo-de-texto.png" alt="let's chat" /><p class="text-center">  CHAT </p></button>
+				<button class="w-10" on:click={onChat}> <img src="/bate-papo-de-texto.png" alt="let's chat" /><p class="text-center">  CHAT </p></button>
 				<button class="w-10"> <img src="/bloqueado.png" alt="block this user" width="90%"/><p class="text-center">  BLOCK </p></button>
 				<button class="w-10"> <img src="/pingue-pongue.png" alt="let's play" /><p class="text-center">  PLAY </p></button>
 			</div>
