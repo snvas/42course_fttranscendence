@@ -62,9 +62,9 @@ const Home = () => {
                     <h1>Online Users</h1>
                     <ul>
                         {status.map((player: PlayerStatusDto, index: number) => (
-                            <div style={{display: "flex"}}>
-                                <li style={{marginRight: "20px"}}
-                                    key={index}>{player.nickname} | {player.status} |
+                            <div key={index} style={{display: "flex"}}>
+                                <li style={{marginRight: "20px"}}>
+                                    {player.nickname} | {player.status} |
                                 </li>
                                 {profile?.nickname === player.nickname ? (
                                     <p>(You)</p>

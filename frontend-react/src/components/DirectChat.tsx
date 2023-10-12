@@ -16,8 +16,6 @@ export const DirectChat = () => {
     const [messageHistory, setMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const {profile} = useProfile() as ProfileContextData;
     const {state} = useLocation();
-    const {id, nickname} = state;
-
 
     useEffect(() => {
         const history: PrivateMessageHistoryDto[] = [
@@ -67,16 +65,19 @@ export const DirectChat = () => {
             }
         ];
 
-        if (nickname && id) {
-            history.push({
-                id: id,
-                nickname: nickname,
-                messages: []
-            })
+        if (!state?.id || !state?.nickname) {
+            setMessageHistory(history);
+            return;
         }
 
+        history.push({
+            id: state.id,
+            nickname: state.nickname,
+            messages: []
+        })
+
         setMessageHistory(history);
-        setSelectedUser(nickname);
+        setSelectedUser(state.nickname);
     }, []);
 
     useEffect(() => {
