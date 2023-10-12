@@ -4,7 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { AuthenticatedSocket } from '../../chat/types/authenticated-socket';
+import { AuthenticatedSocketType } from '../../chat/types/authenticated.socket.type';
 
 @Injectable()
 export class WsAuthenticatedGuard implements CanActivate {
@@ -12,7 +12,7 @@ export class WsAuthenticatedGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const client = context.switchToWs().getClient();
-    const socket: AuthenticatedSocket = client as AuthenticatedSocket;
+    const socket: AuthenticatedSocketType = client as AuthenticatedSocketType;
 
     if (!client.request.isAuthenticated()) {
       this.logger.verbose(

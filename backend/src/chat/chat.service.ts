@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthenticatedSocket } from './types/authenticated-socket';
+import { AuthenticatedSocketType } from './types/authenticated.socket.type';
 import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -31,11 +31,13 @@ import { ConversationDto } from './dto/conversation.dto';
 import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
 import { GroupChatDto } from './dto/group-chat.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
+import { PlayerStatusDto } from './dto/player-status.dto';
+import { PlayerStatusSocket } from './types/player-status.socket';
 
 @Injectable()
 export class ChatService {
   private readonly logger: Logger = new Logger(ChatService.name);
-  private authenticatedSockets: Map<number, AuthenticatedSocket> = new Map();
+  private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(
     private readonly profileService: ProfileService,
@@ -51,42 +53,61 @@ export class ChatService {
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
 
-  public setOnlineUser(socket: AuthenticatedSocket): void {
-    this.authenticatedSockets.set(socket.request.user.id, socket);
+  public async setPlayerStatus(
+    socket: AuthenticatedSocketType,
+    status: string,
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(
+      socket.request.user.id,
+    );
+
+    const onlineUser: PlayerStatusSocket = {
+      id: profile.id,
+      nickname: profile.nickname,
+      status,
+      socket,
+    };
+
+    this.playerStatusSocket.set(profile.id, onlineUser);
   }
 
-  public removeOnlineUser(socket: AuthenticatedSocket): void {
-    this.authenticatedSockets.delete(socket.request.user.id);
+  public async removePlayerStatus(
+    socket: AuthenticatedSocketType,
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(
+      socket.request.user.id,
+    );
+
+    this.playerStatusSocket.delete(profile.id);
   }
 
-  public async getOnlineUsers(): Promise<string[]> {
-    const authenticatedSockets: AuthenticatedSocket[] = Array.from(
-      this.authenticatedSockets.values(),
+  public async getPlayersStatus(): Promise<PlayerStatusDto[]> {
+    const onlineUserSocket: PlayerStatusSocket[] = Array.from(
+      this.playerStatusSocket.values(),
     );
 
-    const usersFromSockets: number[] = authenticatedSockets.map(
-      (user: AuthenticatedSocket) => user.request.user.id,
+    const onlineUsers: PlayerStatusDto[] = onlineUserSocket.map(
+      (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
+        return {
+          id: onlineUser.id,
+          nickname: onlineUser.nickname,
+          status: onlineUser.status,
+        };
+      },
     );
 
-    if (usersFromSockets.length === 0) {
-      return [];
-    }
-
-    const onlineProfiles: ProfileEntity[] =
-      await this.profileService.findByUserIds(usersFromSockets);
-
-    const onlineNicknames: string[] = onlineProfiles.map(
-      (p: ProfileEntity) => p.nickname,
+    this.logger.debug(
+      `### Online users nicknames: ${onlineUsers.map(
+        (u: PlayerStatusDto) => u.nickname,
+      )}`,
     );
 
-    this.logger.debug(`### Online users nicknames: ${onlineNicknames}`);
-
-    return onlineNicknames;
+    return onlineUsers;
   }
 
   //TODO: Implement
   public async handleGroupMessage(
-    socket: AuthenticatedSocket,
+    socket: AuthenticatedSocketType,
     message: string,
   ): Promise<GroupMessageDto> {
     const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;

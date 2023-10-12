@@ -10,7 +10,7 @@ import {
 import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
-import { AuthenticatedSocket } from './types/authenticated-socket';
+import { AuthenticatedSocketType } from './types/authenticated.socket.type';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 
 @WebSocketGateway({
@@ -29,7 +29,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocketType) {
     this.logger.log(`### Client connected: ${socket.id}`);
 
     if (!socket.request.user) {
@@ -41,19 +41,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Authenticated user: ${JSON.stringify(socket.request.user)}`,
     );
 
-    this.chatService.setOnlineUser(socket);
+    await this.chatService.setPlayerStatus(socket, 'online');
 
-    this.server.emit('onlineUsers', await this.chatService.getOnlineUsers());
+    this.server.emit(
+      'playersStatus',
+      await this.chatService.getPlayersStatus(),
+    );
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocketType) {
     this.logger.log(`Client disconnected: ${socket.id}`);
-    this.chatService.removeOnlineUser(socket);
+    await this.chatService.removePlayerStatus(socket);
 
     socket.broadcast.emit(
-      'onlineUsers',
-      await this.chatService.getOnlineUsers(),
+      'playersStatus',
+      await this.chatService.getPlayersStatus(),
     );
   }
 
@@ -61,7 +64,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   async handleMessage(
     @MessageBody() message: string,
-    @ConnectedSocket() socket: AuthenticatedSocket,
+    @ConnectedSocket() socket: AuthenticatedSocketType,
   ) {
     // const messageDto: GroupMessageDto =
     //  messageDto await this.chatService.handleGroupMessage(socket, message);

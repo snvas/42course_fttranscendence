@@ -31,7 +31,7 @@ export class GroupChatDto implements GroupChat {
   @Exclude()
   password: string;
   @IsString({ each: true })
-  onlineUsers: string[];
+  playersStatus: string[];
   @ValidateNested()
   members: GroupMemberEntity[];
   @ValidateNested()
