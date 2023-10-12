@@ -46,9 +46,9 @@
 
 {#each users as user, i}
 	<div
-		class="w-full border-b border-opacity-20 border-white flex flex-row p-4 gap-4 justify-between"
+		class="w-full border-b border-opacity-20 border-white flex flex-row p-4 gap-4 justify-between items-center"
 	>
-		<div class="flex flex-row gap-4 ml-4">
+		<div class="flex flex-row gap-4 ml-4 items-center">
 			<img
 				class="avatar max-w-sm aspect-square w-10 h-10"
 				src={user.avatar}
@@ -69,12 +69,12 @@
 					{/if}
 				</div>
 			</div>
+		</div>
 			<div class="flex flex-row items-center gap-4 text-center text-xs ml-10 justify-end">
 				<button class="w-10"> <img src="/adicionar-usuario.png" alt="add friend" width="90%"/><p class="text-center"> FRIEND</p></button>
 				<button class="w-10"> <img src="/bate-papo-de-texto.png" alt="let's chat" /><p class="text-center">  CHAT </p></button>
 				<button class="w-10"> <img src="/bloqueado.png" alt="block this user" width="90%"/><p class="text-center">  BLOCK </p></button>
 				<button class="w-10"> <img src="/pingue-pongue.png" alt="let's play" /><p class="text-center">  PLAY </p></button>
 			</div>
-		</div>
 	</div>
 {/each}
