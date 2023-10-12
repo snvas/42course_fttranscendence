@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthenticatedSocketType } from './types/authenticated.socket.type';
+import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -54,7 +54,7 @@ export class ChatService {
   ) {}
 
   public async setPlayerStatus(
-    socket: AuthenticatedSocketType,
+    socket: AuthenticatedSocket,
     status: string,
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
@@ -71,9 +71,7 @@ export class ChatService {
     this.playerStatusSocket.set(profile.id, onlineUser);
   }
 
-  public async removePlayerStatus(
-    socket: AuthenticatedSocketType,
-  ): Promise<void> {
+  public async removePlayerStatus(socket: AuthenticatedSocket): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
     );
@@ -107,7 +105,7 @@ export class ChatService {
 
   //TODO: Implement
   public async handleGroupMessage(
-    socket: AuthenticatedSocketType,
+    socket: AuthenticatedSocket,
     message: string,
   ): Promise<GroupMessageDto> {
     const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;

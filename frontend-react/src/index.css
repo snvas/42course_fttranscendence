@@ -36,12 +36,13 @@ body {
 }
 
 .dashboard {
-    flex: 1;
+    flex: 30%;
     margin-right: 20px;
 }
 
-.chat {
-    flex: 1;
+.match-history {
+    flex: 30%;
+    height: 300px;
 }
 
 .header {

@@ -10,8 +10,9 @@ import {
 import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
-import { AuthenticatedSocketType } from './types/authenticated.socket.type';
+import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
+import { ConversationDto } from './dto/conversation.dto';
 
 @WebSocketGateway({
   cors: {
@@ -29,7 +30,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocketType) {
+  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`### Client connected: ${socket.id}`);
 
     if (!socket.request.user) {
@@ -50,7 +51,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocketType) {
+  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`Client disconnected: ${socket.id}`);
     await this.chatService.removePlayerStatus(socket);
 
@@ -64,11 +65,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   async handleMessage(
     @MessageBody() message: string,
-    @ConnectedSocket() socket: AuthenticatedSocketType,
+    @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
     // const messageDto: GroupMessageDto =
     //  messageDto await this.chatService.handleGroupMessage(socket, message);
 
-    this.server.emit('message', message);
+    const conversationDto: ConversationDto = {
+      id: 1,
+      message: message,
+      createdAt: new Date(),
+      sender: {
+        id: 1,
+        nickname: 'Teste',
+      },
+    };
+
+    this.server.emit('message', conversationDto);
   }
 }

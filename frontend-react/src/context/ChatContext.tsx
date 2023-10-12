@@ -6,6 +6,7 @@ import {NavigateFunction, useNavigate} from "react-router-dom";
 import chatService from "../api/ws/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
+import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -18,7 +19,7 @@ interface WebSocketProviderProps {
 export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     // const { user } = useContext(AuthContext) as AuthContextData;
     // const { profile } = useProfile() as ProfileContextData;
-    const [messages, setMessages] = useState<GroupMessageDto[]>([]);
+    const [messages, setMessages] = useState<ConversationDto[]>([]);
     const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
     const throwAsyncError = useThrowAsyncError();
@@ -53,7 +54,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         const onMessage = (message: GroupMessageDto) => {
             console.log(`### received chat message ${JSON.stringify(message)}`);
 
-            setMessages((messages: GroupMessageDto[]) => [...messages, message]);
+            setMessages((messages: ConversationDto[]) => [...messages, message]);
         };
 
         const onPlayersStatus = (onlineUsers: PlayerStatusDto[]) => {

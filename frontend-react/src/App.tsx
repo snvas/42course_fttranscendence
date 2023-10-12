@@ -30,7 +30,6 @@ function App() {
                         <Routes>
                             <Route path="/login" element={<Login/>}/>
                             <Route element={<PrivateRoutes/>}>
-                                <Route path="/" element={<Home/>}/>
                                 <Route
                                     path="/welcome"
                                     element={<ProfileCustomization title={"Welcome to Pong!!"}/>}
@@ -49,6 +48,7 @@ function App() {
                             </Route>
 
                             <Route element={<ChatRoutes/>}>
+                                <Route path="/" element={<Home/>}/>
                                 <Route path="/chat" element={<Chat/>}/>
                             </Route>
                             <Route path="*" element={<NotFound/>}/>

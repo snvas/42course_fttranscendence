@@ -5,8 +5,8 @@ import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 import {useEffect, useState} from "react";
 import {v4 as uuidV4} from 'uuid';
 import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
-import {GroupMessageDto} from "../../../backend/src/chat/dto/group-message.dto.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
+import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
 
 //TODO: Para funcionar precisa refatorar o backend para enviar as mensagens no novo formato
 export const GroupChat = () => {
@@ -19,7 +19,7 @@ export const GroupChat = () => {
         console.log("Online", playersStatus);
         setOnline(playersStatus);
 
-        const componentMessages: ComponentMessage[] = messages.map((message: GroupMessageDto) => {
+        const componentMessages: ComponentMessage[] = messages.map((message: ConversationDto) => {
             return {
                 uuid: uuidV4(),
                 nickname: message.sender.nickname,
@@ -32,7 +32,7 @@ export const GroupChat = () => {
     }, []);
 
     useEffect(() => {
-        const componentMessages: ComponentMessage[] = messages.map((message: GroupMessageDto) => {
+        const componentMessages: ComponentMessage[] = messages.map((message: ConversationDto) => {
             return {
                 uuid: uuidV4(),
                 nickname: message.sender.nickname,
@@ -59,10 +59,12 @@ export const GroupChat = () => {
             <div style={{flex: 1, marginRight: "20px", overflowY: "auto", maxHeight: "700px"}}>
                 <h1>Online Users</h1>
                 <ul>
-                    {online.map((player: PlayerStatusDto, index: number) => (
+                    {online.map((player: PlayerStatusDto) => (
                         <div style={{display: "flex"}}>
                             <li style={{marginRight: "20px"}}
-                                key={index}>{player.nickname}-{player.status} {/*Add label Owner, Admin, User*/}</li>
+                                key={player.id}>
+                                {player.nickname}-{player.status} {/*Add label Owner, Admin, User*/}
+                            </li>
                             <div>
                                 {/* <Create actions for these buttons */}
                                 <button className="btn-hover">DM</button>

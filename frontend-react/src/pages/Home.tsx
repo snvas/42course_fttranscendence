@@ -1,41 +1,75 @@
-import { useProfile } from "../context/ProfileContext.tsx";
-import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
+import {useProfile} from "../context/ProfileContext.tsx";
+import {ProfileContextData} from "../context/interfaces/ProfileContextData.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
+import {useEffect, useState} from "react";
+import {useChat} from "../context/ChatContext.tsx";
+import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 
 const Home = () => {
-  const { profile, avatarImageUrl } = useProfile() as ProfileContextData;
+    const {profile, avatarImageUrl} = useProfile() as ProfileContextData;
 
-  return (
-    <>
-      <div className="container-home">
-        <div className="dashboard">
-          <h1>Player Dashboard</h1>
+    const {playersStatus} = useChat() as ChatContextData;
+    const [status, setStatus] = useState<PlayerStatusDto[]>([]);
 
-          <br></br>
-          <div>
-            {avatarImageUrl ? (
-              <img src={avatarImageUrl} alt="User Avatar Image" />
-            ) : (
-              <img src="/default-avatar.jpeg" alt="Default Avatar Image" />
-            )}
-            <p>Nickname: {profile?.nickname}</p>
-          </div>
-          <br></br>
-          <p>Wins: {profile?.wins}</p>
-          <p>Draws: {profile?.draws}</p>
-          <p>Loses: {profile?.losses}</p>
-          <p>Ranking: Not Implement Yet</p>
-        </div>
-        <div className="chat">
-          <h1>Match History</h1>
-          <ul>
-            <li>Match 1</li>
-            <li>Match 2</li>
-            <li>Match 3</li>
-          </ul>
-        </div>
-      </div>
-    </>
-  );
+    useEffect(() => {
+        setStatus(playersStatus);
+    }, [playersStatus]);
+
+    useEffect(() => {
+        setStatus(playersStatus);
+    }, []);
+
+    return (
+        <>
+            <div className="container-home">
+                <div className="dashboard">
+                    <h1>Player Dashboard</h1>
+
+                    <br></br>
+                    <div>
+                        {avatarImageUrl ? (
+                            <img src={avatarImageUrl} alt="User Avatar Image"/>
+                        ) : (
+                            <img src="/default-avatar.jpeg" alt="Default Avatar Image"/>
+                        )}
+                        <p>Nickname: {profile?.nickname}</p>
+                    </div>
+                    <br></br>
+                    <p>Wins: {profile?.wins}</p>
+                    <p>Draws: {profile?.draws}</p>
+                    <p>Loses: {profile?.losses}</p>
+                    <p>Ranking: Not Implement Yet</p>
+                </div>
+
+                <div style={{flex: 1, marginRight: "20px", overflowY: "auto", maxHeight: "700px"}}>
+
+                    <div className="match-history">
+                        <h1>Match History</h1>
+                        <ul>
+                            <li>Match 1</li>
+                            <li>Match 2</li>
+                            <li>Match 3</li>
+                        </ul>
+                    </div>
+                    <hr></hr>
+                    <h1>Online Users</h1>
+                    <ul>
+                        {status.map((player: PlayerStatusDto, index: number) => (
+                            <div style={{display: "flex"}}>
+                                <li style={{marginRight: "20px"}}
+                                    key={index}>{player.nickname}-{player.status} {/*Add label Owner, Admin, User*/}</li>
+                                <div>
+                                    {/* <Create actions for these buttons */}
+                                    <button className="btn-hover">DM</button>
+                                    <button className="btn-hover">X1</button>
+                                </div>
+                            </div>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </>
+    );
 };
 
 export default Home;
