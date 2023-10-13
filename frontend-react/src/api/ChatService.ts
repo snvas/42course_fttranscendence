@@ -1,10 +1,21 @@
 import {io, Socket} from "socket.io-client";
+import axios, {AxiosInstance, AxiosResponse} from "axios";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
+    private axiosInstance: AxiosInstance;
 
     constructor(baseURL: string) {
-        this.socket = io(`${baseURL}/chat`, {withCredentials: true, autoConnect: false});
+        const socketBaseUrl: string = `${baseURL}/chat`;
+        const httpBaseUrl: string = `${baseURL}/api/chat`;
+
+        this.socket = io(socketBaseUrl, {withCredentials: true, autoConnect: false});
+
+        this.axiosInstance = axios.create({
+            baseURL: httpBaseUrl,
+            withCredentials: true
+        });
     }
 
     public connect(): void {
@@ -21,6 +32,10 @@ class ChatService {
 
     public disconnect(): void {
         this.socket?.disconnect();
+    }
+
+    public getPrivateMessageHistory(): Promise<AxiosResponse<PrivateMessageHistoryDto[]>> {
+        return this.axiosInstance.get("/private/messages/history");
     }
 }
 

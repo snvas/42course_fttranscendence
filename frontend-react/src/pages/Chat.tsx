@@ -3,7 +3,7 @@
 
 import {GroupChat} from "../components/GroupChat.tsx";
 import {useState} from "react";
-import {DirectChat} from "../components/DirectChat.tsx";
+import {PrivateChat} from "../components/PrivateChat.tsx";
 
 const Chat = () => {
     const [chatMode, setChatMode] = useState<string>("Direct");
@@ -32,7 +32,7 @@ const Chat = () => {
                 </button>
             </div>
             <hr></hr>
-            {chatMode === "Direct" ? <DirectChat/> : <GroupChat/>}
+            {chatMode === "Direct" ? <PrivateChat/> : <GroupChat/>}
 
         </div>
     );

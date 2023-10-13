@@ -6,6 +6,8 @@ import chatService from "../api/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
+import {AxiosResponse} from "axios";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -22,14 +24,6 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
     const throwAsyncError = useThrowAsyncError();
-
-    const sendMessage = (message: string) => {
-        chatService.emitMessage(message);
-    };
-
-    const disconnect = () => {
-        chatService.disconnect();
-    }
 
     useEffect(() => {
         const socket: Socket = chatService.getSocket();
@@ -78,11 +72,30 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     }, []);
 
 
+    const sendMessage = (message: string) => {
+        chatService.emitMessage(message);
+    };
+
+    const disconnect = () => {
+        chatService.disconnect();
+    }
+
+    const getPrivateMessageHistory = async (): Promise<PrivateMessageHistoryDto[] | undefined> => {
+        try {
+            const response: AxiosResponse<PrivateMessageHistoryDto[]> = await chatService.getPrivateMessageHistory();
+
+            return response.data;
+        } catch (error) {
+            throwAsyncError(error);
+        }
+    }
+
     const contextData: ChatContextData = {
         sendMessage,
         disconnect,
+        getPrivateMessageHistory,
         messages,
-        playersStatus: playersStatus
+        playersStatus
     };
 
     return <ChatContext.Provider value={contextData}>{children}</ChatContext.Provider>;

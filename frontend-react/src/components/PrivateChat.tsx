@@ -8,76 +8,43 @@ import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-me
 import {v4 as uuidV4} from 'uuid';
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
 import {useLocation} from "react-router-dom";
+import {useChat} from "../context/ChatContext.tsx";
+import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 
 
-export const DirectChat = () => {
+export const PrivateChat = () => {
     const [msg, setMgs] = useState<ComponentMessage[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>("");
     const [messageHistory, setMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const {profile} = useProfile() as ProfileContextData;
+    const {getPrivateMessageHistory} = useChat() as ChatContextData;
     const {state} = useLocation();
 
     useEffect(() => {
-        const history: PrivateMessageHistoryDto[] = [
-            {
-                "id": 2,
-                "nickname": "Rods",
-                "messages": [
-                    {
-                        "id": 1,
-                        "message": "my message",
-                        "createdAt": new Date("2023-10-12T03:09:26.089Z"),
-                        "sender": {
-                            "id": 4,
-                            "nickname": "rods"
-                        }
-                    }
-                ]
-            },
-            {
-                "id": 3,
-                "nickname": "roh",
-                "messages": [
-                    {
-                        "id": 2,
-                        "message": "my message 2",
-                        "createdAt": new Date("2023-10-12T03:09:37.750Z"),
-                        "sender": {
-                            "id": 4,
-                            "nickname": "ccc"
-                        }
-                    },
-                    {
-                        "id": 3,
-                        "message": "my message 3",
-                        "createdAt": new Date("2023-10-12T03:09:37.750Z"),
-                        "sender": {
-                            "id": 4,
-                            "nickname": "rods"
-                        }
-                    }
-                ]
-            },
-            {
-                "id": 99,
-                "nickname": "Teste",
-                "messages": []
-            }
-        ];
-
-        if (!state?.id || !state?.nickname) {
-            setMessageHistory(history);
-            return;
+        const getHistory = async (): Promise<PrivateMessageHistoryDto[] | undefined> => {
+            return await getPrivateMessageHistory();
         }
 
-        history.push({
-            id: state.id,
-            nickname: state.nickname,
-            messages: []
-        })
+        getHistory().then((history: PrivateMessageHistoryDto[] | undefined) => {
 
-        setMessageHistory(history);
-        setSelectedUser(state.nickname);
+            if (history === undefined) {
+                history = [];
+            }
+
+            if (!state?.id || !state?.nickname) {
+                setMessageHistory(history);
+                return;
+            }
+
+            history.push({
+                id: state.id,
+                nickname: state.nickname,
+                messages: []
+            })
+
+            setMessageHistory(history);
+            setSelectedUser(state.nickname);
+        });
     }, []);
 
     useEffect(() => {
@@ -86,7 +53,6 @@ export const DirectChat = () => {
 
         const messagesFromHistory: ComponentMessage[] | undefined =
             selectedHistory?.messages.map((message: ConversationDto): ComponentMessage => {
-
                 return {
                     message: message.message,
                     createdAt: message.createdAt,
@@ -106,7 +72,13 @@ export const DirectChat = () => {
         console.log("Selected User: ", nickname);
     }
 
-    // Para resolver isso:
+
+    //TODO:
+    // Enviar para o backend a mensagem privada, com sender e receiver
+    //
+    // Receber evento de private message e adicionar na lista de mensagens
+    //
+    // Resolver problema de confirmação de mensagens enviadas:
     //  Enviar para o backend a mensagem com um UUID que o frontend gerou
     //  Receber do backend o UUID da mensagem que foi enviada com sucesso no callback e fazer o tick
     // ou
@@ -131,7 +103,7 @@ export const DirectChat = () => {
                 maxHeight: "60vh",
             }}>
                 <div style={{flex: "30%", border: "1px solid black", marginLeft: "10px"}}>
-                    <h1 style={{textAlign: "center"}}>Direct Chat</h1>
+                    <h1 style={{textAlign: "center"}}>Private Chat</h1>
                     {messageHistory.map((message: PrivateMessageHistoryDto, index: number) => {
                         return (
                             <div key={index}>
