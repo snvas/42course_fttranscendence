@@ -12,12 +12,14 @@ import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
 import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
+import {parseISO} from "date-fns";
 
 
 export const PrivateChat = () => {
-    const [msg, setMgs] = useState<ComponentMessage[]>([]);
+    const [messages, setMessages] = useState<ComponentMessage[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>("");
     const {profile} = useProfile() as ProfileContextData;
+
     const {
         privateMessageHistory,
         updatePrivateMessageHistory,
@@ -27,7 +29,7 @@ export const PrivateChat = () => {
     } = useChat() as ChatContextData;
     const {state} = useLocation();
 
-    useEffect(() => {
+    useEffect((): void => {
         if (!state?.id || !state?.nickname) {
             return;
         }
@@ -42,7 +44,7 @@ export const PrivateChat = () => {
         setSelectedUser(state.nickname);
     }, []);
 
-    useEffect(() => {
+    useEffect((): void => {
         console.log(`### Selected user: ${selectedUser} -${JSON.stringify(privateMessageHistory)}`);
         const selectedHistory: PrivateMessageHistoryDto | undefined =
             privateMessageHistory.find((message: PrivateMessageHistoryDto): boolean => selectedUser === message.nickname);
@@ -51,19 +53,20 @@ export const PrivateChat = () => {
             selectedHistory?.messages.map((message: ConversationDto): ComponentMessage => {
                 return {
                     message: message.message,
-                    createdAt: message.createdAt,
+                    createdAt: new Date(message.createdAt).toISOString(),
                     nickname: message.sender.nickname == profile?.nickname ? "me" : message.sender.nickname,
-                    uuid: uuidV4()
+                    uuid: uuidV4(),
+                    sync: true
                 };
             });
 
 
         console.log(`### Messages from history: ${messagesFromHistory}`);
-        setMgs(messagesFromHistory || []);
+        setMessages(messagesFromHistory || []);
     }, [selectedUser, privateMessageHistory]);
 
 
-    const handleSelectedUser = (nickname: string) => () => {
+    const handleSelectedUser = (nickname: string) => (): void => {
         setSelectedUser(nickname);
         console.log("Selected User: ", nickname);
     }
@@ -79,14 +82,16 @@ export const PrivateChat = () => {
     //  Receber do backend o UUID da mensagem que foi enviada com sucesso no callback e fazer o tick
     // ou
     // Receber do backend a mensagem direto e se não receber é porque deu erro
-    const sendMessage = async (message: string) => {
-        const messageDate: Date = new Date();
+    const sendMessage = async (message: string): Promise<void> => {
+        const messageDate: string = new Date().toISOString();
+        const messageUUID: string = uuidV4();
 
         const componentMessage: ComponentMessage = {
             message: message,
             createdAt: messageDate,
             nickname: "me",
-            uuid: uuidV4()
+            uuid: messageUUID,
+            sync: false
         }
 
         let receiver: PlayerStatusDto | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
@@ -113,7 +118,7 @@ export const PrivateChat = () => {
             return;
         }
 
-        setMgs([...msg, componentMessage]);
+        setMessages([...messages, componentMessage]);
 
         const privateMessage: PrivateMessageDto = {
             message: message,
@@ -125,7 +130,7 @@ export const PrivateChat = () => {
                 id: profile?.id,
                 nickname: profile?.nickname
             },
-            createdAt: messageDate
+            createdAt: parseISO(messageDate)
         }
 
         //Receber a mensagem de volta com o ID, passar para o update
@@ -136,8 +141,8 @@ export const PrivateChat = () => {
             return
         }
 
-        //TODO: adicionar icone de enviado com sucesso
         updatePrivateMessageHistoryFromMessageDto(backendMessage);
+
         console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
     }
 
@@ -169,7 +174,7 @@ export const PrivateChat = () => {
                 </div>
                 <div style={{flex: "70%", border: "1px solid black", margin: "0 10px 0 10px"}}>
                     <h1 style={{textAlign: "center"}}>{!selectedUser ? "Choose a user" : selectedUser}</h1>
-                    <Messages messages={msg}/>
+                    <Messages messages={messages}/>
                 </div>
 
                 <MessageInput send={sendMessage}/>

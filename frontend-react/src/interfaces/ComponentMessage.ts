@@ -1,6 +1,7 @@
 export interface ComponentMessage {
     message: string;
-    createdAt: Date;
+    createdAt: string;
     nickname: string;
     uuid: string;
+    sync: boolean
 }

@@ -71,7 +71,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
 
         const onPrivateMessage = (message: PrivateMessageDto): void => {
             setPrivateMessageHistory((prevHistory: PrivateMessageHistoryDto[]): PrivateMessageHistoryDto[] => {
-                console.log(`### received private ${message.message} message id: ${message.sender.id} | history ids: ${JSON.stringify(prevHistory.map(h => h.id))}`);
+                console.log(`### received private ${message.message} message id: ${message.sender.id} | history ids: ${JSON.stringify(prevHistory.map((h: PrivateMessageHistoryDto) => h.id))}`);
 
                 if (!prevHistory.find((history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id)) {
                     const newHistory: PrivateMessageHistoryDto[] = prevHistory;
