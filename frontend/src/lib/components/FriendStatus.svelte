@@ -1,4 +1,6 @@
 <script lang="ts">
+		import { goto } from '$app/navigation';
+
 	type User = {
 		//oponentID: string;
 		nickname: string;
@@ -42,22 +44,25 @@
 			blocked: false
 		}
 	];
+	async function onChat() {
+		goto('/chat');
+	}
 </script>
 
 {#each users as user, i}
 	<div
-		class="w-full border-b border-opacity-20 border-white flex flex-row p-2 gap-4 justify-between"
+		class="w-full border-b border-opacity-20 border-white flex flex-row p-4 gap-4 justify-between items-center"
 	>
-		<div class="flex flex-row gap-4">
+		<div class="flex flex-row gap-4 ml-4 items-center">
 			<img
 				class="avatar max-w-sm aspect-square w-10 h-10"
 				src={user.avatar}
 				alt={user.nickname}
 				title={user.nickname}
 			/>
-			<div class="flex flex-col">
+			<div class="flex flex-col justify-start">
 				<p class="flex flex-col">{user.nickname}</p>
-				<div class="flex gap-2">
+				<div class="flex gap-2 text-xs">
 					<p class=" text-green-600">{user.status}</p>
 					{#if user.friend}
 						<div class="text-gray-600">|</div>
@@ -70,11 +75,11 @@
 				</div>
 			</div>
 		</div>
-		<div>
-			<button> FRIEND </button>
-			<button> CHAT </button>
-			<button> BLOCK </button>
-			<button> PLAY </button>
-		</div>
+			<div class="flex flex-row items-center gap-4 text-center text-xs ml-10 justify-end">
+				<button class="w-10"> <img src="/adicionar-usuario.png" alt="add friend" width="90%"/><p class="text-center"> FRIEND</p></button>
+				<button class="w-10" on:click={onChat}> <img src="/bate-papo-de-texto.png" alt="let's chat" /><p class="text-center">  CHAT </p></button>
+				<button class="w-10"> <img src="/bloqueado.png" alt="block this user" width="90%"/><p class="text-center">  BLOCK </p></button>
+				<button class="w-10"> <img src="/pingue-pongue.png" alt="let's play" /><p class="text-center">  PLAY </p></button>
+			</div>
 	</div>
 {/each}
