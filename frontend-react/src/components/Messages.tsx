@@ -14,7 +14,7 @@ const Messages = ({messages}: {
 
     const parseDate = (date: string) => {
         const newDate: Date = parseISO(date);
-        const timeZoneOffsetMinutes = newDate.getTimezoneOffset();
+        const timeZoneOffsetMinutes: number = newDate.getTimezoneOffset();
 
         const adjustedDate: Date = new Date(newDate.getTime() - timeZoneOffsetMinutes * 60 * 1000);
 
@@ -23,9 +23,8 @@ const Messages = ({messages}: {
         });
     }
 
-
     return (
-        <div style={{overflow: "auto", maxHeight: "300px"}}>
+        <div style={{overflow: "auto", maxHeight: "500px"}}>
             {conversations.map((conversation: ComponentMessage) =>
 
                 <div key={conversation.uuid} style={{display: "flex", justifyContent: "space-between"}}>
