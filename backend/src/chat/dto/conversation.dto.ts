@@ -3,16 +3,16 @@ import {
   IsDate,
   IsNotEmpty,
   IsNotEmptyObject,
-  IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { MessageProfileDto } from './message-profile.dto';
 
 export class ConversationDto implements Conversation {
-  @IsNumber()
+  @IsOptional()
   @IsNotEmpty()
-  id: number;
+  id?: number;
   @IsString()
   @IsNotEmpty()
   message: string;

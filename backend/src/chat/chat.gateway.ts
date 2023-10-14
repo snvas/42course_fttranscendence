@@ -13,6 +13,7 @@ import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
 import { ConversationDto } from './dto/conversation.dto';
+import { PrivateMessageDto } from './dto/private-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -59,6 +60,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'playersStatus',
       await this.chatService.getPlayersStatus(),
     );
+  }
+
+  @UseGuards(WsAuthenticatedGuard)
+  @SubscribeMessage('sendPrivateMessage')
+  async handlePrivateMessage(
+    @MessageBody() message: PrivateMessageDto,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<boolean> {
+    try {
+      const receiverSocket: string | undefined =
+        await this.chatService.getPlayerSocketId(message.receiver.id);
+
+      await this.chatService.handlePrivateMessage(message);
+
+      if (receiverSocket) {
+        socket.to(receiverSocket).emit('receivePrivateMessage', message);
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
+    }
   }
 
   @UseGuards(WsAuthenticatedGuard)

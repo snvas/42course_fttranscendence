@@ -1,27 +1,22 @@
-import { PrivateMessage } from '../interfaces/private-message.interface';
-import { ProfileEntity } from '../../db/entities';
 import {
   IsDate,
   IsNotEmpty,
   IsNotEmptyObject,
-  IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { MessageProfileDto } from './message-profile.dto';
 
-export class PrivateMessageDto implements PrivateMessage {
-  @IsNotEmpty()
-  @IsNumber()
-  id: number;
+export class PrivateMessageDto {
   @IsString()
   @IsNotEmpty()
   message: string;
   @IsNotEmptyObject()
   @ValidateNested()
-  receiver: ProfileEntity;
+  receiver: MessageProfileDto;
   @IsNotEmptyObject()
   @ValidateNested()
-  sender: ProfileEntity;
+  sender: MessageProfileDto;
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;

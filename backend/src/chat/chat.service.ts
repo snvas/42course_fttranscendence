@@ -103,32 +103,42 @@ export class ChatService {
     return onlineUsers;
   }
 
-  //TODO: Implement
-  public async handleGroupMessage(
-    socket: AuthenticatedSocket,
-    message: string,
-  ): Promise<GroupMessageDto> {
-    const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
-    const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
-
-    const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
-      {
-        message,
-      },
+  public async getPlayerSocketId(
+    profileId: number,
+  ): Promise<string | undefined> {
+    const profile: ProfileDTO = await this.profileService.findByProfileId(
+      profileId,
     );
 
-    const groupMessageEntity: GroupMessageEntity =
-      await this.chatMessageRepository.save(messageEntity);
-
-    this.logger.verbose(
-      `### Event message: ${JSON.stringify(groupMessageEntity)}`,
-    );
-
-    return plainToClass(GroupMessageDto, groupMessageEntity);
+    return this.playerStatusSocket.get(profile.id)?.socket.id;
   }
 
-  //TODO: Implement
-  //async handlePrivateMessage() {}
+  async handlePrivateMessage(
+    privateMessageDto: PrivateMessageDto,
+  ): Promise<PrivateMessageDto> {
+    const sender: ProfileDTO = await this.profileService.findByProfileId(
+      privateMessageDto.sender.id,
+    );
+    const receiver: ProfileDTO = await this.profileService.findByProfileId(
+      privateMessageDto.receiver.id,
+    );
+
+    const privateMessageEntity: PrivateMessageEntity =
+      this.privateMessageRepository.create({
+        sender,
+        receiver,
+        message: privateMessageDto.message,
+      });
+
+    this.logger.debug(
+      `### Saving private message by: ${privateMessageDto.sender.nickname} to ${privateMessageDto.receiver.nickname}`,
+    );
+
+    return plainToClass(
+      PrivateMessageDto,
+      await this.privateMessageRepository.save(privateMessageEntity),
+    );
+  }
 
   async savePrivateMessage(
     senderUserId: number,
@@ -157,6 +167,30 @@ export class ChatService {
       PrivateMessageDto,
       await this.privateMessageRepository.save(privateMessageEntity),
     );
+  }
+
+  //TODO: Implement
+  public async handleGroupMessage(
+    socket: AuthenticatedSocket,
+    message: string,
+  ): Promise<GroupMessageDto> {
+    const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
+    const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
+
+    const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
+      {
+        message,
+      },
+    );
+
+    const groupMessageEntity: GroupMessageEntity =
+      await this.chatMessageRepository.save(messageEntity);
+
+    this.logger.verbose(
+      `### Event message: ${JSON.stringify(groupMessageEntity)}`,
+    );
+
+    return plainToClass(GroupMessageDto, groupMessageEntity);
   }
 
   async saveGroupMessage(
