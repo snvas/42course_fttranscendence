@@ -21,6 +21,7 @@ export const PrivateChat = () => {
     const {
         privateMessageHistory,
         updatePrivateMessageHistory,
+        updatePrivateMessageHistoryFromMessageDto,
         sendPrivateMessage,
         playersStatus
     } = useChat() as ChatContextData;
@@ -42,6 +43,7 @@ export const PrivateChat = () => {
     }, []);
 
     useEffect(() => {
+        console.log(`### Selected user: ${selectedUser} -${JSON.stringify(privateMessageHistory)}`);
         const selectedHistory: PrivateMessageHistoryDto | undefined =
             privateMessageHistory.find((message: PrivateMessageHistoryDto): boolean => selectedUser === message.nickname);
 
@@ -56,6 +58,7 @@ export const PrivateChat = () => {
             });
 
 
+        console.log(`### Messages from history: ${messagesFromHistory}`);
         setMgs(messagesFromHistory || []);
     }, [selectedUser, privateMessageHistory]);
 
@@ -84,13 +87,23 @@ export const PrivateChat = () => {
             uuid: uuidV4()
         }
 
-        const receiver: PlayerStatusDto | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
+        let receiver: PlayerStatusDto | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
             return playerStatus.nickname === selectedUser
         });
 
         if (!receiver) {
-            console.log("Receiver not found");
-            return;
+            const receiverHistory: PrivateMessageHistoryDto | undefined = privateMessageHistory.find((m: PrivateMessageHistoryDto): boolean => {
+                return m.nickname === selectedUser
+            })
+            if (!receiverHistory) {
+                console.log("Receiver not found");
+                return;
+            }
+            receiver = {
+                id: receiverHistory.id,
+                nickname: receiverHistory.nickname,
+                status: "offline"
+            }
         }
 
         if (!profile) {
@@ -114,6 +127,14 @@ export const PrivateChat = () => {
         }
 
         const ack: boolean = await sendPrivateMessage(privateMessage);
+
+        if (!ack) {
+            console.log("Error when sending private message");
+            return
+        }
+
+        //TODO: adicionar icone de enviado com sucesso
+        updatePrivateMessageHistoryFromMessageDto(privateMessage);
         console.log(`Private message sent: ${JSON.stringify(privateMessage)}, ack?: ${ack}`);
     }
 

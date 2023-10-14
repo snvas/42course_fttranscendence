@@ -8,6 +8,7 @@ export interface ChatContextData {
     sendPrivateMessage: (message: PrivateMessageDto) => Promise<boolean>;
     disconnect: () => void;
     updatePrivateMessageHistory: (history: PrivateMessageHistoryDto) => void;
+    updatePrivateMessageHistoryFromMessageDto: (privateMessageDto: PrivateMessageDto) => void
     privateMessageHistory: PrivateMessageHistoryDto[];
     messages: ConversationDto[];
     playersStatus: PlayerStatusDto[];

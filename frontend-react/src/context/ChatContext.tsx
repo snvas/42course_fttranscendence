@@ -70,15 +70,27 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         };
 
         const onPrivateMessage = (message: PrivateMessageDto) => {
-            console.log(`### received private message ${JSON.stringify(message)}`);
+            setPrivateMessageHistory((prevHistory) => {
+                console.log(`### received private message ${JSON.stringify(message)}`);
+                console.log(`### message id: ${message.sender.id} | history ids: ${JSON.stringify(prevHistory.map(h => h.id))}`);
 
-            privateMessageHistory.map((history: PrivateMessageHistoryDto): void => {
-                if (history.id === message.sender.id) {
-                    history.messages.push(message);
-                }
+                // Now you can safely work with prevHistory to update the state.
+                const newHistory = prevHistory.map((history) => {
+                    if (history.id === message.sender.id) {
+                        history.messages.push({
+                            message: message.message,
+                            sender: {
+                                id: message.sender.id,
+                                nickname: message.sender.nickname
+                            },
+                            createdAt: message.createdAt
+                        });
+                    }
+                    return history;
+                });
+
+                return newHistory;
             });
-
-            setPrivateMessageHistory(privateMessageHistory);
         }
 
         const onPlayersStatus = (onlineUsers: PlayerStatusDto[]) => {
@@ -127,11 +139,29 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         setPrivateMessageHistory(privateMessageHistory);
     }
 
+    const updatePrivateMessageHistoryFromMessageDto = (privateMessageDto: PrivateMessageDto): void => {
+        const newHistory = privateMessageHistory.map((history: PrivateMessageHistoryDto) => {
+            if (history.id != privateMessageDto.receiver.id) {
+                return history;
+            }
+
+            history.messages.push({
+                message: privateMessageDto.message,
+                sender: privateMessageDto.sender,
+                createdAt: privateMessageDto.createdAt,
+            })
+
+            return history;
+        })
+        setPrivateMessageHistory(newHistory);
+    }
+
     const contextData: ChatContextData = {
         sendMessage,
         sendPrivateMessage,
         disconnect,
         updatePrivateMessageHistory,
+        updatePrivateMessageHistoryFromMessageDto,
         privateMessageHistory,
         messages,
         playersStatus
