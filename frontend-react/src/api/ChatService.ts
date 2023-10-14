@@ -1,6 +1,7 @@
 import {io, Socket} from "socket.io-client";
 import axios, {AxiosInstance, AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
@@ -28,6 +29,14 @@ class ChatService {
 
     public emitMessage(message: string): void {
         this.socket?.emit("message", message);
+    }
+
+    public emitPrivateMessage(message: PrivateMessageDto): Promise<boolean> {
+        return new Promise<boolean>((resolve): void => {
+            this.socket?.emit("sendPrivateMessage", message, (ack: boolean): void => {
+                resolve(ack);
+            });
+        });
     }
 
     public disconnect(): void {

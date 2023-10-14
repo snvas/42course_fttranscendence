@@ -10,46 +10,40 @@ import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts
 import {useLocation} from "react-router-dom";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
 
 
 export const PrivateChat = () => {
     const [msg, setMgs] = useState<ComponentMessage[]>([]);
     const [selectedUser, setSelectedUser] = useState<string>("");
-    const [messageHistory, setMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const {profile} = useProfile() as ProfileContextData;
-    const {getPrivateMessageHistory} = useChat() as ChatContextData;
+    const {
+        privateMessageHistory,
+        updatePrivateMessageHistory,
+        sendPrivateMessage,
+        playersStatus
+    } = useChat() as ChatContextData;
     const {state} = useLocation();
 
     useEffect(() => {
-        const getHistory = async (): Promise<PrivateMessageHistoryDto[] | undefined> => {
-            return await getPrivateMessageHistory();
+        if (!state?.id || !state?.nickname) {
+            return;
         }
 
-        getHistory().then((history: PrivateMessageHistoryDto[] | undefined) => {
+        const history: PrivateMessageHistoryDto = {
+            id: state.id,
+            nickname: state.nickname,
+            messages: []
+        }
 
-            if (history === undefined) {
-                history = [];
-            }
-
-            if (!state?.id || !state?.nickname) {
-                setMessageHistory(history);
-                return;
-            }
-
-            history.push({
-                id: state.id,
-                nickname: state.nickname,
-                messages: []
-            })
-
-            setMessageHistory(history);
-            setSelectedUser(state.nickname);
-        });
+        updatePrivateMessageHistory(history);
+        setSelectedUser(state.nickname);
     }, []);
 
     useEffect(() => {
         const selectedHistory: PrivateMessageHistoryDto | undefined =
-            messageHistory.find((message: PrivateMessageHistoryDto): boolean => selectedUser === message.nickname);
+            privateMessageHistory.find((message: PrivateMessageHistoryDto): boolean => selectedUser === message.nickname);
 
         const messagesFromHistory: ComponentMessage[] | undefined =
             selectedHistory?.messages.map((message: ConversationDto): ComponentMessage => {
@@ -63,8 +57,7 @@ export const PrivateChat = () => {
 
 
         setMgs(messagesFromHistory || []);
-
-    }, [selectedUser]);
+    }, [selectedUser, privateMessageHistory]);
 
 
     const handleSelectedUser = (nickname: string) => () => {
@@ -83,15 +76,45 @@ export const PrivateChat = () => {
     //  Receber do backend o UUID da mensagem que foi enviada com sucesso no callback e fazer o tick
     // ou
     // Receber do backend a mensagem direto e se não receber é porque deu erro
-    const sendMessage = (message: string) => {
+    const sendMessage = async (message: string) => {
         const componentMessage: ComponentMessage = {
             message: message,
             createdAt: new Date(),
             nickname: "me",
             uuid: uuidV4()
         }
+
+        const receiver: PlayerStatusDto | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
+            return playerStatus.nickname === selectedUser
+        });
+
+        if (!receiver) {
+            console.log("Receiver not found");
+            return;
+        }
+
+        if (!profile) {
+            console.log("Profile not found");
+            return;
+        }
+
         setMgs([...msg, componentMessage]);
-        console.log("Message: ", message);
+
+        const privateMessage: PrivateMessageDto = {
+            message: message,
+            receiver: {
+                id: receiver.id,
+                nickname: receiver.nickname
+            },
+            sender: {
+                id: profile?.id,
+                nickname: profile?.nickname
+            },
+            createdAt: new Date()
+        }
+
+        const ack: boolean = await sendPrivateMessage(privateMessage);
+        console.log(`Private message sent: ${JSON.stringify(privateMessage)}, ack?: ${ack}`);
     }
 
     return (
@@ -104,7 +127,7 @@ export const PrivateChat = () => {
             }}>
                 <div style={{flex: "30%", border: "1px solid black", marginLeft: "10px"}}>
                     <h1 style={{textAlign: "center"}}>Private Chat</h1>
-                    {messageHistory.map((message: PrivateMessageHistoryDto, index: number) => {
+                    {privateMessageHistory.map((message: PrivateMessageHistoryDto, index: number) => {
                         return (
                             <div key={index}>
                                 <button

@@ -8,6 +8,7 @@ import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.t
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
 import {AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -22,10 +23,28 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     // const { profile } = useProfile() as ProfileContextData;
     const [messages, setMessages] = useState<ConversationDto[]>([]);
     const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
+    const [privateMessageHistory, setPrivateMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
     const throwAsyncError = useThrowAsyncError();
 
+
     useEffect(() => {
+        const getPrivateMessageHistory = async (): Promise<PrivateMessageHistoryDto[] | undefined> => {
+            try {
+                const response: AxiosResponse<PrivateMessageHistoryDto[]> = await chatService.getPrivateMessageHistory();
+
+                return response.data;
+            } catch (error) {
+                throwAsyncError(error);
+            }
+        }
+
+        getPrivateMessageHistory().then((history: PrivateMessageHistoryDto[] | undefined): void => {
+            if (history) {
+                setPrivateMessageHistory(history);
+            }
+        });
+
         const socket: Socket = chatService.getSocket();
         socket.connect();
 
@@ -50,6 +69,18 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             setMessages((messages: ConversationDto[]) => [...messages, message]);
         };
 
+        const onPrivateMessage = (message: PrivateMessageDto) => {
+            console.log(`### received private message ${JSON.stringify(message)}`);
+
+            privateMessageHistory.map((history: PrivateMessageHistoryDto): void => {
+                if (history.id === message.sender.id) {
+                    history.messages.push(message);
+                }
+            });
+
+            setPrivateMessageHistory(privateMessageHistory);
+        }
+
         const onPlayersStatus = (onlineUsers: PlayerStatusDto[]) => {
             console.log(`### received online users ${onlineUsers}`);
 
@@ -60,12 +91,14 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
         socket.on("message", onMessage);
+        socket.on("receivePrivateMessage", onPrivateMessage);
         socket.on("playersStatus", onPlayersStatus);
 
         return () => {
             socket.off("connect");
             socket.off("error");
             socket.off("message");
+            socket.off("receivePrivateMessage")
             socket.off("playersStatus");
             socket.disconnect();
         };
@@ -76,24 +109,30 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         chatService.emitMessage(message);
     };
 
+    const sendPrivateMessage = async (message: PrivateMessageDto): Promise<boolean> => {
+        return await chatService.emitPrivateMessage(message);
+    }
+
     const disconnect = () => {
         chatService.disconnect();
     }
 
-    const getPrivateMessageHistory = async (): Promise<PrivateMessageHistoryDto[] | undefined> => {
-        try {
-            const response: AxiosResponse<PrivateMessageHistoryDto[]> = await chatService.getPrivateMessageHistory();
 
-            return response.data;
-        } catch (error) {
-            throwAsyncError(error);
-        }
+    const updatePrivateMessageHistory = (history: PrivateMessageHistoryDto): void => {
+        privateMessageHistory.push({
+            id: history.id,
+            nickname: history.nickname,
+            messages: history.messages
+        })
+        setPrivateMessageHistory(privateMessageHistory);
     }
 
     const contextData: ChatContextData = {
         sendMessage,
+        sendPrivateMessage,
         disconnect,
-        getPrivateMessageHistory,
+        updatePrivateMessageHistory,
+        privateMessageHistory,
         messages,
         playersStatus
     };
