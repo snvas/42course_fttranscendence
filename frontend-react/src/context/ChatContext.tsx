@@ -48,36 +48,65 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         const socket: Socket = chatService.getSocket();
         socket.connect();
 
-        const onConnect = () => {
+        const onConnect = (): void => {
             console.log("### connected to server via websocket");
         };
 
-        const onException = (message: string) => {
+        const onException = (message: string): void => {
             console.log(`### received error message ${JSON.stringify(message)}`);
             throwAsyncError(message);
         };
 
-        const onUnauthorized = (message: string) => {
+        const onUnauthorized = (message: string): void => {
             console.log(`### received unauthorized message ${JSON.stringify(message)}`);
             socket.disconnect();
             navigate("/login");
         };
 
-        const onMessage = (message: ConversationDto) => {
+        const onMessage = (message: ConversationDto): void => {
             console.log(`### received chat message ${JSON.stringify(message)}`);
 
             setMessages((messages: ConversationDto[]) => [...messages, message]);
         };
 
-        const onPrivateMessage = (message: PrivateMessageDto) => {
-            setPrivateMessageHistory((prevHistory) => {
-                console.log(`### received private message ${JSON.stringify(message)}`);
-                console.log(`### message id: ${message.sender.id} | history ids: ${JSON.stringify(prevHistory.map(h => h.id))}`);
+        const onPrivateMessage = (message: PrivateMessageDto): void => {
+            setPrivateMessageHistory((prevHistory: PrivateMessageHistoryDto[]): PrivateMessageHistoryDto[] => {
+                console.log(`### received private ${message.message} message id: ${message.sender.id} | history ids: ${JSON.stringify(prevHistory.map(h => h.id))}`);
 
-                // Now you can safely work with prevHistory to update the state.
-                const newHistory = prevHistory.map((history) => {
+                if (!prevHistory.find((history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id)) {
+                    const newHistory: PrivateMessageHistoryDto[] = prevHistory;
+
+                    console.log(`### prev history: ${JSON.stringify(prevHistory)}`);
+                    newHistory.push({
+                        id: message.sender.id,
+                        nickname: message.sender.nickname,
+                        messages: [
+                            {
+                                id: message.id,
+                                message: message.message,
+                                sender: {
+                                    id: message.sender.id,
+                                    nickname: message.sender.nickname
+                                },
+                                createdAt: message.createdAt,
+                            }
+                        ]
+                    })
+
+                    console.log(`### new history: ${JSON.stringify(newHistory)}`);
+
+                    return newHistory;
+                }
+
+                return prevHistory.map((history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
                     if (history.id === message.sender.id) {
+
+                        if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
+                            return history;
+                        }
+
                         history.messages.push({
+                            id: message.id,
                             message: message.message,
                             sender: {
                                 id: message.sender.id,
@@ -88,12 +117,10 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
                     }
                     return history;
                 });
-
-                return newHistory;
             });
         }
 
-        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]) => {
+        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
             console.log(`### received online users ${onlineUsers}`);
 
             setPlayersStatus(onlineUsers);
@@ -117,11 +144,11 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     }, []);
 
 
-    const sendMessage = (message: string) => {
+    const sendMessage = (message: string): void => {
         chatService.emitMessage(message);
     };
 
-    const sendPrivateMessage = async (message: PrivateMessageDto): Promise<boolean> => {
+    const sendPrivateMessage = async (message: PrivateMessageDto): Promise<PrivateMessageDto> => {
         return await chatService.emitPrivateMessage(message);
     }
 
@@ -131,6 +158,10 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
 
 
     const updatePrivateMessageHistory = (history: PrivateMessageHistoryDto): void => {
+        if (privateMessageHistory.find((h: PrivateMessageHistoryDto): boolean => h.id == history.id)) {
+            return;
+        }
+
         privateMessageHistory.push({
             id: history.id,
             nickname: history.nickname,
@@ -140,12 +171,18 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     }
 
     const updatePrivateMessageHistoryFromMessageDto = (privateMessageDto: PrivateMessageDto): void => {
-        const newHistory = privateMessageHistory.map((history: PrivateMessageHistoryDto) => {
+        console.log(`Received private message id: ${privateMessageDto.id} from ${privateMessageDto.sender.nickname}`)
+        const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory.map((history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
             if (history.id != privateMessageDto.receiver.id) {
                 return history;
             }
 
+            if (history.messages.find((m: ConversationDto): boolean => m.id === privateMessageDto.id)) {
+                return history;
+            }
+
             history.messages.push({
+                id: privateMessageDto.id,
                 message: privateMessageDto.message,
                 sender: privateMessageDto.sender,
                 createdAt: privateMessageDto.createdAt,

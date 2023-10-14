@@ -31,9 +31,9 @@ class ChatService {
         this.socket?.emit("message", message);
     }
 
-    public emitPrivateMessage(message: PrivateMessageDto): Promise<boolean> {
-        return new Promise<boolean>((resolve): void => {
-            this.socket?.emit("sendPrivateMessage", message, (ack: boolean): void => {
+    public emitPrivateMessage(message: PrivateMessageDto): Promise<PrivateMessageDto> {
+        return new Promise<PrivateMessageDto>((resolve): void => {
+            this.socket?.emit("sendPrivateMessage", message, (ack: PrivateMessageDto): void => {
                 resolve(ack);
             });
         });

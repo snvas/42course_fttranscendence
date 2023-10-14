@@ -5,7 +5,7 @@ import {PrivateMessageDto} from "../../../../backend/src/chat/dto/private-messag
 
 export interface ChatContextData {
     sendMessage: (message: string) => void;
-    sendPrivateMessage: (message: PrivateMessageDto) => Promise<boolean>;
+    sendPrivateMessage: (message: PrivateMessageDto) => Promise<PrivateMessageDto>;
     disconnect: () => void;
     updatePrivateMessageHistory: (history: PrivateMessageHistoryDto) => void;
     updatePrivateMessageHistoryFromMessageDto: (privateMessageDto: PrivateMessageDto) => void

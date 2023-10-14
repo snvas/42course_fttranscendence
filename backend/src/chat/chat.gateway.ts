@@ -34,9 +34,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
     this.logger.log(`### Client connected: ${socket.id}`);
 
-    if (!socket.request.user) {
+    if (!socket.request.user.id) {
       this.logger.warn(`### User not authenticated: ${socket.id}`);
       socket.emit('unauthorized', 'User not authenticated');
+      return;
     }
 
     this.logger.verbose(
@@ -67,21 +68,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handlePrivateMessage(
     @MessageBody() message: PrivateMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
-  ): Promise<boolean> {
+  ): Promise<PrivateMessageDto | null> {
     try {
       const receiverSocket: string | undefined =
         await this.chatService.getPlayerSocketId(message.receiver.id);
 
-      await this.chatService.handlePrivateMessage(message);
+      const privateMessage: PrivateMessageDto =
+        await this.chatService.handlePrivateMessage(message);
 
       if (receiverSocket) {
-        socket.to(receiverSocket).emit('receivePrivateMessage', message);
+        socket.to(receiverSocket).emit('receivePrivateMessage', privateMessage);
       }
 
-      return true;
+      return privateMessage;
     } catch (error) {
       this.logger.error(error);
-      return false;
+      return null;
     }
   }
 

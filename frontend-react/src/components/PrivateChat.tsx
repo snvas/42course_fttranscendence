@@ -80,9 +80,11 @@ export const PrivateChat = () => {
     // ou
     // Receber do backend a mensagem direto e se não receber é porque deu erro
     const sendMessage = async (message: string) => {
+        const messageDate: Date = new Date();
+
         const componentMessage: ComponentMessage = {
             message: message,
-            createdAt: new Date(),
+            createdAt: messageDate,
             nickname: "me",
             uuid: uuidV4()
         }
@@ -123,19 +125,20 @@ export const PrivateChat = () => {
                 id: profile?.id,
                 nickname: profile?.nickname
             },
-            createdAt: new Date()
+            createdAt: messageDate
         }
 
-        const ack: boolean = await sendPrivateMessage(privateMessage);
+        //Receber a mensagem de volta com o ID, passar para o update
+        const backendMessage: PrivateMessageDto = await sendPrivateMessage(privateMessage);
 
-        if (!ack) {
+        if (!backendMessage) {
             console.log("Error when sending private message");
             return
         }
 
         //TODO: adicionar icone de enviado com sucesso
-        updatePrivateMessageHistoryFromMessageDto(privateMessage);
-        console.log(`Private message sent: ${JSON.stringify(privateMessage)}, ack?: ${ack}`);
+        updatePrivateMessageHistoryFromMessageDto(backendMessage);
+        console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
     }
 
     return (
@@ -148,9 +151,9 @@ export const PrivateChat = () => {
             }}>
                 <div style={{flex: "30%", border: "1px solid black", marginLeft: "10px"}}>
                     <h1 style={{textAlign: "center"}}>Private Chat</h1>
-                    {privateMessageHistory.map((message: PrivateMessageHistoryDto, index: number) => {
+                    {privateMessageHistory.map((message: PrivateMessageHistoryDto) => {
                         return (
-                            <div key={index}>
+                            <div key={message.id}>
                                 <button
                                     style={{
                                         width: "100%",

@@ -2,12 +2,17 @@ import {
   IsDate,
   IsNotEmpty,
   IsNotEmptyObject,
+  IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { MessageProfileDto } from './message-profile.dto';
 
 export class PrivateMessageDto {
+  @IsNumber()
+  @IsOptional()
+  id?: number;
   @IsString()
   @IsNotEmpty()
   message: string;
