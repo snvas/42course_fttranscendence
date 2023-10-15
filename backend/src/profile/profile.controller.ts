@@ -56,6 +56,12 @@ export class ProfileController {
     return await this.profileService.findByProfileId(id);
   }
 
+  @Get('profiles')
+  @HttpCode(HttpStatus.OK)
+  async getAllProfiles(): Promise<ProfileDTO[]> {
+    return await this.profileService.findAllProfiles();
+  }
+
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
   async saveProfile(

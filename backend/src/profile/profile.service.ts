@@ -19,7 +19,7 @@ import { Profile } from './interfaces/profile.interface';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
 import { ProfileUpdatedResponseDto } from './models/profile-updated-response.dto';
 import { AvatarService } from '../avatar/avatar.service';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { ProfileDTO } from './models/profile.dto';
 import { AvatarDTO } from '../avatar/models/avatar.dto';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -64,6 +64,17 @@ export class ProfileService {
 
     this.logger.log(`Public profile found for user [${profileId}]`);
     return plainToClass(ProfileDTO, profileEntity);
+  }
+
+  async findAllProfiles(): Promise<ProfileDTO[]> {
+    const profileEntity: ProfileEntity[] | null =
+      await this.profileRepository.find();
+
+    if (!profileEntity) {
+      throw new NotFoundException(`Group chats not found`);
+    }
+
+    return plainToInstance(ProfileDTO, profileEntity);
   }
 
   async isNicknameExist(nickname: string): Promise<boolean> {
