@@ -21,10 +21,12 @@ import { GroupMessageDto } from './dto/group-message.dto';
 import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
 
 //TODO:
-//Delete group chat
-//Remove member from group chat
-//Change member role in group chat
+//Delete group chat - check if is the owner
+//Remove member from group chat - check if is admin
+//Change member role in group chat - check if is admin
 //Remove non necessary infos from member in GroupChatDto and GroupChatHistoryDto
+//Create joinPublicGroup and joinPrivateGroup to be member of group
+//Receive a group name in websocket, check if use is member of the group, if so, join socket room
 
 @Controller('chat')
 export class ChatController {

@@ -26,6 +26,7 @@ export class WsAuthenticatedGuard implements CanActivate {
       );
 
       socket.emit('unauthorized', 'User not authenticated');
+      socket.disconnect();
       return false;
     }
 

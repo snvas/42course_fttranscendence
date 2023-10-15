@@ -61,7 +61,7 @@ export class ChatService {
     ) {
       this.logger.warn(`### User not authenticated: ${socket.id}`);
       socket.emit('unauthorized', 'User not authenticated');
-
+      socket.disconnect();
       return false;
     }
 
