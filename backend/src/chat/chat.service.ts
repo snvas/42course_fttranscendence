@@ -459,7 +459,7 @@ export class ChatService {
   public async deleteGroupChatById(
     id: number,
   ): Promise<GroupChatDeletedResponseDto> {
-    this.logger.verbose(`### Getting group chat by id: ${id}`);
+    this.logger.verbose(`### Deleting group chat by id: ${id}`);
 
     const groupChatDeleteResult: DeleteResult =
       await this.groupChatRepository.delete({

@@ -19,7 +19,9 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: 'user' })
   role: string;
 
-  @ManyToOne(() => GroupChatEntity, (chat) => chat.members)
+  @ManyToOne(() => GroupChatEntity, (chat) => chat.members, {
+    onDelete: 'CASCADE',
+  })
   groupChat: GroupChatEntity;
 
   @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships)

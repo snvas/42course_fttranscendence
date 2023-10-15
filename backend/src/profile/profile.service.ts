@@ -38,8 +38,16 @@ export class ProfileService {
 
   async findByUserId(userId: number): Promise<ProfileDTO> {
     const profileEntity: ProfileEntity | null =
-      await this.profileRepository.findOneBy({
-        userEntity: { id: userId },
+      await this.profileRepository.findOne({
+        where: {
+          userEntity: { id: userId },
+        },
+        relations: {
+          groupMemberships: {
+            groupChat: true,
+          },
+          ownedGroupChats: true,
+        },
       });
 
     if (!profileEntity) {
@@ -52,8 +60,16 @@ export class ProfileService {
 
   async findByProfileId(profileId: number): Promise<ProfileDTO> {
     const profileEntity: ProfileEntity | null =
-      await this.profileRepository.findOneBy({
-        id: profileId,
+      await this.profileRepository.findOne({
+        where: {
+          id: profileId,
+        },
+        relations: {
+          groupMemberships: {
+            groupChat: true,
+          },
+          ownedGroupChats: true,
+        },
       });
 
     if (!profileEntity) {
@@ -68,7 +84,14 @@ export class ProfileService {
 
   async findAllProfiles(): Promise<ProfileDTO[]> {
     const profileEntity: ProfileEntity[] | null =
-      await this.profileRepository.find();
+      await this.profileRepository.find({
+        relations: {
+          groupMemberships: {
+            groupChat: true,
+          },
+          ownedGroupChats: true,
+        },
+      });
 
     if (!profileEntity) {
       throw new NotFoundException(`Group chats not found`);

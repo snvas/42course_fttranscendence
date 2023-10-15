@@ -17,7 +17,9 @@ export class GroupMessageEntity implements GroupMessage {
   @Column()
   message: string;
 
-  @ManyToOne(() => GroupChatEntity, (chat) => chat.messages)
+  @ManyToOne(() => GroupChatEntity, (chat) => chat.messages, {
+    onDelete: 'CASCADE',
+  })
   groupChat: GroupChatEntity;
 
   @ManyToOne(() => ProfileEntity, (sender) => sender.groupMessages)
