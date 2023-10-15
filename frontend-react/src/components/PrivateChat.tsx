@@ -71,17 +71,6 @@ export const PrivateChat = () => {
         console.log("Selected User: ", nickname);
     }
 
-
-    //TODO:
-    // Enviar para o backend a mensagem privada, com sender e receiver
-    //
-    // Receber evento de private message e adicionar na lista de mensagens
-    //
-    // Resolver problema de confirmação de mensagens enviadas:
-    //  Enviar para o backend a mensagem com um UUID que o frontend gerou
-    //  Receber do backend o UUID da mensagem que foi enviada com sucesso no callback e fazer o tick
-    // ou
-    // Receber do backend a mensagem direto e se não receber é porque deu erro
     const sendMessage = async (message: string): Promise<void> => {
         const messageDate: string = new Date().toISOString();
         const messageUUID: string = uuidV4();
@@ -133,7 +122,6 @@ export const PrivateChat = () => {
             createdAt: parseISO(messageDate)
         }
 
-        //Receber a mensagem de volta com o ID, passar para o update
         const backendMessage: PrivateMessageDto = await sendPrivateMessage(privateMessage);
 
         if (!backendMessage) {
@@ -146,11 +134,18 @@ export const PrivateChat = () => {
         console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
     }
 
+    const handleSelectedUserHeader = () => {
+        const selectedUserStatus: string | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
+            return playerStatus.nickname === selectedUser
+        })?.status;
+        return `${selectedUser} (${selectedUserStatus || 'offline'})`;
+    }
+
     return (
         <>
             <div style={{
                 display: "flex",
-                margin: "10px",
+                margin: "1.5rem 10px 10px 10px",
                 height: "60vh",
                 maxHeight: "60vh",
             }}>
@@ -173,11 +168,10 @@ export const PrivateChat = () => {
                     })}
                 </div>
                 <div style={{flex: "70%", border: "1px solid black", margin: "0 10px 0 10px"}}>
-                    <h1 style={{textAlign: "center"}}>{!selectedUser ? "Choose a user" : selectedUser}</h1>
+                    <h1 style={{textAlign: "center"}}>{!selectedUser ? "Choose a user" : handleSelectedUserHeader()}</h1>
                     <Messages messages={messages}/>
                 </div>
-
-                <MessageInput send={sendMessage}/>
+                {!selectedUser ? <></> : <MessageInput send={sendMessage}/>}
             </div>
         </>
     );

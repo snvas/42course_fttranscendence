@@ -31,7 +31,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleConnection(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleConnection(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<void> {
     this.logger.log(`### Client connected: ${socket.id}`);
 
     if (!socket.request.user.id) {
@@ -53,7 +55,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  async handleDisconnect(@ConnectedSocket() socket: AuthenticatedSocket) {
+  async handleDisconnect(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<void> {
     this.logger.log(`Client disconnected: ${socket.id}`);
     await this.chatService.removePlayerStatus(socket);
 
@@ -79,6 +83,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (receiverSocket) {
         socket.to(receiverSocket).emit('receivePrivateMessage', privateMessage);
       }
+
+      //await new Promise((resolve) => setTimeout(resolve, 5000));
 
       return privateMessage;
     } catch (error) {
