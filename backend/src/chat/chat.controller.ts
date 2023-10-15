@@ -42,6 +42,11 @@ export class ChatController {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
   }
 
+  @Get('group/chats')
+  async getAllGroupChats(): Promise<GroupChatDto[]> {
+    return await this.chatService.getAllGroupChats();
+  }
+
   @Post('group/:chatId/member/:profileId')
   async addMemberToGroupChat(
     @Req() { user }: { user: FortyTwoUserDto },

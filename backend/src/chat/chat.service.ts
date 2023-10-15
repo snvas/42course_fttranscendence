@@ -268,6 +268,9 @@ export class ChatService {
         relations: {
           groupChat: {
             owner: true,
+            members: {
+              profile: true,
+            },
             messages: {
               sender: true,
             },
@@ -295,6 +298,7 @@ export class ChatService {
         visibility: groupChat.visibility,
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
+        members: groupChat.members,
         messages: groupChat.messages
           .map((message: GroupMessageEntity): ConversationDto => {
             return {
@@ -435,6 +439,26 @@ export class ChatService {
     }
 
     return plainToClass(GroupChatDto, groupChat);
+  }
+
+  public async getAllGroupChats(): Promise<GroupChatDto[]> {
+    this.logger.verbose(`### Getting group all chats`);
+
+    const groupChat: GroupChatEntity[] | null =
+      await this.groupChatRepository.find({
+        relations: {
+          owner: true,
+          members: {
+            profile: true,
+          },
+        },
+      });
+
+    if (!groupChat) {
+      throw new NotFoundException(`Group chats not found`);
+    }
+
+    return plainToInstance(GroupChatDto, groupChat);
   }
 
   private async getUserPrivateMessages(
