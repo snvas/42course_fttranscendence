@@ -16,6 +16,10 @@ class ProfileService {
         return this.axiosInstance.get("");
     }
 
+    public async getPublicProfile(id: number): Promise<AxiosResponse<ProfileDTO>> {
+        return this.axiosInstance.get(`public/${id}`)
+    }
+
     public async getAvatarImage(avatarId: number): Promise<AxiosResponse<Blob>> {
         return this.axiosInstance.get(`/avatar/${avatarId}`, {
             responseType: "blob"

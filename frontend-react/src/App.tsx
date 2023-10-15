@@ -14,6 +14,7 @@ import {ProfileProvider} from "./context/ProfileContext.tsx";
 import {AuthProvider} from "./context/AuthContext.tsx";
 import Chat from "./pages/Chat.tsx";
 import ChatRoutes from "./components/ChatRoutes.tsx";
+import PublicProfile from "./pages/PublicProfile.tsx";
 
 function App() {
     //Todo:
@@ -34,22 +35,21 @@ function App() {
                                     path="/welcome"
                                     element={<ProfileCustomization title={"Welcome to Pong!!"}/>}
                                 />
+                                <Route path="/validate-otp" element={<ValidateOTP/>}/>
+                            </Route>
+
+                            <Route element={<ChatRoutes/>}>
+                                <Route path="/" element={<Home/>}/>
+                                <Route path="/chat" element={<Chat/>}/>
+                                <Route path="/profile" element={<ProfileSettings/>}/>
+                                <Route path="/public/:profileId" element={<PublicProfile/>}/>
+                                <Route path="/register-2fa" element={<Register2FA/>}/>
                                 <Route
                                     path="/customization"
                                     element={
                                         <ProfileCustomization title={"Update your profile"}/>
                                     }
                                 />
-
-                                <Route path="/profile" element={<ProfileSettings/>}/>
-                                <Route path="/register-2fa" element={<Register2FA/>}/>
-                                <Route path="/validate-otp" element={<ValidateOTP/>}/>
-
-                            </Route>
-
-                            <Route element={<ChatRoutes/>}>
-                                <Route path="/" element={<Home/>}/>
-                                <Route path="/chat" element={<Chat/>}/>
                             </Route>
                             <Route path="*" element={<NotFound/>}/>
                         </Routes>

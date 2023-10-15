@@ -7,7 +7,7 @@ import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
 import {v4 as uuidV4} from 'uuid';
 import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
-import {useLocation} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
 import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
@@ -135,10 +135,13 @@ export const PrivateChat = () => {
     }
 
     const handleSelectedUserHeader = () => {
-        const selectedUserStatus: string | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
+        const selectedPlayer: PlayerStatusDto | undefined = playersStatus.find((playerStatus: PlayerStatusDto): boolean => {
             return playerStatus.nickname === selectedUser
-        })?.status;
-        return `${selectedUser} (${selectedUserStatus || 'offline'})`;
+        });
+
+        return <div>
+            <Link to={`/public/${selectedPlayer?.id}`}>{selectedUser}</Link> ({selectedPlayer?.status || 'offline'})
+        </div>
     }
 
     return (
@@ -149,7 +152,12 @@ export const PrivateChat = () => {
                 height: "60vh",
                 maxHeight: "60vh",
             }}>
-                <div style={{flex: "30%", border: "1px solid black", marginLeft: "10px"}}>
+                <div style={{
+                    flex: "30%",
+                    border: "1px solid black",
+                    marginLeft: "10px",
+                    overflow: "auto",
+                }}>
                     <h1 style={{textAlign: "center"}}>Private Chat</h1>
                     {privateMessageHistory.map((message: PrivateMessageHistoryDto) => {
                         return (

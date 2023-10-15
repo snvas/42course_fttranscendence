@@ -4,7 +4,7 @@ import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.t
 import {useEffect, useState} from "react";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
-import {NavigateFunction, useNavigate} from "react-router-dom";
+import {Link, NavigateFunction, useNavigate} from "react-router-dom";
 
 const Home = () => {
     const {profile, avatarImageUrl} = useProfile() as ProfileContextData;
@@ -35,17 +35,19 @@ const Home = () => {
                     <br></br>
                     <div>
                         {avatarImageUrl ? (
-                            <img src={avatarImageUrl} alt="User Avatar Image"/>
+                            <img src={avatarImageUrl} alt="User Avatar Image"
+                                 style={{maxWidth: '200px', maxHeight: '200px'}}/>
                         ) : (
-                            <img src="/default-avatar.jpeg" alt="Default Avatar Image"/>
+                            <img src="/default-avatar.jpeg" alt="Default Avatar Image"
+                                 style={{maxWidth: '200px', maxHeight: '200px'}}/>
                         )}
                         <p>Nickname: {profile?.nickname}</p>
+                        <p>Level: 1</p>
                     </div>
                     <br></br>
                     <p>Wins: {profile?.wins}</p>
                     <p>Draws: {profile?.draws}</p>
                     <p>Loses: {profile?.losses}</p>
-                    <p>Ranking: Not Implement Yet</p>
                 </div>
 
                 <div style={{flex: 1, marginRight: "20px", overflowY: "auto", maxHeight: "700px"}}>
@@ -64,7 +66,7 @@ const Home = () => {
                         {status.map((player: PlayerStatusDto, index: number) => (
                             <div key={index} style={{display: "flex"}}>
                                 <li style={{marginRight: "20px"}}>
-                                    {player.nickname} | {player.status} |
+                                    <Link to={`/public/${player.id}`}> {player.nickname}</Link> ({player.status})
                                 </li>
                                 {profile?.nickname === player.nickname ? (
                                     <p>(You)</p>
