@@ -2,47 +2,64 @@
 
 * {
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-      "Helvetica Neue", sans-serif;
+    "Helvetica Neue", sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     text-rendering: optimizeLegibility;
     /* color: inherit; */
     font-size: inherit;
-    background-color: rgb(249, 250,251);
-  }
+    background-color: rgb(249, 250, 251);
+}
 
-  body {
+body {
     line-height: 1.6;
     font-weight: 400;
     font-size: 1.5rem;
     color: var(--color-light-gray);
     background-color: var(--color-bg);
     min-height: 100vh;
-  }
+}
 
 
-  .container{
+.container {
     max-width: 90%;
     margin: auto;
     padding: 2em;
-  }
+}
 
-.header{
+.container-home {
+    max-width: 90%;
+    margin: auto;
+    padding: 2em;
+    display: flex;
+}
+
+.dashboard {
+    flex: 30%;
+    margin-right: 20px;
+}
+
+.match-history {
+    flex: 30%;
+    height: 300px;
+}
+
+.header {
     display: flex;
     justify-content: space-between;
     padding: 1em 1em;
     border-bottom: 2px solid #000;
 }
 
-.header > .links--wrapper{
+.header > .links--wrapper {
     display: flex;
     gap: 1em;
     text-decoration-line: none;
     align-items: center;
 }
 
-.header > .links--wrapper > .header--link{
+.header > .links--wrapper > .header--link {
     text-decoration-line: none;
     color: #000;
     text-transform: uppercase;
@@ -62,7 +79,7 @@
     display: block;
 }
 
-#header-logo{
+#header-logo {
     font-size: 48px;
     text-decoration-line: none;
     color: #000;
@@ -70,29 +87,40 @@
     font-family: 'Orbitron', sans-serif;
 }
 
-.btn{
-    display: block;  
+.btn-hover {
+    background-color: #000;
+
+    color: #fff;
+}
+
+.btn-hover:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+.btn {
+    display: block;
     cursor: pointer;
-    border:none;
+    border: none;
     background-color: #000;
     color: #fff;
     padding: 0.5em 1em;
     transition: 0.3s;
-    border:1px solid #000;
+    border: 1px solid #000;
     text-decoration: none;
     line-height: normal;
     font-weight: 400;
     font-family: 'Orbitron', sans-serif;
 }
 
-.btn-small{
+.btn-small {
     display: block;
     cursor: pointer;
     background-color: #000;
     color: #fff;
     padding: 0.5em 1em;
     transition: 0.3s;
-    border:1px solid #000;
+    border: 1px solid #000;
     text-decoration: none;
     line-height: normal;
     font-weight: 400;
@@ -101,14 +129,14 @@
     text-align: center;
 }
 
-.btn:hover{
+.btn:hover {
     background-color: #fff;
     color: #000;
 }
 
-.two-factor-register-container{
+.two-factor-register-container {
     max-width: 200px;
-    margin:0 auto;
+    margin: 0 auto;
 }
 
 .form-field-btn-wrapper {
@@ -119,9 +147,26 @@
     height: 100%;
 }
 
-.btn-small {
+
+.btn-chan {
     display: block;
-    margin: 1em auto;
+    cursor: pointer;
+    background-color: #000;
+    color: #fff;
+    padding: 0.5em 1em;
+    transition: 0.3s;
+    border: 1px solid #fff;
+    text-decoration: none;
+    line-height: normal;
+    font-weight: 400;
+    font-family: 'Orbitron', sans-serif;
+    max-height: 100px;
+    text-align: center;
+}
+
+.btn-chan:hover {
+    background-color: #fff;
+    color: #000;
 }
 
 .welcome-title {
@@ -130,9 +175,9 @@
     margin-bottom: 1em;
 }
 
-.welcome-form-wrapper{
+.welcome-form-wrapper {
     max-width: 400px;
-    margin:0 auto;
+    margin: 0 auto;
 }
 
 .two-factor-register-title {
@@ -143,10 +188,10 @@
 
 .login-register-container, .avatar-register-container {
     max-width: 200px;
-    margin:0 auto;
+    margin: 0 auto;
 }
 
-.login-logo-wrapper{
+.login-logo-wrapper {
     text-align: center;
     margin-top: 1em;
     margin-bottom: 1em;
@@ -172,7 +217,7 @@
     font-weight: 600;
 }
 
-input{
+input {
     background: #fff;
     border: 1px solid #000;
     padding: 1rem;
@@ -181,26 +226,26 @@ input{
     outline: none;
 }
 
-.form-field-wrapper{
+.form-field-wrapper {
     margin: 1em 0;
 }
 
 
-@media(max-width:800px) {
-    #header-logo{
+@media (max-width: 800px) {
+    #header-logo {
         display: none;
     }
 
-    .header{
+    .header {
         justify-content: center;
     }
 }
 
-@media(max-width:800px) {
-    .container{
+@media (max-width: 800px) {
+    .container {
         max-width: 95%;
         margin: auto;
         padding: 1em;
-      }
+    }
 }
 

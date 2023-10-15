@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
@@ -11,7 +10,6 @@ import {
   Res,
   Session,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FortyTwoAuthGuard, Public, TwoFactorAuthentication } from './index';
 import { AuthService } from './auth.service';
@@ -53,15 +51,15 @@ export class AuthController {
       this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
       'http://localhost:3001';
 
-      const hasProfile: boolean = await this.profileService.userHasProfile(user);
+    const hasProfile: boolean = await this.profileService.userHasProfile(user);
 
-      if (!hasProfile) {
-        res.redirect(redirectUrl + '/welcome');
-      }
+    if (!hasProfile) {
+      res.redirect(redirectUrl + '/welcome');
+    }
 
-      if (user.otpEnabled) {
-        res.redirect(redirectUrl + '/validate-otp');
-      }
+    if (user.otpEnabled) {
+      res.redirect(redirectUrl + '/validate-otp');
+    }
 
     res.redirect(redirectUrl);
   }
@@ -78,7 +76,6 @@ export class AuthController {
 
   @Get('session')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
   async session(
     @Req() { user }: { user: FortyTwoUserDto },
     @Session() session: Record<string, any>,
@@ -90,7 +87,6 @@ export class AuthController {
   @TwoFactorAuthentication()
   @Get('2fa/session')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
   async session2fa(
     @Req() { user }: { user: FortyTwoUserDto },
     @Session() session: Record<string, any>,

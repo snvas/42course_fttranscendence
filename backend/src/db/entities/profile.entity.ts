@@ -2,12 +2,17 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { Profile } from '../../profile/interfaces/profile.interface';
 import { AvatarEntity } from './avatar.entity';
+import { GroupChatEntity } from './group-chat.entity';
+import { GroupMemberEntity } from './group-member.entity';
+import { GroupMessageEntity } from './group-message.entity';
+import { PrivateMessageEntity } from './private-message.entity';
 
 //TODO: Implementar número de amigos, lista de amigos e lista de usuários bloqueados
 //TODO: Calcular rankings, estatísticas com base nos dados do perfil em tempo de execução
@@ -44,4 +49,28 @@ export class ProfileEntity implements Profile {
   })
   @JoinColumn()
   userEntity: UserEntity;
+
+  @OneToMany(() => GroupChatEntity, (groupChat) => groupChat.owner)
+  ownedGroupChats: GroupChatEntity[];
+
+  @OneToMany(() => GroupMessageEntity, (groupMessage) => groupMessage.sender)
+  groupMessages: GroupMessageEntity[];
+
+  @OneToMany(() => GroupMemberEntity, (groupMember) => groupMember.profile)
+  groupMemberships: GroupMemberEntity[];
+
+  @OneToMany(() => PrivateMessageEntity, (message) => message.sender)
+  sentPrivateMessages: PrivateMessageEntity[];
+
+  @OneToMany(() => PrivateMessageEntity, (message) => message.receiver)
+  receivedPrivateMessages: PrivateMessageEntity[];
+
+  // @CreateDateColumn()
+  // createdAt: Date;
+  //
+  // @UpdateDateColumn()
+  // updatedAt: Date;
+  //
+  // @DeleteDateColumn()
+  // deletedAt?: Date;
 }

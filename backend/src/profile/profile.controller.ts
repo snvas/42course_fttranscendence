@@ -50,7 +50,6 @@ export class ProfileController {
 
   @Get('public/:id')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
   async getPublicProfile(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ProfileDTO> {
@@ -59,7 +58,6 @@ export class ProfileController {
 
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(ClassSerializerInterceptor)
   async saveProfile(
     @Req() { user }: { user: FortyTwoUserDto },
     @Body() body: { nickname: string },
@@ -86,7 +84,7 @@ export class ProfileController {
 
   @Post('avatar')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(ClassSerializerInterceptor, FileInterceptor('avatar'))
+  @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(
     @Req() @Req() { user }: { user: FortyTwoUserDto },
     @UploadedFile(

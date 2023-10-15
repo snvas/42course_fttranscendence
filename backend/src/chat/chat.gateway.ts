@@ -1,57 +1,117 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
+import { Logger, UseGuards } from '@nestjs/common';
+import { AuthenticatedSocket } from './types/authenticated-socket.type';
+import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
+import { ConversationDto } from './dto/conversation.dto';
+import { PrivateMessageDto } from './dto/private-message.dto';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: process.env.APP_CORS_ORIGIN,
+    credentials: true,
   },
+  namespace: 'chat',
 })
-export class ChatGateway {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  private readonly server: Server;
+  private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(private readonly chatService: ChatService) {}
 
-  @SubscribeMessage('createChat')
-  async create(
-    @MessageBody() createChatDto: CreateChatDto,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const chat = this.chatService.create(createChatDto, socket.id);
+  async handleConnection(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<void> {
+    this.logger.log(`### Client connected: ${socket.id}`);
 
-    this.server.emit('chat', chat);
-    return chat;
+    if (!this.chatService.isConnectionAuthenticated(socket)) {
+      return;
+    }
+
+    this.logger.verbose(
+      `Authenticated user: ${JSON.stringify(socket.request.user)}`,
+    );
+
+    await this.chatService.setPlayerStatus(socket, 'online');
+
+    this.server.emit(
+      'playersStatus',
+      await this.chatService.getPlayersStatus(),
+    );
   }
 
-  @SubscribeMessage('findAllChat')
-  findAll() {
-    return this.chatService.findAll();
+  async handleDisconnect(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<void> {
+    this.logger.log(`Client disconnected: ${socket.id}`);
+
+    if (!this.chatService.isConnectionAuthenticated(socket)) {
+      return;
+    }
+
+    await this.chatService.removePlayerStatus(socket);
+
+    socket.broadcast.emit(
+      'playersStatus',
+      await this.chatService.getPlayersStatus(),
+    );
   }
 
-  @SubscribeMessage('join')
-  joinRoom(
-    @MessageBody('name') name: string,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    return this.chatService.identify(name, socket.id);
+  @UseGuards(WsAuthenticatedGuard)
+  @SubscribeMessage('sendPrivateMessage')
+  async handlePrivateMessage(
+    @MessageBody() message: PrivateMessageDto,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<PrivateMessageDto | null> {
+    try {
+      const receiverSocket: string | undefined =
+        await this.chatService.getPlayerSocketId(message.receiver.id);
+
+      const privateMessage: PrivateMessageDto =
+        await this.chatService.handlePrivateMessage(message);
+
+      if (receiverSocket) {
+        socket.to(receiverSocket).emit('receivePrivateMessage', privateMessage);
+      }
+
+      //await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      return privateMessage;
+    } catch (error) {
+      this.logger.error(error);
+      return null;
+    }
   }
 
-  @SubscribeMessage('typing')
-  async typing(
-    @MessageBody('isTyping') isTyping: boolean,
-    @ConnectedSocket() socket: Socket,
+  @UseGuards(WsAuthenticatedGuard)
+  @SubscribeMessage('message')
+  async handleMessage(
+    @MessageBody() message: string,
+    @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    const name = this.chatService.getClientName(socket.id);
+    // const messageDto: GroupMessageDto =
+    //  messageDto await this.chatService.handleGroupMessage(socket, message);
 
-    //send to everyone expect the sender
-    socket.broadcast.emit('typing', { name, isTyping });
+    const conversationDto: ConversationDto = {
+      id: 1,
+      message: message,
+      createdAt: new Date(),
+      sender: {
+        id: 1,
+        nickname: 'Teste',
+      },
+    };
+
+    this.server.emit('message', conversationDto);
   }
 }

@@ -26,4 +26,13 @@ export class UserEntity implements FortyTwoUser {
 
   @Column({ nullable: true })
   otpSecret?: string;
+
+  // @CreateDateColumn()
+  // createdAt: Date;
+  //
+  // @UpdateDateColumn()
+  // updatedAt: Date;
+  //
+  // @DeleteDateColumn()
+  // deletedAt?: Date;
 }

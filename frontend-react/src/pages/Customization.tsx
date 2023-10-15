@@ -1,19 +1,14 @@
 //TODO: Criar um contexto de 'Profile'
 // se o profile existir, redirecionar para a home
 // se não existir, redirecionar exibir esse componente
-import { NavigateFunction, useNavigate } from "react-router-dom";
-import {
-  ChangeEvent,
-  FormEvent,
-  MutableRefObject,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { Link, NavigateFunction, useNavigate } from "react-router-dom";
+import { ChangeEvent, FormEvent, MutableRefObject, useEffect, useRef, useState } from "react";
 import { ProfileDTO } from "../../../backend/src/profile/models/profile.dto.ts";
 import { useProfile } from "../context/ProfileContext.tsx";
 import { ProfileContextData } from "../context/interfaces/ProfileContextData.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
+import { isAxiosError } from "axios";
+
 const Customization = ({ title }: { title: string }) => {
   const welcomeForm: MutableRefObject<HTMLFormElement | null> =
     useRef<HTMLFormElement | null>(null);
@@ -21,7 +16,9 @@ const Customization = ({ title }: { title: string }) => {
     useProfile() as ProfileContextData;
   const navigate: NavigateFunction = useNavigate();
   const throwAsyncError = useThrowAsyncError();
-  const [invalidProfile, setInvalidProfile] = useState<boolean>(false);
+  const [userNameAlreadyExists, setUserNameAlreadyExists] = useState<boolean>(false);
+  const [profileAlreadyExists, setProfileAlreadyExists] = useState<boolean>(false);
+  const [invalidProfileName, setInvalidProfileName] = useState<boolean>(false);
   const [nicknameSaved, setNicknameSaved] = useState<boolean>(false);
   const [continueToHome, setContinueToHome] = useState<boolean>(false);
   const [selectedAvatar, setSelectedAvatar] = useState<File | undefined>(
@@ -47,8 +44,8 @@ const Customization = ({ title }: { title: string }) => {
     const nickname: string | undefined = welcomeForm.current.nickname?.value;
 
     try {
-      if (!nickname || nickname?.length < 4) {
-        setInvalidProfile(true);
+      if (!nickname || nickname?.length < 3) {
+        setInvalidProfileName(true);
         return;
       }
 
@@ -58,6 +55,16 @@ const Customization = ({ title }: { title: string }) => {
 
       setNicknameSaved(true);
     } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 406) {
+        setUserNameAlreadyExists(true);
+        return;
+      }
+
+      if (isAxiosError(error) && error.response?.status === 400) {
+        setProfileAlreadyExists(true);
+        return;
+      }
+
       throwAsyncError(error);
     }
   };
@@ -111,7 +118,22 @@ const Customization = ({ title }: { title: string }) => {
         </form>
       </div>
 
-      {invalidProfile && (
+      {userNameAlreadyExists && (
+        <p className="warning-text">
+          Username alraedy exists, try another one
+        </p>
+      )}
+
+      {profileAlreadyExists && (
+        <div>
+          <p className="warning-text">
+            Profile Already Exists
+          </p>
+          <Link id="home-lunk" to="/">Go to Home Page</Link>
+        </div>
+      )}
+
+      {invalidProfileName && (
         <p className="warning-text">
           Username must have at least 4 characters, try again
         </p>

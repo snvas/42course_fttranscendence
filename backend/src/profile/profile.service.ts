@@ -14,7 +14,6 @@ import {
   QueryFailedError,
   QueryRunner,
   Repository,
-  UpdateResult,
 } from 'typeorm';
 import { Profile } from './interfaces/profile.interface';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
@@ -73,11 +72,7 @@ export class ProfileService {
         nickname,
       });
 
-    if (profileEntity) {
-      return true;
-    }
-
-    return false;
+    return !!profileEntity;
   }
 
   async create(userId: number, nickname: string): Promise<ProfileDTO> {
@@ -89,9 +84,10 @@ export class ProfileService {
       throw new NotFoundException(`User [${userId}] not found`);
     }
 
-    const profileEntity: ProfileEntity = new ProfileEntity();
-    profileEntity.nickname = nickname;
-    profileEntity.userEntity = userEntity;
+    const profileEntity: ProfileEntity = this.profileRepository.create({
+      nickname,
+      userEntity,
+    });
 
     let savedEntity: ProfileEntity;
 
@@ -194,6 +190,14 @@ export class ProfileService {
       deleted: userDeleteResult.affected > 0 && avatarDeleteResult.affected > 0,
       affected: userDeleteResult.affected + avatarDeleteResult.affected,
     };
+  }
+
+  async findByUserIds(userIds: number[]): Promise<ProfileEntity[]> {
+    return await this.profileRepository
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.userEntity', 'user')
+      .andWhere('user.id IN (:...userIds)', { userIds })
+      .getMany();
   }
 
   async uploadAvatar(

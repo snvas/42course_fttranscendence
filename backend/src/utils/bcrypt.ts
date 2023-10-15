@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 
 export function hashPassword(password: string): string {
-  const salt = bcrypt.genSaltSync();
+  const salt: string = bcrypt.genSaltSync();
   return bcrypt.hashSync(password, salt);
 }
 

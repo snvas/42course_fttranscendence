@@ -25,6 +25,9 @@ const Header = () => {
             <Link to="/profile" className="header--link">
               Profile
             </Link>
+            <Link to="/chat" className="header--link">
+              Chat
+            </Link>
             <button onClick={logoutUser} className="btn">
               Logout
             </button>

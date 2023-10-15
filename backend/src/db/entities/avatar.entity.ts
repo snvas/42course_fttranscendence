@@ -13,4 +13,10 @@ export class AvatarEntity implements Avatar {
     type: 'bytea',
   })
   data: Uint8Array;
+  // @CreateDateColumn()
+  // createdAt: Date;
+  // @UpdateDateColumn()
+  // updatedAt: Date;
+  // @DeleteDateColumn()
+  // deletedAt?: Date;
 }

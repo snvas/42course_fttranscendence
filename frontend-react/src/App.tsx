@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Header from "./components/Header.js";
 import Home from "./pages/Home.js";
 import ProfileSettings from "./pages/ProfileSettings.tsx";
@@ -10,47 +10,54 @@ import ValidateOTP from "./pages/ValidateOTP.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import ProfileCustomization from "./pages/Customization.tsx";
-import { ProfileProvider } from "./context/ProfileContext.tsx";
-import { AuthProvider } from "./context/AuthContext.tsx";
+import {ProfileProvider} from "./context/ProfileContext.tsx";
+import {AuthProvider} from "./context/AuthContext.tsx";
+import Chat from "./pages/Chat.tsx";
+import ChatRoutes from "./components/ChatRoutes.tsx";
+import PublicProfile from "./pages/PublicProfile.tsx";
 
 function App() {
-  //Todo:
-  // Adicionar as rotas em um arquivo Routes.tsx
-  // Fazer página profile/:id para buscar por profiles de outros usuários
-  // Fazer página para o chat
-  // Fazer página para o game
+    //Todo:
+    // Adicionar as rotas em um arquivo Routes.tsx
+    // Fazer página profile/:id para buscar por profiles de outros usuários
+    // Fazer página para o game
 
-  return (
-    <Router>
-      <ErrorBoundary>
-        <AuthProvider>
-          <ProfileProvider>
-            <Header />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route element={<PrivateRoutes />}>
-                <Route path="/" element={<Home />} />
-                <Route
-                  path="/welcome"
-                  element={<ProfileCustomization title={"Welcome to Pong!!"} />}
-                />
-                <Route
-                  path="/customization"
-                  element={
-                    <ProfileCustomization title={"Update your profile"} />
-                  }
-                />
-                <Route path="/profile" element={<ProfileSettings />} />
-                <Route path="/register-2fa" element={<Register2FA />} />
-                <Route path="/validate-otp" element={<ValidateOTP />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ProfileProvider>
-        </AuthProvider>
-      </ErrorBoundary>
-    </Router>
-  );
+    return (
+        <Router>
+            <ErrorBoundary>
+                <AuthProvider>
+                    <ProfileProvider>
+                        <Header/>
+                        <Routes>
+                            <Route path="/login" element={<Login/>}/>
+                            <Route element={<PrivateRoutes/>}>
+                                <Route
+                                    path="/welcome"
+                                    element={<ProfileCustomization title={"Welcome to Pong!!"}/>}
+                                />
+                                <Route path="/validate-otp" element={<ValidateOTP/>}/>
+                            </Route>
+
+                            <Route element={<ChatRoutes/>}>
+                                <Route path="/" element={<Home/>}/>
+                                <Route path="/chat" element={<Chat/>}/>
+                                <Route path="/profile" element={<ProfileSettings/>}/>
+                                <Route path="/public/:profileId" element={<PublicProfile/>}/>
+                                <Route path="/register-2fa" element={<Register2FA/>}/>
+                                <Route
+                                    path="/customization"
+                                    element={
+                                        <ProfileCustomization title={"Update your profile"}/>
+                                    }
+                                />
+                            </Route>
+                            <Route path="*" element={<NotFound/>}/>
+                        </Routes>
+                    </ProfileProvider>
+                </AuthProvider>
+            </ErrorBoundary>
+        </Router>
+    );
 }
 
 export default App;

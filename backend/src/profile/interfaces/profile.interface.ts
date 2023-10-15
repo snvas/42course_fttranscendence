@@ -1,4 +1,10 @@
-import { AvatarEntity, UserEntity } from '../../db/entities';
+import {
+  AvatarEntity,
+  GroupChatEntity,
+  GroupMemberEntity,
+  PrivateMessageEntity,
+  UserEntity,
+} from '../../db/entities';
 
 export interface Profile {
   id: number;
@@ -9,4 +15,8 @@ export interface Profile {
   avatarId?: number;
   avatar?: AvatarEntity;
   userEntity: UserEntity;
+  groupMemberships: GroupMemberEntity[];
+  ownedGroupChats: GroupChatEntity[];
+  sentPrivateMessages: PrivateMessageEntity[];
+  receivedPrivateMessages: PrivateMessageEntity[];
 }

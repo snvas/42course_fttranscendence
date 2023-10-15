@@ -8,6 +8,13 @@ import {
 import { Profile } from '../interfaces/profile.interface';
 import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { Type } from 'class-transformer';
+import {
+  AvatarEntity,
+  GroupChatEntity,
+  GroupMemberEntity,
+  GroupMessageEntity,
+  PrivateMessageEntity,
+} from 'src/db/entities';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
@@ -28,6 +35,18 @@ export class ProfileDTO implements Profile {
   @ValidateNested()
   @Type(() => FortyTwoUserDto)
   userEntity: FortyTwoUserDto;
+  @ValidateNested()
+  avatar?: AvatarEntity | undefined;
+  @ValidateNested()
+  groupMemberships: GroupMemberEntity[];
+  @ValidateNested()
+  ownedGroupChats: GroupChatEntity[];
+  @ValidateNested()
+  receivedPrivateMessages: PrivateMessageEntity[];
+  @ValidateNested()
+  sentPrivateMessages: PrivateMessageEntity[];
+  @ValidateNested()
+  groupMessages: GroupMessageEntity[];
 
   constructor(partial: Partial<ProfileDTO>) {
     Object.assign(this, partial);
