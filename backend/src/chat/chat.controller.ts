@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './dto/group-creation.dto';
@@ -10,11 +18,13 @@ import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
 import { GroupChatDto } from './dto/group-chat.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { GroupMessageDto } from './dto/group-message.dto';
+import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
 
 //TODO:
 //Delete group chat
 //Remove member from group chat
 //Change member role in group chat
+//Remove non necessary infos from member in GroupChatDto and GroupChatHistoryDto
 
 @Controller('chat')
 export class ChatController {
@@ -40,6 +50,13 @@ export class ChatController {
     @Body() groupCreationDto: GroupCreationDto,
   ): Promise<GroupChatDto> {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
+  }
+
+  @Delete('group/:chatId')
+  async deleteGroupChat(
+    @Param('chatId') chatId: number,
+  ): Promise<GroupChatDeletedResponseDto> {
+    return await this.chatService.deleteGroupChatById(chatId);
   }
 
   @Get('group/chats')

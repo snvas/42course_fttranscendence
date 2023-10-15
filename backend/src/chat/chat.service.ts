@@ -8,7 +8,7 @@ import {
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { GroupMessageDto } from './dto/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
 import {
   GroupChatEntity,
   GroupMemberEntity,
@@ -33,6 +33,7 @@ import { GroupChatDto } from './dto/group-chat.dto';
 import { GroupMemberDto } from './dto/group-member.dto';
 import { PlayerStatusDto } from './dto/player-status.dto';
 import { PlayerStatusSocket } from './types/player-status.socket';
+import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
 
 @Injectable()
 export class ChatService {
@@ -52,6 +53,20 @@ export class ChatService {
     @InjectRepository(PrivateMessageEntity)
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
+
+  public isConnectionAuthenticated(socket: AuthenticatedSocket): boolean {
+    if (
+      socket.request.user === undefined ||
+      socket.request.user.id === undefined
+    ) {
+      this.logger.warn(`### User not authenticated: ${socket.id}`);
+      socket.emit('unauthorized', 'User not authenticated');
+
+      return false;
+    }
+
+    return true;
+  }
 
   public async setPlayerStatus(
     socket: AuthenticatedSocket,
@@ -439,6 +454,29 @@ export class ChatService {
     }
 
     return plainToClass(GroupChatDto, groupChat);
+  }
+
+  public async deleteGroupChatById(
+    id: number,
+  ): Promise<GroupChatDeletedResponseDto> {
+    this.logger.verbose(`### Getting group chat by id: ${id}`);
+
+    const groupChatDeleteResult: DeleteResult =
+      await this.groupChatRepository.delete({
+        id,
+      });
+
+    if (!groupChatDeleteResult.affected) {
+      this.logger.error(`### Group chat [${id}] not found, nothing to delete`);
+      throw new NotFoundException(`Group chat with id ${id} not found`);
+    }
+
+    this.logger.log(`### Group chat [${id}] deleted`);
+
+    return {
+      deleted: groupChatDeleteResult.affected > 0,
+      affected: groupChatDeleteResult.affected,
+    };
   }
 
   public async getAllGroupChats(): Promise<GroupChatDto[]> {

@@ -22,7 +22,6 @@ import { PrivateMessageDto } from './dto/private-message.dto';
   },
   namespace: 'chat',
 })
-// @UseGuards(WsAuthenticatedGuard) - Testar
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private readonly server: Server;
@@ -30,15 +29,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly chatService: ChatService) {}
 
-  @UseGuards(WsAuthenticatedGuard)
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
     this.logger.log(`### Client connected: ${socket.id}`);
 
-    if (!socket.request.user.id) {
-      this.logger.warn(`### User not authenticated: ${socket.id}`);
-      socket.emit('unauthorized', 'User not authenticated');
+    if (!this.chatService.isConnectionAuthenticated(socket)) {
       return;
     }
 
@@ -54,11 +50,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-  @UseGuards(WsAuthenticatedGuard)
   async handleDisconnect(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
     this.logger.log(`Client disconnected: ${socket.id}`);
+
+    if (!this.chatService.isConnectionAuthenticated(socket)) {
+      return;
+    }
+
     await this.chatService.removePlayerStatus(socket);
 
     socket.broadcast.emit(

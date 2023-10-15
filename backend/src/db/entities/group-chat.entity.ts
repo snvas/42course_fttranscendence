@@ -25,13 +25,19 @@ export class GroupChatEntity implements GroupChat {
   @Column({ default: 'public' })
   visibility: string;
 
-  @OneToMany(() => GroupMemberEntity, (member) => member.groupChat)
+  @OneToMany(() => GroupMemberEntity, (member) => member.groupChat, {
+    onDelete: 'CASCADE',
+  })
   members: GroupMemberEntity[];
 
-  @OneToMany(() => GroupMessageEntity, (message) => message.groupChat)
+  @OneToMany(() => GroupMessageEntity, (message) => message.groupChat, {
+    onDelete: 'CASCADE',
+  })
   messages: GroupMessageEntity[];
 
-  @ManyToOne(() => ProfileEntity, (owner) => owner.ownedGroupChats)
+  @ManyToOne(() => ProfileEntity, (owner) => owner.ownedGroupChats, {
+    onDelete: 'CASCADE',
+  })
   owner: ProfileEntity;
 
   @CreateDateColumn()

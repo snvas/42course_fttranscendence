@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 
+//Protect websocket events, except OnGatewayConnection and OnGatewayDisconnect
+
 @Injectable()
 export class WsAuthenticatedGuard implements CanActivate {
   private readonly logger: Logger = new Logger(WsAuthenticatedGuard.name);
@@ -14,13 +16,16 @@ export class WsAuthenticatedGuard implements CanActivate {
     const client = context.switchToWs().getClient();
     const socket: AuthenticatedSocket = client as AuthenticatedSocket;
 
-    if (!client.request.isAuthenticated() || !socket.request.user.id) {
+    if (
+      !client.request.isAuthenticated() ||
+      socket.request.user === undefined ||
+      socket.request.user.id === undefined
+    ) {
       this.logger.verbose(
         `### User is not authenticated for WS, blocking access - socket id: ${socket.id}`,
       );
 
       socket.emit('unauthorized', 'User not authenticated');
-
       return false;
     }
 

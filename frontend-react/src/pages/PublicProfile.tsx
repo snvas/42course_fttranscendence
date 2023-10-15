@@ -55,7 +55,7 @@ const PublicProfile = () => {
 
             <div className="container-home">
                 <div className="dashboard">
-                    <h1>Player Dashboard</h1>
+                    <h1>Public Profile</h1>
 
                     <br></br>
                     <div>
