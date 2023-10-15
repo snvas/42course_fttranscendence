@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { AxiosResponse } from 'axios';
-	import Image from './Image.svelte';
 	import AvatarImage from './AvatarImage.svelte';
 
 	type Match = {
@@ -21,13 +20,13 @@
 			openentNick: 'Teste2',
 			oponentAvatar: '../../hackathon.png',
 			oponentScore: 3,
-			mineScore: 5
+			mineScore: 2
 		},
 		{
 			openentNick: 'Teste3',
 			oponentAvatar: '../../hackathon.png',
 			oponentScore: 2,
-			mineScore: 4
+			mineScore: 2
 		},
 		{
 			openentNick: 'Teste',
@@ -38,7 +37,7 @@
 		{
 			openentNick: 'Teste2',
 			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
+			oponentScore: 6,
 			mineScore: 5
 		},
 		{
@@ -76,12 +75,14 @@
 
 <div class="flex flex-col w-full">
 	<div class="justify-start w-full">
-		<div class="btn-history w-1/2 mx-auto min-w-fit mb-4">History</div>
+		<div class="btn-history w-1/2 mx-auto min-w-fit mb-4 rounded-xl">History</div>
 	</div>
 
-	<div class="flex flex-col gap-4 overflow-auto">
+	<div class="flex flex-col gap-2 overflow-auto">
 		{#each matchs as match, i}
-			<div class="border-4 flex">
+			<div class="border-4 flex rounded-xl m-2 p-2
+			{match.mineScore > match.oponentScore ? 'green' : 
+			match.mineScore === match.oponentScore ? 'yellow' : 'red'}">
 				<div class="w-full flex flex-row gap-2 items-center justify-center min-w-fit">
 					<img
 						class="avatar max-w-sm aspect-square w-20"
@@ -89,7 +90,7 @@
 						alt={match.openentNick}
 						title={match.openentNick}
 					/>
-					{match.oponentScore} x {match.mineScore}
+					<p class="text-5xl p-4">{match.oponentScore} - {match.mineScore}</p>
 					<div class="w-20">
 						<AvatarImage {avatar} />
 					</div>
@@ -100,10 +101,16 @@
 </div>
 
 <style>
-	.win-display {
-		border-color: rgb(21, 159, 0);
+	.green {
+		@apply border-green-700;
+		@apply text-green-700;
 	}
-	.lose-display {
-		border-color: rgb(185 28 28);
+	.red {
+		@apply border-red-700;
+		@apply text-red-700;
+	}
+	.yellow {
+		@apply border-yellow-600;
+		@apply text-yellow-700;
 	}
 </style>
