@@ -1,5 +1,11 @@
 import { PlayerStatus } from '../interfaces/player.status.interface';
-import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class PlayerStatusDto implements PlayerStatus {
   @IsNotEmpty()
@@ -8,6 +14,9 @@ export class PlayerStatusDto implements PlayerStatus {
   @IsNotEmpty()
   @IsString()
   nickname: string;
+  @IsOptional()
+  @IsNumber()
+  avatarId?: number;
   @IsNotEmpty()
   @IsString()
   @IsIn(['online', 'playing'])

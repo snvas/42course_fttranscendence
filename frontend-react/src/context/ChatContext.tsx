@@ -121,7 +121,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         }
 
         const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
-            console.log(`### received online users ${onlineUsers}`);
+            console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
 
             setPlayersStatus(onlineUsers);
         };

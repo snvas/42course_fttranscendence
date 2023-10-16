@@ -79,6 +79,7 @@ export class ChatService {
     const onlineUser: PlayerStatusSocket = {
       id: profile.id,
       nickname: profile.nickname,
+      avatarId: profile.avatarId,
       status,
       socket,
     };
@@ -105,6 +106,7 @@ export class ChatService {
           id: onlineUser.id,
           nickname: onlineUser.nickname,
           status: onlineUser.status,
+          avatarId: onlineUser.avatarId,
         };
       },
     );
@@ -260,6 +262,7 @@ export class ChatService {
           return {
             id: profile.id,
             nickname: profile.nickname,
+            avatarId: profile.avatarId,
             messages,
           };
         },

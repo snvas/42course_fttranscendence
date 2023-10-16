@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNotEmptyObject,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -16,6 +17,9 @@ export class PrivateMessageHistoryDto implements PrivateMessageHistory {
   @IsString()
   @IsNotEmpty()
   nickname: string;
+  @IsNumber()
+  @IsOptional()
+  avatarId?: number;
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
