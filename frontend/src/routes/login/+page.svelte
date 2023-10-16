@@ -12,7 +12,7 @@
 	}
 </script>
 
-<div class="gap-20 flex flex-col h-screen justify-center items-center pt-10 md:pt-20 w-screen">
+<div class="gap-20 flex flex-col h-screen justify-center items-center pt-10 lg:pt-20 w-screen">
 	<div class="w-full flex flex-row gap-10 items-center">
 		<div class={chunkClass}>
 			<div class={lineClass} />
@@ -25,5 +25,5 @@
 		</div>
 	</div>
 
-	<button disabled={isLoading} class="btn-primary md:w-1/4 w-3/4" on:click={onLogin}> Login </button>
+	<button disabled={isLoading} class="btn-primary lg:w-1/4 w-3/4" on:click={onLogin}> Login </button>
 </div>

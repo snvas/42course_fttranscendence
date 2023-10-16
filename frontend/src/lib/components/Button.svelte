@@ -18,63 +18,17 @@
 	};
 
 	const style = {
-		history: 'small history',
-		settings: 'small settings',
-		chat: 'chat',
-		play: 'play',
-		logout: 'small logout'
+		history: 'smallButton history',
+		settings: 'smallButton settings',
+		chat: 'bigButton chat',
+		play: 'bigButton play',
+		logout: 'smallButton logout'
 	};
 </script>
 
-<div class="w-full flex justify-around">
+<div class="w-full flex justify-around  flex-row gap-3">
 	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
 		<span class={icons[type]} />
 	</button>
 </div>
 
-<style>
-	.small {
-		width: 60px;
-		height: 60px;
-		border-radius: 30px;
-		font-size: 2.5vh;
-	}
-
-	.history {
-		/* Defina os estilos do botão History aqui */
-		background-color: green;
-		color: white;
-	}
-
-	.settings {
-		/* Defina os estilos do botão Settings aqui */
-		background-color: yellow;
-		color: black;
-	}
-
-	.logout {
-		background-color: rgb(34, 34, 34);
-		color: white;
-		font-size: 3.5vh;
-	}
-
-	.play {
-		/* Defina os estilos do botão Play aqui */
-		background-color: red;
-		color: white;
-		width: 90px;
-		height: 90px;
-		border-radius: 60px;
-		font-size: 4vh;
-	}
-
-	.chat {
-		/* Defina os estilos do botão Play aqui */
-		background-color: rgb(246, 184, 16);
-		color: white;
-		width: 90px;
-		height: 90px;
-		border-radius: 60px;
-		font-size: 4vh;
-	}
-</style>
