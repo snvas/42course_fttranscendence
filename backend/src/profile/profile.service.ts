@@ -221,8 +221,8 @@ export class ProfileService {
     this.logger.log(`### User [${userId}] avatar deleted`);
 
     return {
-      deleted: userDeleteResult.affected > 0 && avatarDeleteResult.affected > 0,
-      affected: userDeleteResult.affected + avatarDeleteResult.affected,
+      deleted: avatarDeleteResult.affected > 0,
+      affected: userDeleteResult.affected,
     };
   }
 

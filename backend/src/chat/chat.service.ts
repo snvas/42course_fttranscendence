@@ -458,7 +458,18 @@ export class ChatService {
 
   public async deleteGroupChatById(
     id: number,
+    userId: number,
   ): Promise<GroupChatDeletedResponseDto> {
+    const groupChatDto: GroupChatDto = await this.getGroupChatById(id);
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    if (groupChatDto.owner.id != profile.id) {
+      this.logger.error("### 'Group chat not deleted, user is not the owner");
+      throw new NotAcceptableException(
+        'Group chat not deleted, user is not the owner',
+      );
+    }
+
     this.logger.verbose(`### Deleting group chat by id: ${id}`);
 
     const groupChatDeleteResult: DeleteResult =
@@ -467,7 +478,7 @@ export class ChatService {
       });
 
     if (!groupChatDeleteResult.affected) {
-      this.logger.error(`### Group chat [${id}] not found, nothing to delete`);
+      this.logger.log(`### Group chat with id ${id} not found`);
       throw new NotFoundException(`Group chat with id ${id} not found`);
     }
 

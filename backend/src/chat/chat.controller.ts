@@ -21,7 +21,6 @@ import { GroupMessageDto } from './dto/group-message.dto';
 import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
 
 //TODO:
-//Delete group chat - check if is the owner
 //Remove member from group chat - check if is admin
 //Change member role in group chat - check if is admin
 //Remove non necessary infos from member in GroupChatDto and GroupChatHistoryDto
@@ -57,8 +56,9 @@ export class ChatController {
   @Delete('group/:chatId')
   async deleteGroupChat(
     @Param('chatId') chatId: number,
+    @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatDeletedResponseDto> {
-    return await this.chatService.deleteGroupChatById(chatId);
+    return await this.chatService.deleteGroupChatById(chatId, user.id);
   }
 
   @Get('group/chats')

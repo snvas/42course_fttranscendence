@@ -1,6 +1,7 @@
 import { GroupChat } from '../interfaces/group-chat.interface';
 import {
   IsDate,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -17,15 +18,12 @@ export class GroupChatDto implements GroupChat {
   @IsNotEmpty()
   @IsNumber()
   id: number;
-  @IsNotEmpty()
-  @IsNumber()
-  ownerId: number;
   @IsString()
   @IsNotEmpty()
   name: string;
-  @IsString()
+  @IsIn(['public', 'private'])
   @IsNotEmpty()
-  visibility: string;
+  visibility: 'public' | 'private';
   @IsString()
   @IsNotEmpty()
   @Exclude()
