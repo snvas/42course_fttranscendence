@@ -29,3 +29,15 @@ export async function getUserAvatar(profilePromise: Promise<AxiosResponse<Profil
 		return null;
 	}
 }
+
+export async function getAvatarFromId(
+	avatarId: number | null
+): Promise<AxiosResponse<Blob> | null> {
+	if (avatarId == null) return null;
+	try {
+		let image = await profileService.getAvatarImage(avatarId);
+		return image;
+	} catch {
+		return null;
+	}
+}

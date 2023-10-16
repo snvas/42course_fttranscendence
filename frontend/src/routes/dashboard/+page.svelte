@@ -1,13 +1,58 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { useAuth } from '$lib/stores';
-	import { authService, getProfile, getUserAvatar, profileService } from '$lib/api';
+	import { authService, getProfile, getUserAvatar, getAvatarFromId } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import Profile from '$lib/components/Profile.svelte';
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
 	import UsersList from '$lib/components/UsersList.svelte';
+	import type { PlayerStatusDto } from '$lib/dtos';
+	import chatService from '$lib/api/services/ChatService';
+
+	type User = PlayerStatusDto & {
+		friend: boolean;
+		blocked: boolean;
+	};
+
+	const users: User[] = [
+		{
+			nickname: 'Teste',
+			id: 1,
+			status: 'Offline',
+			friend: true,
+			blocked: false
+		},
+		{
+			nickname: 'Sicrano',
+			id: 12,
+			status: 'Offline',
+			friend: true,
+			blocked: false
+		},
+		{
+			nickname: 'Beltrano',
+			id: 13,
+			status: 'Playing',
+			friend: false,
+			blocked: true
+		},
+		{
+			nickname: 'Colega',
+			id: 14,
+			status: 'Playing',
+			friend: false,
+			blocked: false
+		},
+		{
+			nickname: 'Colega',
+			id: 14,
+			status: 'Playing',
+			friend: false,
+			blocked: false
+		}
+	];
 
 	const auth = useAuth();
 
@@ -30,7 +75,7 @@
 	$: avatar = getUserAvatar(profile);
 </script>
 
-<div class="h-full min-h-screen w-screen flex flex-col md:h-screen">
+<div class="h-full min-h-screen w-full min-w-screen flex flex-col md:h-screen md:w-screen">
 	<div class="flex-none">
 		<PongHeader />
 	</div>
@@ -58,7 +103,7 @@
 			</div>
 		</div>
 		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-			<UsersList />
+			<UsersList {users} getAvatar={getAvatarFromId} />
 		</div>
 	</div>
 </div>
