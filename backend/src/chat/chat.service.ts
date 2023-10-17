@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotAcceptableException,
@@ -6,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { GroupMessageDto } from './dto/group-message.dto';
+import { GroupMessageDto } from './models/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
 import {
@@ -20,20 +21,21 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileDTO } from '../profile/models/profile.dto';
-import { ChatMessageDto } from './dto/chat-message.dto';
+import { ChatMessageDto } from './models/chat-message.dto';
 import { Conversation } from './interfaces/private-conversation.interface';
-import { GroupCreationDto } from './dto/group-creation.dto';
+import { GroupCreationDto } from './models/group-creation.dto';
 import { hashPassword } from '../utils/bcrypt';
-import { GroupRoleDto } from './dto/group-role.dto';
-import { PrivateMessageDto } from './dto/private-message.dto';
-import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
-import { ConversationDto } from './dto/conversation.dto';
-import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
-import { GroupChatDto } from './dto/group-chat.dto';
-import { GroupMemberDto } from './dto/group-member.dto';
-import { PlayerStatusDto } from './dto/player-status.dto';
+import { PrivateMessageDto } from './models/private-message.dto';
+import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
+import { ConversationDto } from './models/conversation.dto';
+import { GroupChatHistoryDto } from './models/group-chat-history.dto';
+import { GroupChatDto } from './models/group-chat.dto';
+import { GroupMemberDto } from './models/group-member.dto';
+import { PlayerStatusDto } from './models/player-status.dto';
 import { PlayerStatusSocket } from './types/player-status.socket';
-import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
+import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
+import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
+import { ChatRole } from './types/chat-role.type';
 
 @Injectable()
 export class ChatService {
@@ -157,35 +159,6 @@ export class ChatService {
     );
   }
 
-  async savePrivateMessage(
-    senderUserId: number,
-    receiverProfileId: number,
-    message: ChatMessageDto,
-  ): Promise<PrivateMessageDto> {
-    const sender: ProfileDTO = await this.profileService.findByUserId(
-      senderUserId,
-    );
-    const receiver: ProfileDTO = await this.profileService.findByProfileId(
-      receiverProfileId,
-    );
-
-    const privateMessageEntity: PrivateMessageEntity =
-      this.privateMessageRepository.create({
-        sender,
-        receiver,
-        message: message.message,
-      });
-
-    this.logger.debug(
-      `### Saving private message by: ${sender.nickname} to ${receiver.nickname}`,
-    );
-
-    return plainToClass(
-      PrivateMessageDto,
-      await this.privateMessageRepository.save(privateMessageEntity),
-    );
-  }
-
   //TODO: Implement
   public async handleGroupMessage(
     socket: AuthenticatedSocket,
@@ -210,7 +183,7 @@ export class ChatService {
     return plainToClass(GroupMessageDto, groupMessageEntity);
   }
 
-  async saveGroupMessage(
+  public async saveGroupMessage(
     chatId: number,
     userId: number,
     message: ChatMessageDto,
@@ -336,7 +309,7 @@ export class ChatService {
     });
   }
 
-  async createGroupChat(
+  public async createGroupChat(
     groupCreationDto: GroupCreationDto,
     userId: number,
   ): Promise<GroupChatDto> {
@@ -357,16 +330,11 @@ export class ChatService {
       const groupChatEntity: GroupChatEntity =
         await this.groupChatRepository.save(groupChat);
 
-      const roleDto: GroupRoleDto = {
+      const chatRole: ChatRole = {
         role: 'admin',
       };
 
-      await this.addMemberToGroupChat(
-        userId,
-        groupChatEntity.id,
-        profile.id,
-        roleDto,
-      );
+      await this.addMemberToGroupChat(groupChatEntity.id, profile.id, chatRole);
 
       this.logger.debug(
         `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
@@ -387,25 +355,12 @@ export class ChatService {
     }
   }
 
-  async addMemberToGroupChat(
-    userId: number,
+  public async addMemberToGroupChat(
     chatId: number,
     newMemberProfileId: number,
-    roleDto?: GroupRoleDto,
+    chatRole: ChatRole,
   ): Promise<GroupMemberDto> {
     const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
-
-    if (roleDto?.role === 'admin') {
-      const userProfile: ProfileDTO = await this.profileService.findByUserId(
-        userId,
-      );
-
-      if (groupChat.owner.id !== userProfile.id) {
-        throw new UnauthorizedException(
-          `Only owner of group chat can add admin members`,
-        );
-      }
-    }
 
     const newMemberProfile: ProfileDTO =
       await this.profileService.findByProfileId(newMemberProfileId);
@@ -413,7 +368,7 @@ export class ChatService {
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
       profile: newMemberProfile,
-      role: roleDto?.role || 'user',
+      role: chatRole.role,
     });
     groupMember.groupChat = groupChat;
     groupMember.profile = newMemberProfile;
@@ -434,6 +389,45 @@ export class ChatService {
       }
       throw Exception;
     }
+  }
+
+  //TODO:
+  public async removeMemberFromGroupChat(
+    userId: number,
+    chatId: number,
+    profileId: number,
+  ): Promise<GroupMemberDeletedResponse> {
+    if (!(await this.isGroupChatAdminMember(userId, chatId))) {
+      throw new NotAcceptableException(
+        `User [${userId} is not an admin member of group chat [${chatId}]`,
+      );
+    }
+
+    const memberToRemove: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy({
+        profile: {
+          id: profileId,
+        },
+      });
+
+    const memberDeleteResult: DeleteResult =
+      await this.groupMemberRepository.delete({ id: memberToRemove?.id });
+
+    if (!memberDeleteResult.affected) {
+      this.logger.log(
+        `### Member [${memberToRemove?.id}] for chat with id ${chatId} not found`,
+      );
+      throw new NotFoundException(
+        `Member [${memberToRemove?.id}] for group chat with id ${chatId} not found`,
+      );
+    }
+
+    this.logger.log(`### Group chat [${chatId}] deleted`);
+
+    return {
+      deleted: memberDeleteResult.affected > 0,
+      affected: memberDeleteResult.affected,
+    };
   }
 
   public async getGroupChatById(id: number): Promise<GroupChatDto> {
@@ -511,6 +505,65 @@ export class ChatService {
     }
 
     return plainToInstance(GroupChatDto, groupChat);
+  }
+
+  //Debug method apagar depois que o frontend estiver pronto
+  public async savePrivateMessage(
+    senderUserId: number,
+    receiverProfileId: number,
+    message: ChatMessageDto,
+  ): Promise<PrivateMessageDto> {
+    const sender: ProfileDTO = await this.profileService.findByUserId(
+      senderUserId,
+    );
+    const receiver: ProfileDTO = await this.profileService.findByProfileId(
+      receiverProfileId,
+    );
+
+    const privateMessageEntity: PrivateMessageEntity =
+      this.privateMessageRepository.create({
+        sender,
+        receiver,
+        message: message.message,
+      });
+
+    this.logger.debug(
+      `### Saving private message by: ${sender.nickname} to ${receiver.nickname}`,
+    );
+
+    return plainToClass(
+      PrivateMessageDto,
+      await this.privateMessageRepository.save(privateMessageEntity),
+    );
+  }
+
+  public async getGroupMemberRole(
+    chatId: number,
+    profileId: number,
+  ): Promise<ChatRole> {
+    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+
+    if (profileId === groupChat.owner.id) {
+      return { role: 'owner' };
+    }
+
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy({
+        profile: {
+          id: profileId,
+        },
+      });
+
+    if (!groupMember) {
+      this.logger.error(
+        `### Profile id [${profileId}] is not a member from chat [${chatId}]`,
+      );
+      throw new BadRequestException(
+        `Profile id [${profileId}] is not a member from chat [${chatId}]`,
+      );
+    }
+
+    return groupMember.role === 'admin' ? { role: 'admin' } : { role: 'user' };
   }
 
   private async getUserPrivateMessages(
@@ -619,5 +672,36 @@ export class ChatService {
       });
 
     return !!groupChatEntity;
+  }
+
+  private async isGroupChatAdminMember(
+    userId: number,
+    chatId: number,
+  ): Promise<boolean> {
+    const askerMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy({
+        profile: {
+          userEntity: {
+            id: userId,
+          },
+        },
+      });
+
+    if (!askerMember) {
+      this.logger.error(
+        `### User id [${userId}] is not a member from chat [${chatId}]`,
+      );
+      return false;
+    }
+
+    if (askerMember?.role != 'admin') {
+      this.logger.error(
+        `### Member [${askerMember?.id}] is not admin to remove another members from chat`,
+      );
+
+      return false;
+    }
+
+    return true;
   }
 }

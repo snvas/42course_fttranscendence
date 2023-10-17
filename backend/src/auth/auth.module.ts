@@ -12,7 +12,6 @@ import entities from '../db/entities';
 import { UserService } from '../user/user.service';
 import { ProfileService } from '../profile/profile.service';
 import { AvatarService } from '../avatar/avatar.service';
-import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 
 @Module({
   controllers: [AuthController],
@@ -22,12 +21,11 @@ import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
     ProfileService,
     FortyTwoStrategy,
     UserAuthenticatedGuard,
-    WsAuthenticatedGuard,
     FortyTwoAuthGuard,
     SessionSerializer,
     AuthService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserAuthenticatedGuard, WsAuthenticatedGuard],
+  exports: [UserAuthenticatedGuard],
 })
 export class AuthModule {}

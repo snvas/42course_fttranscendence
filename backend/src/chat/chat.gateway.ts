@@ -11,9 +11,9 @@ import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { WsAuthenticatedGuard } from '../auth/guards/ws-authenticated.guard';
-import { ConversationDto } from './dto/conversation.dto';
-import { PrivateMessageDto } from './dto/private-message.dto';
+import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
+import { ConversationDto } from './models/conversation.dto';
+import { PrivateMessageDto } from './models/private-message.dto';
 
 @WebSocketGateway({
   cors: {

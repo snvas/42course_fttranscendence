@@ -1,7 +1,7 @@
 import {io, Socket} from "socket.io-client";
 import axios, {AxiosInstance, AxiosResponse} from "axios";
-import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
-import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
