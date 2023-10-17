@@ -391,18 +391,10 @@ export class ChatService {
     }
   }
 
-  //TODO:
   public async removeMemberFromGroupChat(
-    userId: number,
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
-    if (!(await this.isGroupChatAdminMember(userId, chatId))) {
-      throw new NotAcceptableException(
-        `User [${userId} is not an admin member of group chat [${chatId}]`,
-      );
-    }
-
     const memberToRemove: GroupMemberEntity | null =
       await this.groupMemberRepository.findOneBy({
         profile: {

@@ -103,15 +103,10 @@ export class ChatController {
   @UseGuards(ChatManagementGuard)
   @Delete('group/:chatId/member/:profileId')
   async removeMemberToGroupChat(
-    @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
-    return await this.chatService.removeMemberFromGroupChat(
-      user.id,
-      chatId,
-      profileId,
-    );
+    return await this.chatService.removeMemberFromGroupChat(chatId, profileId);
   }
 
   //Debug routes

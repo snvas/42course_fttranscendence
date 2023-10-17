@@ -42,7 +42,7 @@ export class ChatManagementGuard implements CanActivate {
 
     return (
       askerRole.role === 'owner' ||
-      (askerRole.role === 'admin' && receiverRole.role !== 'owner')
+      (askerRole.role === 'admin' && receiverRole.role === 'user')
     );
   }
 }
