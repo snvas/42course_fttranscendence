@@ -1,7 +1,9 @@
 import { browser } from '$app/environment';
-import { type Readable, readable } from 'svelte/store';
-import type { FortyTwoUserDto } from './dtos';
+import { type Readable, readable, writable, type Writable } from 'svelte/store';
+import type { PlayerStatusDto, FortyTwoUserDto, MessageProfileDto } from './dtos';
 import { authService } from './api';
+import type { Socket } from 'socket.io-client';
+import chatService from './api/services/ChatService';
 
 type AuthState = {
 	loading: boolean;
@@ -39,3 +41,7 @@ export function useAuth(): Readable<AuthState> {
 	});
 	return auth;
 }
+
+export let socket = writable<Socket>(chatService.getSocket());
+
+export let selectedDirect = writable<MessageProfileDto | null>();

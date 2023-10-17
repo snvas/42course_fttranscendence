@@ -1,42 +1,7 @@
 <script lang="ts">
-	type Message = {
-		name: string;
-		authorId: User['id'];
-		date: string;
-		message: string;
-	};
+	import type { PrivateMessageHistoryDto } from "$lib/dtos";
 
-	type User = {
-		id: string;
-		avatarId: string;
-		name: string;
-		status: 'Online' | 'Offline' | 'Playing';
-		blocked?: true;
-	};
-
-	type DirectPreview = User;
-
-	type Direct = DirectPreview & {
-		messages: Message[];
-	};
-
-	type GroupMember = User & {
-		role: 'admin' | 'owner' | 'member';
-	};
-
-	type GroupPreview = {
-		id: string;
-		name: string;
-		visibility: 'public' | 'private' | 'protected';
-		members: number;
-	};
-
-	type Group = GroupPreview & {
-		members: GroupMember[];
-		messages: Message[];
-	};
-
-	export let direct: Direct | null;
+	export let direct: PrivateMessageHistoryDto | null;
 </script>
 
 <div class="border-4 border-white w-full h-full flex flex-col rounded-3xl">
@@ -45,17 +10,17 @@
 		null
 	{:else}
 		<div class="border-2 border-white h-10 m-2 flex items-center justify-center rounded-md">
-			<p class="text-xs text-center">{direct.name}</p>
+			<p class="text-xs text-center">{direct.nickname}</p>
 		</div>
 		<div class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-md">
-			{#each direct.messages as message}
+			{#each direct.messages as conversation}
 				<div>
 					<p>
 						<!--TODO:  Verificar se authorid é do usuário -->
-						{message.authorId == '0' ? 'Me' : message.name}
+						{conversation.sender.nickname == '0' ? 'Me' : conversation.sender.nickname}
 					</p>
 					<p>
-						{message.message}
+						{conversation.message}
 					</p>
 				</div>
 			{/each}

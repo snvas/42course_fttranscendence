@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { useAuth } from '$lib/stores';
+	import { selectedDirect, socket, useAuth } from '$lib/stores';
 	import { authService, getProfile, getUserAvatar, getAvatarFromId } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -8,64 +8,40 @@
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
 	import UsersList from '$lib/components/UsersList.svelte';
-	import type { PlayerStatusDto } from '$lib/dtos';
-	import chatService from '$lib/api/services/ChatService';
-
-	type User = PlayerStatusDto & {
-		friend: boolean;
-		blocked: boolean;
-	};
-
-	const users: User[] = [
-		{
-			nickname: 'Teste',
-			id: 1,
-			status: 'Offline',
-			friend: true,
-			blocked: false
-		},
-		{
-			nickname: 'Sicrano',
-			id: 12,
-			status: 'Offline',
-			friend: true,
-			blocked: false
-		},
-		{
-			nickname: 'Beltrano',
-			id: 13,
-			status: 'Playing',
-			friend: false,
-			blocked: true
-		},
-		{
-			nickname: 'Colega',
-			id: 14,
-			status: 'Playing',
-			friend: false,
-			blocked: false
-		},
-		{
-			nickname: 'Colega',
-			id: 14,
-			status: 'Playing',
-			friend: false,
-			blocked: false
-		}
-	];
+	import type { MessageProfileDto, PlayerStatusDto } from '$lib/dtos';
+	import { setContext } from 'svelte';
+	import { browser } from '$app/environment';
 
 	const auth = useAuth();
+	
+	$socket.connect();
 
 	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');
 	}
+
+	let playersStatus: PlayerStatusDto[] = [];
+
+	const onConnect = (): void => {
+		console.log('### connected to server via websocket');
+	};
+
+	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
+		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
+
+		playersStatus = onlineUsers;
+	};
+
+	$socket.on('connect', onConnect);
+	$socket.on('playersStatus', onPlayersStatus);
 
 	async function onLogout() {
 		await authService.logoutUser();
 		goto('/login');
 	}
 
-	async function onChat() {
+	async function onChat(user: PlayerStatusDto | null) {
+		$selectedDirect = user
 		goto('/chat');
 	}
 
@@ -90,7 +66,7 @@
 		<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
 			<Profile bind:profile {onLogout} {avatar} />
 			<div class="flex flex-row items-center h-full">
-				<Button type="chat" on:click={onChat} />
+				<Button type="chat" on:click={() => onChat(null)} />
 
 				<Button
 					type="history"
@@ -103,7 +79,7 @@
 			</div>
 		</div>
 		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-			<UsersList {users} getAvatar={getAvatarFromId} />
+			<UsersList users={playersStatus} getAvatar={getAvatarFromId} on:chat={(e) => onChat(e.detail)} />
 		</div>
 	</div>
 </div>

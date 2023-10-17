@@ -2,8 +2,21 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import DirectMessages from '$lib/components/DirectMessages.svelte';
 	import GroupMessages from '$lib/components/GroupMessages.svelte';
-	import { useAuth } from '$lib/stores';
+	import { useAuth, socket, selectedDirect } from '$lib/stores';
 	import { goto } from '$app/navigation';
+	import { getContext, onDestroy } from 'svelte';
+	import type { Socket } from 'socket.io-client';
+	import chatService from '$lib/api/services/ChatService';
+	import type {
+		ConversationDto,
+		MessageProfileDto,
+		PlayerStatusDto,
+		PrivateMessageDto,
+		PrivateMessageHistoryDto
+	} from '$lib/dtos';
+	import AvatarImage from '$lib/components/AvatarImage.svelte';
+	import { getAvatarFromId } from '$lib/api';
+	import UsersList from '$lib/components/UsersList.svelte';
 
 	const auth = useAuth();
 
@@ -11,375 +24,149 @@
 		goto('/login');
 	}
 
-	type Message = {
-		name: string;
-		authorId: User['id'];
-		date: string;
-		message: string;
-	};
-
-	type User = {
-		id: string;
-		avatarId: string;
-		name: string;
-		status: 'Online' | 'Offline' | 'Playing';
-		blocked?: true;
-	};
-
-	type DirectPreview = User;
-
-	type Direct = DirectPreview & {
-		messages: Message[];
-	};
-
-	type GroupMember = User & {
-		role: 'admin' | 'owner' | 'member';
-	};
-
-	type GroupBase = {
-		id: string;
-		name: string;
-		visibility: 'public' | 'private';
-	};
-
-	type GroupPreview = GroupBase;
-
-	type Group = GroupBase & {
-		members: GroupMember[];
-		messages: Message[];
-	};
-
-	let directPreview: DirectPreview[] = [
-		{
-			id: '1',
-			avatarId: '../../camera.png',
-			name: 'Usuário 1',
-			status: 'Online',
-			blocked: true
-		},
-		{
-			id: '2',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 2',
-			status: 'Offline'
-		},
-		{
-			id: '3',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 3',
-			status: 'Playing'
-		},
-		{
-			id: '4',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 4',
-			status: 'Online'
-		},
-		{
-			id: '5',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 5',
-			status: 'Offline'
-		}
-	];
-
-	let directData: Direct[] = [
-		{
-			id: '1',
-			avatarId: '../../camera.png',
-			name: 'Usuário 1',
-			status: 'Online',
-			blocked: true,
-			messages: [
-				{
-					name: 'Usuário 1',
-					authorId: '1',
-					date: '0',
-					message: 'Olá, como você está?'
-				},
-				{
-					name: 'Usuário 1',
-					authorId: '1',
-					date: '0',
-					message: 'Como foi o seu dia?'
-				}
-			]
-		},
-		{
-			id: '2',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 2',
-			status: 'Offline',
-			messages: [
-				{
-					name: 'Usuário 2',
-					authorId: '0',
-					date: '0',
-					message: 'Qual é o seu plano para hoje?'
-				},
-				{
-					name: 'Usuário 2',
-					authorId: '2',
-					date: '0',
-					message: 'Vamos marcar algo para o próximo fim de semana?'
-				},
-				{
-					name: 'Usuário 2',
-					authorId: '0',
-					date: '0',
-					message: 'Tenha um bom dia!'
-				}
-			]
-		},
-		{
-			id: '3',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 3',
-			status: 'Playing',
-			messages: [
-				{
-					name: 'Usuário 3',
-					authorId: '0',
-					date: '0',
-					message: 'Estou ansioso para o fim de semana!'
-				},
-				{
-					name: 'Usuário 3',
-					authorId: '3',
-					date: '0',
-					message: 'Você viu as últimas notícias?'
-				}
-			]
-		},
-		{
-			id: '4',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 4',
-			status: 'Online',
-			messages: [
-				{
-					name: 'Usuário 4',
-					authorId: '0',
-					date: '0',
-					message: 'Como está o tempo hoje?'
-				},
-				{
-					name: 'Usuário 4',
-					authorId: '4',
-					date: '0',
-					message: 'Que filme você recomenda assistir?'
-				}
-			]
-		},
-		{
-			id: '5',
-			avatarId: '../../rapido.png',
-			name: 'Usuário 5',
-			status: 'Offline',
-			messages: [
-				{
-					name: 'Usuário 5',
-					authorId: '5',
-					date: '0',
-					message: 'Vamos discutir o projeto hoje à tarde?'
-				},
-				{
-					name: 'Usuário 5',
-					authorId: '0',
-					date: '0',
-					message: 'Como foi o seu dia?'
-				},
-				{
-					name: 'Usuário 5',
-					authorId: '0',
-					date: '0',
-					message: 'Qual é o seu plano para hoje?'
-				}
-			]
-		}
-	];
-
-	let groupsPreview: GroupPreview[] = [
-		{
-			id: '401',
-			name: 'Grupo de Trabalho',
-			visibility: 'public'
-		},
-		{
-			id: '402',
-			name: 'Grupo de Estudo',
-			visibility: 'private'
-		},
-		{
-			id: '403',
-			name: 'Grupo de Amigos',
-			visibility: 'private'
-		}
-	];
-
-	let groupsData: Group[] = [
-		{
-			id: '401',
-			name: 'Grupo de Trabalho',
-			visibility: 'public',
-			members: [
-				{
-					id: '201',
-					avatarId: '../../camera.png',
-					name: 'Alice',
-					status: 'Online',
-					role: 'owner'
-				},
-				{
-					id: '0',
-					avatarId: '../../rapido.png',
-					name: 'Teste',
-					status: 'Offline',
-					role: 'admin'
-				},
-				{
-					id: '202',
-					avatarId: '../../rapido.png',
-					name: 'Bob',
-					status: 'Offline',
-					role: 'member'
-				}
-			],
-			messages: [
-				{
-					name: 'Alice',
-					authorId: '201',
-					date: '0',
-					message: 'Bem-vindo ao Grupo de Trabalho!'
-				},
-				{
-					name: 'Bob',
-					authorId: '202',
-					date: '0',
-					message: 'O que vamos discutir hoje na reunião?'
-				},
-				{
-					name: 'Teste',
-					authorId: '0',
-					date: '0',
-					message: 'O que vamos discutir hoje na reunião?'
-				}
-			]
-		},
-		{
-			id: '402',
-			name: 'Grupo de Estudo',
-			visibility: 'private',
-			members: [
-				{
-					id: '203',
-					avatarId: '../../camera.png',
-					name: 'Carol',
-					status: 'Online',
-					role: 'owner'
-				},
-				{
-					id: '204',
-					avatarId: '../../rapido.png',
-					name: 'David',
-					status: 'Offline',
-					role: 'member'
-				},
-				{
-					id: '0',
-					avatarId: '../../rapido.png',
-					name: 'Teste',
-					status: 'Offline',
-					role: 'admin'
-				}
-			],
-			messages: [
-				{
-					name: 'Carol',
-					authorId: '203',
-					date: '0',
-					message: 'Vamos começar a estudar para o exame.'
-				},
-				{
-					name: 'Teste',
-					authorId: '0',
-					date: '0',
-					message: 'O que vamos discutir hoje na reunião?'
-				},
-				{
-					name: 'David',
-					authorId: '204',
-					date: '0',
-					message: 'Alguém tem um bom material de estudo?'
-				}
-			]
-		},
-		{
-			id: '403',
-			name: 'Grupo de Amigos',
-			visibility: 'private',
-			members: [
-				{
-					id: '205',
-					avatarId: '../../camera.png',
-					name: 'Eva',
-					status: 'Online',
-					role: 'owner'
-				},
-				{
-					id: '0',
-					avatarId: '../../rapido.png',
-					name: 'Teste',
-					status: 'Offline',
-					role: 'admin'
-				},
-				{
-					id: '206',
-					avatarId: '../../rapido.png',
-					name: 'Frank',
-					status: 'Offline',
-					role: 'member'
-				}
-			],
-			messages: [
-				{
-					name: 'Eva',
-					authorId: '205',
-					date: '0',
-					message: 'Que tal marcarmos um encontro este fim de semana?'
-				},
-				{
-					name: 'Frank',
-					authorId: '206',
-					date: '0',
-					message: 'Boa ideia! Vamos ao cinema.'
-				},
-				{
-					name: 'Teste',
-					authorId: '0',
-					date: '0',
-					message: 'O que vamos discutir hoje na reunião?'
-				}
-			]
-		}
-	];
-
-	function showDirect(index: number) {
-		// TODO: trocar index pelo id do user e requisitar o dado do backend
-		selectedDirect = directData[index];
+	function showDirect(historyId: number) {
+		selectedHistory =
+			privateMessageHistory.find((v) => {
+				return v.id === historyId;
+			}) ?? null;
+		$selectedDirect = selectedHistory ?? null;
 	}
 
-	function showGroup(index: number) {
-		// TODO: trocar index pelo id do user e requisitar o dado do backend
-		selectedGroup = groupsData[index];
-	}
+	// function showGroup(index: number) {
+	// 	// TODO: trocar index pelo id do user e requisitar o dado do backend
+	// 	selectedGroup = groupsData[index];
+	// }
 
-	let selectedDirect: Direct | null = null;
-	let selectedGroup: Group | null = null;
+	$: selectedHistory = getSelectedHistory($selectedDirect);
 
 	let panel: 'direct' | 'groups' | 'create-group' = 'direct';
 
-	// $: showingMessages == 'direct' ? (messages = directMessages[0]) : (messages = groupData[0]);
+	$socket.connect();
+
+	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
+	let playersStatus: PlayerStatusDto[] = [];
+	let messages: ConversationDto[] = [];
+
+	function getSelectedHistory(
+		user: MessageProfileDto | null
+	): PrivateMessageHistoryDto | null {
+		if (!user) {
+			return null;
+		}
+		let selected = privateMessageHistory.find((v) => v.id === user.id);
+		if (selected) {
+			return selected;
+		}
+		let newHistory = { ...user, messages: [] };
+		privateMessageHistory = [...privateMessageHistory, newHistory];
+		return newHistory;
+	}
+
+	const onConnect = (): void => {
+		console.log('### connected to server via websocket');
+	};
+
+	const onException = (message: string): void => {
+		console.log(`### received error message ${JSON.stringify(message)}`);
+		throw message;
+	};
+
+	const onUnauthorized = (message: string): void => {
+		console.log(`### received unauthorized message ${JSON.stringify(message)}`);
+		$socket.disconnect();
+		goto('/login');
+	};
+
+	const onMessage = (msg: ConversationDto): void => {
+		console.log(`### received chat message ${JSON.stringify(msg)}`);
+
+		messages = [...messages, msg];
+	};
+
+	const onPrivateMessage = (message: PrivateMessageDto): void => {
+		console.log(
+			`### received private ${message.message} message id: ${
+				message.sender.id
+			} | history ids: ${JSON.stringify(
+				privateMessageHistory.map((h: PrivateMessageHistoryDto) => h.id)
+			)}`
+		);
+
+		if (
+			!privateMessageHistory.find(
+				(history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id
+			)
+		) {
+			const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory;
+
+			console.log(`### prev history: ${JSON.stringify(privateMessageHistory)}`);
+			newHistory.push({
+				id: message.sender.id,
+				nickname: message.sender.nickname,
+				messages: [
+					{
+						id: message.id,
+						message: message.message,
+						sender: {
+							id: message.sender.id,
+							nickname: message.sender.nickname
+						},
+						createdAt: message.createdAt
+					}
+				]
+			});
+
+			console.log(`### new history: ${JSON.stringify(newHistory)}`);
+
+			privateMessageHistory = newHistory;
+		} else {
+			privateMessageHistory = privateMessageHistory.map(
+				(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
+					if (history.id === message.sender.id) {
+						if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
+							return history;
+						}
+
+						history.messages.push({
+							id: message.id,
+							message: message.message,
+							sender: {
+								id: message.sender.id,
+								nickname: message.sender.nickname
+							},
+							createdAt: message.createdAt
+						});
+					}
+					return history;
+				}
+			);
+		}
+	};
+
+	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
+		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
+
+		playersStatus = onlineUsers;
+	};
+
+	$socket.on('connect', onConnect);
+	$socket.on('exception', onException);
+	$socket.on('unauthorized', onUnauthorized);
+	$socket.on('message', onMessage);
+	$socket.on('receivePrivateMessage', onPrivateMessage);
+	$socket.on('playersStatus', onPlayersStatus);
+
+	onDestroy(() => {
+		$socket.off('connect');
+		$socket.off('error');
+		$socket.off('message');
+		$socket.off('receivePrivateMessage');
+		$socket.off('playersStatus');
+		$socket.disconnect();
+	});
+
+	$: console.log($selectedDirect);
+	$: console.log(privateMessageHistory);
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-10">
@@ -414,30 +201,28 @@
 					</button>
 				</div>
 				{#if panel == 'direct'}
-					{#each directPreview as user, i}
-						<button
-							on:click={() => showDirect(i)}
-							class="border-b-2 border-x-white h-12 m-2 flex flex-row"
-						>
-							<img
+					<div class="h-full w-full flex flex-col">
+						{#each privateMessageHistory as history}
+							<button
+								on:click={() => showDirect(history.id)}
+								class="border-b-2 border-x-white h-12 m-2 flex flex-row"
+							>
+								<!-- <img
 								class="avatar max-w-sm aspect-square w-10 h-10 m-2"
-								src={user.avatarId}
-								alt={user.name}
-								title={user.name}
+								src={history.avatarId}
+								alt={history.nickname}
+								title={history.nickname}
 							/>
-							<div class="flex flex-col ml-3">
-								<p class="flex flex-col">{user.name}</p>
-								{#if user.blocked}
-									<p class="flex flex-col text-red-600">Blocked</p>
-								{:else}
-									<p class="flex flex-col text-green-600">{user.status}</p>
-								{/if}
-							</div>
-						</button>
-					{/each}
+							<AvatarImage ></AvatarImage> -->
+								<div class="flex flex-col ml-3">
+									<p class="flex flex-col">{history.nickname}</p>
+								</div>
+							</button>
+						{/each}
+					</div>
 				{:else}
-					<div class="h-full w-full flex flex-col ">
-						{#each groupsPreview as group, i}
+					<div class="h-full w-full flex flex-col">
+						<!-- {#each groupsPreview as group, i}
 							<button
 								on:click={() => showGroup(i)}
 								class="p-2 border-b border-gray-800 border-x-white flex flex-row bg-yellow-500 bg-opacity-0 hover:bg-opacity-10"
@@ -451,7 +236,7 @@
 									</div>
 								</div>
 							</button>
-						{/each}
+						{/each} -->
 					</div>
 					{#if panel == 'groups'}
 						<div class="p-2">
@@ -465,9 +250,9 @@
 		</div>
 		<div class="flex flex-col w-full h-full">
 			{#if panel == 'direct'}
-				<DirectMessages bind:direct={selectedDirect} />
+				<DirectMessages bind:direct={selectedHistory} />
 			{:else if panel == 'groups'}
-				<GroupMessages bind:group={selectedGroup} />
+				<!-- <GroupMessages bind:group={selectedGroup} /> -->
 			{:else}
 				create group
 			{/if}
