@@ -10,6 +10,7 @@ import { ChatController } from './chat.controller';
 import { ChatManagementGuard } from './guards/chat-management.guard';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { ChatOwnerGuard } from './guards/chat-owner-guard';
+import { ChatAdminGuard } from './guards/chat-admin-guard';
 
 @Module({
   controllers: [ChatController],
@@ -19,6 +20,7 @@ import { ChatOwnerGuard } from './guards/chat-owner-guard';
     WsAuthenticatedGuard,
     ChatManagementGuard,
     ChatOwnerGuard,
+    ChatAdminGuard,
     ProfileService,
     UserService,
     AvatarService,

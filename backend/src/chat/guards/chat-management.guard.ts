@@ -10,6 +10,8 @@ import { ChatService } from '../chat.service';
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import { ChatRole } from '../types/chat-role.type';
 
+//This guard is used to authorize group **chat members** actions: Owner >> Admin >> User
+
 @Injectable()
 export class ChatManagementGuard implements CanActivate {
   private readonly logger: Logger = new Logger(ChatManagementGuard.name);
@@ -41,7 +43,7 @@ export class ChatManagementGuard implements CanActivate {
     ]);
 
     return (
-      askerRole.role === 'owner' ||
+      (askerRole.role === 'owner' && receiverRole.role !== 'owner') ||
       (askerRole.role === 'admin' && receiverRole.role === 'user')
     );
   }

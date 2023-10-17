@@ -21,22 +21,10 @@ import { GroupMemberDto } from './models/group-member.dto';
 import { GroupMessageDto } from './models/group-message.dto';
 import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
 import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
-import { ChatManagementGuard } from './guards/chat-management.guard';
 import { ChatOwnerGuard } from './guards/chat-owner-guard';
 import { ChatRole } from './types/chat-role.type';
-
-//TODO:
-//Remove member from group chat - check if is admin
-//  Check if the removed member is admin, if so, only the owner can remove
-//  Check if the remover member is the owner, if so, he can't be removed
-
-//Change member role in group chat - check if is admin
-
-//Remove non necessary infos from member in GroupChatDto and GroupChatHistoryDto
-
-//Create joinPublicGroup and joinPrivateGroup to be member of group
-
-//Receive a group name in websocket, check if use is member of the group, if so, join socket room
+import { ChatAdminGuard } from './guards/chat-admin-guard';
+import { ChatManagementGuard } from './guards/chat-management.guard';
 
 @Controller('chat')
 export class ChatController {
@@ -72,42 +60,95 @@ export class ChatController {
   @UseGuards(ChatOwnerGuard)
   @Delete('group/:chatId')
   async deleteGroupChat(
-    @Param('chatId') chatId: number,
+    @Param('chatId', ParseIntPipe) chatId: number,
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatDeletedResponseDto> {
     return await this.chatService.deleteGroupChatById(chatId, user.id);
   }
 
-  @UseGuards(ChatManagementGuard)
+  // @UseGuards(ChatOwnerGuard)
+  // @Put('group/:chatId/password')
+  // async updateGroupChatPassword(
+  //   @Req() { user }: { user: FortyTwoUserDto },
+  //   @Body() password: { password: string },
+  // ): Promise<GroupChatDto> {
+  //   return await this.chatService.changeGroupChatPassword(password, user.id);
+  // }
+  //
+  // @UseGuards(ChatOwnerGuard)
+  // @Put('group/:chatId/password')
+  // async deleteGroupChatPassword(
+  //   @Req() { user }: { user: FortyTwoUserDto },
+  // ): Promise<GroupChatDto> {
+  //   return await this.chatService.deleteGroupChatPassword(user.id);
+  // }
+
+  @UseGuards(ChatOwnerGuard)
   @Post('group/:chatId/admin/:profileId')
-  async addAdminToGroupChat(
+  async addGroupChatAdmin(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
-    return await this.chatService.addMemberToGroupChat(chatId, profileId, {
+    return await this.chatService.addGroupChatMember(chatId, profileId, {
       role: 'admin',
     } as ChatRole);
   }
 
-  @UseGuards(ChatManagementGuard)
-  @Post('group/:chatId/member/:profileId')
-  async addMemberToGroupChat(
+  @UseGuards(ChatAdminGuard)
+  @Post('group/:chatId/user/:profileId')
+  async addGroupChatUser(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
-    return await this.chatService.addMemberToGroupChat(chatId, profileId, {
+    return await this.chatService.addGroupChatMember(chatId, profileId, {
       role: 'user',
     } as ChatRole);
   }
 
   @UseGuards(ChatManagementGuard)
   @Delete('group/:chatId/member/:profileId')
-  async removeMemberToGroupChat(
+  async kickGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
-    return await this.chatService.removeMemberFromGroupChat(chatId, profileId);
+    return await this.chatService.kickMemberFromGroupChat(chatId, profileId);
   }
+
+  // @UseGuards(ChatManagementGuard)
+  // @Post('group/:chatId/mute/:profileId')
+  // async muteGroupChatMember(
+  //   @Param('chatId', ParseIntPipe) chatId: number,
+  //   @Param('profileId', ParseIntPipe) profileId: number,
+  // ): Promise<GroupMemberDto> {
+  //   return await this.chatService.muteGroupChatMember(chatId, profileId);
+  // }
+  //
+  // @UseGuards(ChatManagementGuard)
+  // @Post('group/:chatId/unmute/:profileId')
+  // async unmuteGroupChatMember(
+  //   @Param('chatId', ParseIntPipe) chatId: number,
+  //   @Param('profileId', ParseIntPipe) profileId: number,
+  // ): Promise<GroupMemberDto> {
+  //   return await this.chatService.unmuteGroupChatMember(chatId, profileId);
+  // }
+  //
+  // @UseGuards(ChatManagementGuard)
+  // @Post('group/:chatId/ban/:profileId')
+  // async banGroupChatMember(
+  //   @Param('chatId', ParseIntPipe) chatId: number,
+  //   @Param('profileId', ParseIntPipe) profileId: number,
+  // ): Promise<GroupMemberDto> {
+  //   return await this.chatService.banGroupChatMember(chatId, profileId);
+  // }
+  //
+  // @UseGuards(ChatManagementGuard)
+  // @Post('group/:chatId/unban/:profileId')
+  // async unbanGroupChatMember(
+  //     @Param('chatId', ParseIntPipe) chatId: number,
+  //     @Param('profileId', ParseIntPipe) profileId: number,
+  // ): Promise<GroupMemberDto> {
+  //   return await this.chatService.unbanGroupChatMember(chatId, profileId);
+  // }
 
   //Debug routes
   @Post('group/:chatId/message')

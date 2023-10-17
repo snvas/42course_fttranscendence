@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   Logger,
   NotAcceptableException,
@@ -334,7 +333,7 @@ export class ChatService {
         role: 'admin',
       };
 
-      await this.addMemberToGroupChat(groupChatEntity.id, profile.id, chatRole);
+      await this.addGroupChatMember(groupChatEntity.id, profile.id, chatRole);
 
       this.logger.debug(
         `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
@@ -355,7 +354,7 @@ export class ChatService {
     }
   }
 
-  public async addMemberToGroupChat(
+  public async addGroupChatMember(
     chatId: number,
     newMemberProfileId: number,
     chatRole: ChatRole,
@@ -391,7 +390,7 @@ export class ChatService {
     }
   }
 
-  public async removeMemberFromGroupChat(
+  public async kickMemberFromGroupChat(
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
@@ -550,7 +549,7 @@ export class ChatService {
       this.logger.error(
         `### Profile id [${profileId}] is not a member from chat [${chatId}]`,
       );
-      throw new BadRequestException(
+      throw new NotAcceptableException(
         `Profile id [${profileId}] is not a member from chat [${chatId}]`,
       );
     }
