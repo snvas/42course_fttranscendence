@@ -12,13 +12,13 @@
 <div class="flex flex-col w-full h-full gap-10">
 	<div class="flex w-full gap-4">
 		{#await profile then profile}
-			<div class="flex-initial flex-shrink-0 w-28">
+			<div class="flex-initial flex-shrink-0 lg:w-28 w-16">
 				<AvatarImage {avatar} />
 			</div>
 			<div class="flex-1 flex flex-col">
-				<p class="text-3xl">{profile?.data.nickname}</p>
-				<p class="text-2xl text-green-700 flex flex-col">Win: 3</p>
-				<p class="text-2xl text-red-700 flex flex-col">Lose: 3</p>
+				<p class="lg:text-3xl text-2xl">{profile?.data.nickname}</p>
+				<p class="lg:text-2xl text-xl text-green-700 flex flex-col">Win: 3</p>
+				<p class="lg:text-2xl text-xl text-red-700 flex flex-col">Lose: 3</p>
 			</div>
 		{/await}
 		<div class="flex-none">

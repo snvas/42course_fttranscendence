@@ -88,4 +88,40 @@
 		@apply w-16;
 		@apply cursor-pointer;
 	}
+	.smallButton {
+		@apply lg:w-14 lg:h-14 w-14 h-14 xl:w-16 xl:h-16; 
+		@apply rounded-full md:text-2xl;
+	}
+
+	.bigButton{
+		@apply text-white;
+		@apply lg:w-20 lg:h-20 w-16 h-16 xl:w-24 xl:h-24;
+		@apply rounded-full;
+		@apply text-3xl;
+	}
+	.play {
+		/* Defina os estilos do botão Play aqui */
+		@apply bg-red-700;
+	}
+
+	.chat {
+		@apply bg-yellow-600;
+	}
+	.history {
+		/* Defina os estilos do botão History aqui */
+		@apply bg-green-700;
+		@apply text-white;
+	}
+
+	.settings {
+		/* Defina os estilos do botão Settings aqui */
+		@apply bg-yellow-400;
+		@apply text-black;
+	}
+
+	.logout {
+		@apply bg-slate-800;
+		@apply text-white;
+		@apply lg:text-4xl text-2xl;
+	}
 }
