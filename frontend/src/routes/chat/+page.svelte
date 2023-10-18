@@ -4,12 +4,7 @@
 	import { useAuth, socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
-	import type {
-		PrivateMessageDto,
-		PlayerStatusDto,
-		PrivateMessageHistoryDto,
-		ComponentMessage
-	} from '$lib/dtos';
+	import type { PrivateMessageDto, PrivateMessageHistoryDto, ComponentMessage } from '$lib/dtos';
 	import { PrivateChatHandler } from '$lib/privateChatHandler';
 
 	const auth = useAuth();
@@ -17,6 +12,17 @@
 	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');
 	}
+
+	let panel: 'direct' | 'groups' | 'create-group' = 'direct';
+
+	let messages: ComponentMessage[] | null = null;
+
+	/*
+ 	PrivateHandlers 
+	*/
+
+	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
+	let privateChatHandler = new PrivateChatHandler($profile);
 
 	function onSelectUserChat(historyId: number) {
 		privateChatHandler.setSelectedHistory(historyId);
@@ -29,34 +35,11 @@
 		privateMessageHistory = privateChatHandler.privateMessageHistory;
 	}
 
-	// function showGroup(index: number) {
-	// 	// TODO: trocar index pelo id do user e requisitar o dado do backend
-	// 	selectedGroup = groupsData[index];
-	// }
-
-	let panel: 'direct' | 'groups' | 'create-group' = 'direct';
-
-	let messages: ComponentMessage[] | null = null;
-	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
-
-	let privateChatHandler = new PrivateChatHandler($profile);
-
 	privateChatHandler.loading.then((history) => {
 		privateChatHandler.setSelectedMessages($selectedDirect);
 		updatePrivateVariables();
 		console.log(history);
 	});
-
-	const onException = (message: string): void => {
-		console.log(`### received error message ${JSON.stringify(message)}`);
-		throw message;
-	};
-
-	const onUnauthorized = (message: string): void => {
-		console.log(`### received unauthorized message ${JSON.stringify(message)}`);
-		$socket.disconnect();
-		goto('/login');
-	};
 
 	const onPrivateMessage = (message: PrivateMessageDto): void => {
 		console.log(`### received private ${message.message}`);
@@ -64,25 +47,7 @@
 		updatePrivateVariables();
 	};
 
-	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
-		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
-
-		$onlineUsers = onlineUsers;
-	};
-
-	$socket.on('exception', onException);
-	$socket.on('unauthorized', onUnauthorized);
-	$socket.on('receivePrivateMessage', onPrivateMessage);
-	$socket.on('playersStatus', onPlayersStatus);
-
-	onDestroy(() => {
-		$socket.off('exception');
-		$socket.off('unauthorized');
-		$socket.off('receivePrivateMessage');
-		$socket.off('playerStatus');
-	});
-
-	async function sendMessage(message: string) {
+	async function sendPrivateMessage(message: string) {
 		if (!$selectedDirect) return;
 		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect);
 		updatePrivateVariables();
@@ -90,9 +55,23 @@
 		updatePrivateVariables();
 	}
 
-	$: console.log($selectedDirect);
-	$: console.log(privateMessageHistory);
-	$: console.log(messages);
+	/*
+ 	GroupHandlers 
+	*/
+
+	// function showGroup(index: number) {
+	// 	// TODO: trocar index pelo id do user e requisitar o dado do backend
+	// 	selectedGroup = groupsData[index];
+	// }
+
+	/*
+ 	Sockets 
+	*/
+	$socket.on('receivePrivateMessage', onPrivateMessage);
+
+	onDestroy(() => {
+		$socket.off('receivePrivateMessage');
+	});
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-10">
@@ -176,7 +155,7 @@
 		</div>
 		<div class="flex flex-col w-full h-full">
 			{#if panel == 'direct'}
-				<DirectMessages bind:messages {sendMessage} />
+				<DirectMessages bind:messages sendMessage={sendPrivateMessage} />
 			{:else if panel == 'groups'}
 				<!-- <GroupMessages bind:group={selectedGroup} /> -->
 			{:else}

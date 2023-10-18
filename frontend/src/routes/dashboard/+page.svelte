@@ -9,7 +9,6 @@
 	import History from '$lib/components/History.svelte';
 	import UsersList from '$lib/components/UsersList.svelte';
 	import type { PlayerStatusDto } from '$lib/dtos';
-	import { onDestroy } from 'svelte';
 
 	type Match = {
 		//oponentID: string;
@@ -87,23 +86,6 @@
 	}
 
 	$socket.connect();
-
-	const onConnect = (): void => {
-		console.log('### connected to server via websocket');
-	};
-
-	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
-		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
-		$onlineUsers = onlineUsers;
-	};
-
-	$socket.on('connect', onConnect);
-	$socket.on('playersStatus', onPlayersStatus);
-
-	onDestroy(() => {
-		$socket.off('connect');
-		$socket.off('playerStatus');
-	});
 
 	async function onLogout() {
 		$socket.disconnect();
