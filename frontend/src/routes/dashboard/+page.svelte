@@ -97,7 +97,7 @@
 
 	async function onChat(user: PlayerStatusDto | null) {
 		$selectedDirect = user;
-		goto('/chat');
+		goto('/chat/direct');
 	}
 
 	let loadProfile = getProfile();
