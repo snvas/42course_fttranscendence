@@ -160,7 +160,7 @@
 			{#if panel == 'direct'}
 				<DirectMessages bind:messages sendMessage={sendPrivateMessage} />
 			{:else if panel == 'groups'}
-				<!-- <GroupMessages bind:group={selectedGroup} /> -->
+				<GroupMessages bind:messages />
 			{:else}
 				create group
 			{/if}
