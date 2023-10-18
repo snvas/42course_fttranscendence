@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { selectedDirect, socket, useAuth } from '$lib/stores';
+	import { selectedDirect, socket, useAuth, profile, onlineUsers } from '$lib/stores';
 	import { authService, getProfile, getUserAvatar, getAvatarFromId } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -8,19 +8,16 @@
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
 	import UsersList from '$lib/components/UsersList.svelte';
-	import type { MessageProfileDto, PlayerStatusDto } from '$lib/dtos';
-	import { setContext } from 'svelte';
-	import { browser } from '$app/environment';
+	import type { PlayerStatusDto } from '$lib/dtos';
+	import { onDestroy } from 'svelte';
 
 	const auth = useAuth();
-	
-	$socket.connect();
 
 	$: if (!$auth.loading && !$auth.session) {
 		goto('/login');
 	}
 
-	let playersStatus: PlayerStatusDto[] = [];
+	$socket.connect();
 
 	const onConnect = (): void => {
 		console.log('### connected to server via websocket');
@@ -28,27 +25,39 @@
 
 	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
 		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
-
-		playersStatus = onlineUsers;
+		$onlineUsers = onlineUsers;
 	};
 
 	$socket.on('connect', onConnect);
 	$socket.on('playersStatus', onPlayersStatus);
 
+	onDestroy(() => {
+		$socket.off('connect');
+		$socket.off('playerStatus');
+	});
+
 	async function onLogout() {
+		$socket.disconnect();
 		await authService.logoutUser();
 		goto('/login');
 	}
 
 	async function onChat(user: PlayerStatusDto | null) {
-		$selectedDirect = user
+		$selectedDirect = user;
 		goto('/chat');
 	}
 
-	$: profile = getProfile();
+	let loadProfile = getProfile();
 	let showing: 'chat' | 'history' | 'settings' = 'history';
 
-	$: avatar = getUserAvatar(profile);
+	loadProfile.then((v) => {
+		if (v) {
+			$profile = v?.data ?? null;
+		}
+	});
+
+	$: avatar = getUserAvatar(loadProfile);
+	$: console.log($selectedDirect);
 </script>
 
 <div class="h-full min-h-screen w-full min-w-screen flex flex-col md:h-screen md:w-screen">
@@ -64,7 +73,7 @@
 			{/if}
 		</div>
 		<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
-			<Profile bind:profile {onLogout} {avatar} />
+			<Profile bind:profile={loadProfile} {onLogout} {avatar} />
 			<div class="flex flex-row items-center h-full">
 				<Button type="chat" on:click={() => onChat(null)} />
 
@@ -79,7 +88,11 @@
 			</div>
 		</div>
 		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-			<UsersList users={playersStatus} getAvatar={getAvatarFromId} on:chat={(e) => onChat(e.detail)} />
+			<UsersList
+				users={$onlineUsers}
+				getAvatar={getAvatarFromId}
+				on:chat={(e) => onChat(e.detail)}
+			/>
 		</div>
 	</div>
 </div>

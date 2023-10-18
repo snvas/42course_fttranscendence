@@ -1,22 +1,16 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import DirectMessages from '$lib/components/DirectMessages.svelte';
-	import GroupMessages from '$lib/components/GroupMessages.svelte';
-	import { useAuth, socket, selectedDirect } from '$lib/stores';
+	import { useAuth, socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
 	import { goto } from '$app/navigation';
-	import { getContext, onDestroy } from 'svelte';
-	import type { Socket } from 'socket.io-client';
-	import chatService from '$lib/api/services/ChatService';
+	import { onDestroy } from 'svelte';
 	import type {
-		ConversationDto,
-		MessageProfileDto,
-		PlayerStatusDto,
 		PrivateMessageDto,
-		PrivateMessageHistoryDto
+		PlayerStatusDto,
+		PrivateMessageHistoryDto,
+		ComponentMessage
 	} from '$lib/dtos';
-	import AvatarImage from '$lib/components/AvatarImage.svelte';
-	import { getAvatarFromId } from '$lib/api';
-	import UsersList from '$lib/components/UsersList.svelte';
+	import { PrivateChatHandler } from '$lib/privateChatHandler';
 
 	const auth = useAuth();
 
@@ -24,12 +18,15 @@
 		goto('/login');
 	}
 
-	function showDirect(historyId: number) {
-		selectedHistory =
-			privateMessageHistory.find((v) => {
-				return v.id === historyId;
-			}) ?? null;
-		$selectedDirect = selectedHistory ?? null;
+	function onSelectUserChat(historyId: number) {
+		privateChatHandler.setSelectedHistory(historyId);
+		$selectedDirect = privateChatHandler.selectedHistory ?? null;
+		updatePrivateVariables();
+	}
+
+	function updatePrivateVariables() {
+		messages = privateChatHandler.messages;
+		privateMessageHistory = privateChatHandler.privateMessageHistory;
 	}
 
 	// function showGroup(index: number) {
@@ -37,34 +34,18 @@
 	// 	selectedGroup = groupsData[index];
 	// }
 
-	$: selectedHistory = getSelectedHistory($selectedDirect);
-
 	let panel: 'direct' | 'groups' | 'create-group' = 'direct';
 
-	$socket.connect();
-
+	let messages: ComponentMessage[] | null = null;
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
-	let playersStatus: PlayerStatusDto[] = [];
-	let messages: ConversationDto[] = [];
 
-	function getSelectedHistory(
-		user: MessageProfileDto | null
-	): PrivateMessageHistoryDto | null {
-		if (!user) {
-			return null;
-		}
-		let selected = privateMessageHistory.find((v) => v.id === user.id);
-		if (selected) {
-			return selected;
-		}
-		let newHistory = { ...user, messages: [] };
-		privateMessageHistory = [...privateMessageHistory, newHistory];
-		return newHistory;
-	}
+	let privateChatHandler = new PrivateChatHandler($profile);
 
-	const onConnect = (): void => {
-		console.log('### connected to server via websocket');
-	};
+	privateChatHandler.loading.then((history) => {
+		privateChatHandler.setSelectedMessages($selectedDirect);
+		updatePrivateVariables();
+		console.log(history);
+	});
 
 	const onException = (message: string): void => {
 		console.log(`### received error message ${JSON.stringify(message)}`);
@@ -77,96 +58,40 @@
 		goto('/login');
 	};
 
-	const onMessage = (msg: ConversationDto): void => {
-		console.log(`### received chat message ${JSON.stringify(msg)}`);
-
-		messages = [...messages, msg];
-	};
-
 	const onPrivateMessage = (message: PrivateMessageDto): void => {
-		console.log(
-			`### received private ${message.message} message id: ${
-				message.sender.id
-			} | history ids: ${JSON.stringify(
-				privateMessageHistory.map((h: PrivateMessageHistoryDto) => h.id)
-			)}`
-		);
-
-		if (
-			!privateMessageHistory.find(
-				(history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id
-			)
-		) {
-			const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory;
-
-			console.log(`### prev history: ${JSON.stringify(privateMessageHistory)}`);
-			newHistory.push({
-				id: message.sender.id,
-				nickname: message.sender.nickname,
-				messages: [
-					{
-						id: message.id,
-						message: message.message,
-						sender: {
-							id: message.sender.id,
-							nickname: message.sender.nickname
-						},
-						createdAt: message.createdAt
-					}
-				]
-			});
-
-			console.log(`### new history: ${JSON.stringify(newHistory)}`);
-
-			privateMessageHistory = newHistory;
-		} else {
-			privateMessageHistory = privateMessageHistory.map(
-				(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
-					if (history.id === message.sender.id) {
-						if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
-							return history;
-						}
-
-						history.messages.push({
-							id: message.id,
-							message: message.message,
-							sender: {
-								id: message.sender.id,
-								nickname: message.sender.nickname
-							},
-							createdAt: message.createdAt
-						});
-					}
-					return history;
-				}
-			);
-		}
+		console.log(`### received private ${message.message}`);
+		privateChatHandler.recieveMessage(message);
+		updatePrivateVariables();
 	};
 
 	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
 		console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
 
-		playersStatus = onlineUsers;
+		$onlineUsers = onlineUsers;
 	};
 
-	$socket.on('connect', onConnect);
 	$socket.on('exception', onException);
 	$socket.on('unauthorized', onUnauthorized);
-	$socket.on('message', onMessage);
 	$socket.on('receivePrivateMessage', onPrivateMessage);
 	$socket.on('playersStatus', onPlayersStatus);
 
 	onDestroy(() => {
-		$socket.off('connect');
-		$socket.off('error');
-		$socket.off('message');
+		$socket.off('exception');
+		$socket.off('unauthorized');
 		$socket.off('receivePrivateMessage');
-		$socket.off('playersStatus');
-		$socket.disconnect();
+		$socket.off('playerStatus');
 	});
+
+	async function sendMessage(message: string) {
+		if (!$selectedDirect) return;
+		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect);
+		updatePrivateVariables();
+	}
 
 	$: console.log($selectedDirect);
 	$: console.log(privateMessageHistory);
+	$: console.log(messages);
+	$: console.log(privateChatHandler.loading);
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-10">
@@ -204,7 +129,7 @@
 					<div class="h-full w-full flex flex-col">
 						{#each privateMessageHistory as history}
 							<button
-								on:click={() => showDirect(history.id)}
+								on:click={() => onSelectUserChat(history.id)}
 								class="border-b-2 border-x-white h-12 m-2 flex flex-row"
 							>
 								<!-- <img
@@ -250,7 +175,7 @@
 		</div>
 		<div class="flex flex-col w-full h-full">
 			{#if panel == 'direct'}
-				<DirectMessages bind:direct={selectedHistory} />
+				<DirectMessages bind:messages {sendMessage} />
 			{:else if panel == 'groups'}
 				<!-- <GroupMessages bind:group={selectedGroup} /> -->
 			{:else}
