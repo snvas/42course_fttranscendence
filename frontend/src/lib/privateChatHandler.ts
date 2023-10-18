@@ -18,6 +18,7 @@ export class PrivateChatHandler {
 	public messages: ComponentMessage[] | null = [];
 	private profile: ProfileDTO;
 	public loading: Promise<PrivateMessageHistoryDto[] | undefined>;
+	public ackSendMessage: Promise<PrivateMessageDto> | null = null;
 
 	constructor(profile: ProfileDTO) {
 		this.profile = profile;
@@ -81,7 +82,6 @@ export class PrivateChatHandler {
 			);
 		}
 		this.setMessagesFromHistory(this.selectedHistory);
-
 	}
 
 	public async sendMessage(
@@ -143,28 +143,31 @@ export class PrivateChatHandler {
 			createdAt: parseISO(messageDate)
 		};
 
-		const backendMessage: PrivateMessageDto = await chatService.emitPrivateMessage(privateMessage);
+		this.ackSendMessage = chatService.emitPrivateMessage(privateMessage);
+	}
+
+	public async confirmSendMessage() {
+		let backendMessage = await this.ackSendMessage;
 
 		if (!backendMessage) {
 			console.log('Error when sending private message');
 			return;
 		}
-
 		const newHistory: PrivateMessageHistoryDto[] = this.privateMessageHistory.map(
 			(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
-				if (history.id != backendMessage.receiver.id) {
+				if (history.id != backendMessage!.receiver.id) {
 					return history;
 				}
 
-				if (history.messages.find((m: ConversationDto): boolean => m.id === backendMessage.id)) {
+				if (history.messages.find((m: ConversationDto): boolean => m.id === backendMessage!.id)) {
 					return history;
 				}
 
 				history.messages.push({
-					id: backendMessage.id,
-					message: backendMessage.message,
-					sender: backendMessage.sender,
-					createdAt: backendMessage.createdAt
+					id: backendMessage!.id,
+					message: backendMessage!.message,
+					sender: backendMessage!.sender,
+					createdAt: backendMessage!.createdAt
 				});
 
 				return history;
@@ -172,6 +175,7 @@ export class PrivateChatHandler {
 		);
 
 		this.privateMessageHistory = newHistory;
+		this.setMessagesFromHistory(this.selectedHistory);
 		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 

@@ -26,13 +26,22 @@
 			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-md"
 		>
 			{#each messages as conversation}
-				<div>
+				<div class="w-full flex flex-row justify-between">
+					<div>
+						<p>
+							<!--TODO:  Verificar se authorid é do usuário -->
+							{conversation.nickname == '0' ? 'Me' : conversation.nickname}
+						</p>
+						<p>
+							{conversation.message}
+						</p>
+					</div>
 					<p>
-						<!--TODO:  Verificar se authorid é do usuário -->
-						{conversation.nickname == '0' ? 'Me' : conversation.nickname}
-					</p>
-					<p>
-						{conversation.message}
+						{#if !conversation.sync}
+							Loading
+						{:else}
+							Recieved
+						{/if}
 					</p>
 				</div>
 			{/each}
@@ -45,8 +54,9 @@
 				placeholder="Enter the Message"
 				class="text-center w-full h-full text-black text-xl"
 			/>
-			<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>SEND</button
-			>
+			<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
+				SEND
+			</button>
 		</form>
 	{/if}
 </div>

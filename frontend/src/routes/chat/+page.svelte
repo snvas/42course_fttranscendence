@@ -86,12 +86,13 @@
 		if (!$selectedDirect) return;
 		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect);
 		updatePrivateVariables();
+		await privateChatHandler.confirmSendMessage();
+		updatePrivateVariables();
 	}
 
 	$: console.log($selectedDirect);
 	$: console.log(privateMessageHistory);
 	$: console.log(messages);
-	$: console.log(privateChatHandler.loading);
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-10">
