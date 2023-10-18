@@ -41,6 +41,10 @@ export class ProfileService {
 	public async deleteAccount(): Promise<AxiosResponse<ProfileDeletedResponseDto>> {
 		return this.axiosInstance.delete('');
 	}
+
+	public async getPublicProfile(id: string): Promise<AxiosResponse<ProfileDTO>> {
+		return this.axiosInstance.get(`public/${id}`)
+	}
 }
 
 export const profileService: ProfileService = new ProfileService('http://localhost:3000/api/profile');

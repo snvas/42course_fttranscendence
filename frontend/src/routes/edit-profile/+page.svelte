@@ -222,9 +222,3 @@
 	{message}
 </div>
 </div>
-<style>
-	.icon-link{
-		color: whitesmoke;
-	}
-
-</style>

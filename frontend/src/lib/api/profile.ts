@@ -19,6 +19,20 @@ export async function getProfile(): Promise<AxiosResponse<ProfileDTO> | null> {
 	}
 }
 
+export async function getPublicProfile(userId: string): Promise<AxiosResponse<ProfileDTO> | null> {
+	try {
+		let p = await profileService.getPublicProfile(userId);
+		return p;
+	} catch (error) {
+		if (error instanceof AxiosError) {
+			if (error.response?.status == 404) {
+				goto('/404.html');
+			} 
+		}
+		return null;
+	}
+}
+
 export async function getUserAvatar(profilePromise: Promise<AxiosResponse<ProfileDTO> | null>) {
 	try {
 		let profile = await profilePromise;
