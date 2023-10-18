@@ -41,6 +41,8 @@ import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-respons
 import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
 import { ChatRole } from './types/chat-role.type';
 import { ProfileUpdatedResponseDto } from '../profile/models/profile-updated-response.dto';
+import { ChatPasswordDto } from './models/chat-password.dto';
+import { MessageProfile } from './interfaces/message-profile.interface';
 
 @Injectable()
 export class ChatService {
@@ -107,24 +109,24 @@ export class ChatService {
       this.playerStatusSocket.values(),
     );
 
-    const onlineUsers: PlayerStatusDto[] = onlineUserSocket.map(
+    const playerStatusDtos: PlayerStatusDto[] = onlineUserSocket.map(
       (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
         return {
           id: onlineUser.id,
           nickname: onlineUser.nickname,
           status: onlineUser.status,
           avatarId: onlineUser.avatarId,
-        };
+        } as PlayerStatusDto;
       },
     );
 
     this.logger.debug(
-      `### Online users nicknames: ${onlineUsers.map(
+      `### Online users nicknames: ${playerStatusDtos.map(
         (u: PlayerStatusDto) => u.nickname,
       )}`,
     );
 
-    return onlineUsers;
+    return playerStatusDtos;
   }
 
   public async getPlayerSocketId(
@@ -242,7 +244,7 @@ export class ChatService {
             nickname: profile.nickname,
             avatarId: profile.avatarId,
             messages,
-          };
+          } as PrivateMessageHistoryDto;
         },
       );
 
@@ -304,13 +306,14 @@ export class ChatService {
               sender: {
                 id: message.sender.id,
                 nickname: message.sender.nickname,
-              },
+                avatarId: message.sender.avatarId,
+              } as MessageProfile,
             };
           })
           .sort((a: ConversationDto, b: ConversationDto) => {
             return a.createdAt.getTime() - b.createdAt.getTime();
           }),
-      };
+      } as GroupChatHistoryDto;
     });
   }
 
@@ -362,7 +365,7 @@ export class ChatService {
 
   public async changeGroupChatPassword(
     chatId: number,
-    password: { password: string },
+    password: ChatPasswordDto,
   ): Promise<Partial<ProfileUpdatedResponseDto>> {
     const updateResult: UpdateResult = await this.groupChatRepository.update(
       {
@@ -626,7 +629,8 @@ export class ChatService {
         sender: {
           id: message.sender.id,
           nickname: message.sender.nickname,
-        },
+          avatarId: message.sender.avatarId,
+        } as MessageProfile,
       };
     });
   }

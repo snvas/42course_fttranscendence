@@ -29,6 +29,7 @@ import { ChatRole } from './types/chat-role.type';
 import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { ChatManagementGuard } from './guards/chat-management.guard';
 import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
+import { ChatPasswordDto } from './models/chat-password.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -75,13 +76,12 @@ export class ChatController {
     return await this.chatService.deleteGroupChatById(chatId, user.id);
   }
 
-  //TODO: testar troca de senha
   @HttpCode(HttpStatus.OK)
   @UseGuards(ChatOwnerGuard)
   @Put('group/:chatId/password')
   async updateGroupChatPassword(
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Body() password: { password: string },
+    @Body() password: ChatPasswordDto,
   ): Promise<Partial<PasswordUpdateResponseDto>> {
     return await this.chatService.changeGroupChatPassword(chatId, password);
   }

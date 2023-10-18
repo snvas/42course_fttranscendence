@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { MessageProfile } from '../interfaces/message-profile.interface';
 
 export class MessageProfileDto implements MessageProfile {
@@ -8,4 +8,7 @@ export class MessageProfileDto implements MessageProfile {
   @IsString()
   @IsNotEmpty()
   nickname: string;
+  @IsString()
+  @IsOptional()
+  avatarId?: number;
 }
