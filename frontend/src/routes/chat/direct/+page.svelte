@@ -53,15 +53,6 @@
 	}
 
 	/*
- 	GroupHandlers 
-	*/
-
-	// function showGroup(index: number) {
-	// 	// TODO: trocar index pelo id do user e requisitar o dado do backend
-	// 	selectedGroup = groupsData[index];
-	// }
-
-	/*
  	Sockets 
 	*/
 	$socket.on('receivePrivateMessage', onPrivateMessage);

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import { useAuth, socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
+	import { useAuth, socket, profile } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { getProfile } from '$lib/api';
+	
 	const auth = useAuth();
 
 	$: if (!$auth.loading && !$auth.session) {

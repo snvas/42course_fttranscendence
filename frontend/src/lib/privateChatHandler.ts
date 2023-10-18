@@ -194,7 +194,7 @@ export class PrivateChatHandler {
 
 	public setSelectedMessages(user: MessageProfileDto | null, profile: ProfileDTO) {
 		if (!user) {
-			this.setMessagesFromHistory(null, profile );
+			this.setMessagesFromHistory(null, profile);
 
 			return;
 		}
