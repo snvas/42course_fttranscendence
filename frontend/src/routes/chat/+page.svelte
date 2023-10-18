@@ -6,6 +6,8 @@
 	import { onDestroy } from 'svelte';
 	import type { PrivateMessageDto, PrivateMessageHistoryDto, ComponentMessage } from '$lib/dtos';
 	import { PrivateChatHandler } from '$lib/privateChatHandler';
+	import { getAvatarFromId } from '$lib/api';
+	import AvatarImage from '$lib/components/AvatarImage.svelte';
 
 	const auth = useAuth();
 
@@ -112,13 +114,9 @@
 								on:click={() => onSelectUserChat(history.id)}
 								class="border-b-2 border-x-white h-12 m-2 flex flex-row"
 							>
-								<!-- <img
-								class="avatar max-w-sm aspect-square w-10 h-10 m-2"
-								src={history.avatarId}
-								alt={history.nickname}
-								title={history.nickname}
-							/>
-							<AvatarImage ></AvatarImage> -->
+								<div class="h-10 w-10">
+									<AvatarImage avatar={getAvatarFromId(history.avatarId ?? null)} />
+								</div>
 								<div class="flex flex-col ml-3">
 									<p class="flex flex-col">{history.nickname}</p>
 								</div>
