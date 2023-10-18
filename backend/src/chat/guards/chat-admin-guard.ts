@@ -37,6 +37,14 @@ export class ChatAdminGuard implements CanActivate {
       profile.id,
     );
 
-    return chatRole.role === 'admin' || chatRole.role === 'owner';
+    if (chatRole.role !== 'admin' && chatRole.role !== 'owner') {
+      this.logger.warn(
+        `### Rejected, profile [${profile.id}] is not admin/owner of Group Chat: [${chatId}]`,
+      );
+
+      return false;
+    }
+
+    return true;
   }
 }

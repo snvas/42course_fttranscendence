@@ -42,9 +42,16 @@ export class ChatManagementGuard implements CanActivate {
       this.chatService.getGroupMemberRole(chatId, receiverId),
     ]);
 
-    return (
+    if (
       (askerRole.role === 'owner' && receiverRole.role !== 'owner') ||
       (askerRole.role === 'admin' && receiverRole.role === 'user')
+    ) {
+      return true;
+    }
+
+    this.logger.warn(
+      `### Rejected: The check the users roles: Owner >> Admin >> User`,
     );
+    return false;
   }
 }

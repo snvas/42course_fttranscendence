@@ -39,7 +39,7 @@ export class ChatOwnerGuard implements CanActivate {
 
     if (owner.id != profile.id) {
       this.logger.warn(
-        `### Rejected, profile [${profile.id}] is not the owner of Group Chat: [${groupChat.id}]`,
+        `### Rejected, profile [${profile.id}] is not the owner of Group Chat: [${chatId}]`,
       );
       return false;
     }
