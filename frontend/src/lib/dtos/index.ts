@@ -8,3 +8,11 @@ export * from '../../../../backend/src/chat/dto/private-message.dto';
 export * from '../../../../backend/src/chat/dto/conversation.dto';
 export * from '../../../../backend/src/chat/dto/message-profile.dto';
 export * from '../../../../backend/src/chat/dto/player-status.dto';
+
+export type ComponentMessage = {
+	message: string;
+	createdAt: string;
+	nickname: string;
+	uuid: string;
+	sync: boolean;
+};

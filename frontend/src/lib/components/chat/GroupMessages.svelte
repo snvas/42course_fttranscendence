@@ -1,0 +1,75 @@
+<script lang="ts">
+	import type { ComponentMessage } from '$lib/dtos';
+
+	export let messages: ComponentMessage[] | null;
+
+	// TODO: vai ser importado usando store
+	type SelectedGroup = {
+		name: string;
+		id: number;
+		members: {
+			id: number;
+			name: string;
+		}[];
+	};
+
+	let selectedGroup: SelectedGroup = {
+		name: 'triste teste',
+		id: 200,
+		members: [
+			{
+				id: 1,
+				name: 'tristonho'
+			}
+		]
+	};
+</script>
+
+<div class="w-full h-full flex flex-row gap-10">
+	<div class="border-4 border-white w-full h-full flex flex-col">
+		{#if messages == null}
+			<!-- TODO: Tela de "Selecione uma conversa" -->
+			null
+		{:else}
+			<div class="border-2 border-white h-10 m-2 flex items-center justify-center">
+				<p class="text-xs text-center">{selectedGroup.name}</p>
+			</div>
+			<div
+				class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start"
+			>
+				{#each messages as conversation}
+					<div class="w-full flex flex-row justify-between">
+						<div>
+							<p>
+								{conversation.nickname}
+							</p>
+							<p>
+								{conversation.message}
+							</p>
+						</div>
+						<p>
+							{#if !conversation.sync}
+								Loading
+							{:else}
+								Recieved
+							{/if}
+						</p>
+					</div>
+				{/each}
+			</div>
+			<div class="border-2 border-white m-2 flex items-center justify-center bg-white">
+				<input placeholder="Enter the Message" class="text-center" />
+			</div>
+		{/if}
+	</div>
+	<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 rounded-xl">
+		MEMBERS
+		{#if selectedGroup}
+			{#each selectedGroup.members as member}
+				<div>
+					{member.name}
+				</div>
+			{/each}
+		{/if}
+	</div>
+</div>
