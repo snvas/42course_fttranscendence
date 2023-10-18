@@ -16,12 +16,10 @@ export class PrivateChatHandler {
 	public privateMessageHistory: PrivateMessageHistoryDto[] = [];
 	public selectedHistory: PrivateMessageHistoryDto | null = null;
 	public messages: ComponentMessage[] | null = [];
-	private profile: ProfileDTO;
 	public loading: Promise<PrivateMessageHistoryDto[] | undefined>;
 	public ackSendMessage: Promise<PrivateMessageDto> | null = null;
 
-	constructor(profile: ProfileDTO) {
-		this.profile = profile;
+	constructor() {
 		this.loading = getPrivateMessageHistory();
 
 		this.loading.then((history) => {
@@ -31,7 +29,7 @@ export class PrivateChatHandler {
 		});
 	}
 
-	public recieveMessage(message: PrivateMessageDto): void {
+	public recieveMessage(message: PrivateMessageDto, profile: ProfileDTO): void {
 		if (
 			!this.privateMessageHistory.find(
 				(history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id
@@ -81,13 +79,14 @@ export class PrivateChatHandler {
 				}
 			);
 		}
-		this.setMessagesFromHistory(this.selectedHistory);
+		this.setMessagesFromHistory(this.selectedHistory, profile);
 	}
 
 	public async sendMessage(
 		message: string,
 		playersStatus: PlayerStatusDto[],
-		user: MessageProfileDto
+		user: MessageProfileDto,
+		profile: ProfileDTO
 	) {
 		const messageDate: string = new Date().toISOString();
 		const messageUUID: string = uuidV4();
@@ -123,7 +122,7 @@ export class PrivateChatHandler {
 			};
 		}
 
-		if (!this.profile) {
+		if (!profile) {
 			console.log('Profile not found');
 			return;
 		}
@@ -137,8 +136,8 @@ export class PrivateChatHandler {
 				nickname: receiver.nickname
 			},
 			sender: {
-				id: this.profile.id,
-				nickname: this.profile.nickname
+				id: profile.id,
+				nickname: profile.nickname
 			},
 			createdAt: parseISO(messageDate)
 		};
@@ -146,7 +145,7 @@ export class PrivateChatHandler {
 		this.ackSendMessage = chatService.emitPrivateMessage(privateMessage);
 	}
 
-	public async confirmSendMessage() {
+	public async confirmSendMessage(profile: ProfileDTO) {
 		let backendMessage = await this.ackSendMessage;
 
 		if (!backendMessage) {
@@ -175,18 +174,17 @@ export class PrivateChatHandler {
 		);
 
 		this.privateMessageHistory = newHistory;
-		this.setMessagesFromHistory(this.selectedHistory);
+		this.setMessagesFromHistory(this.selectedHistory, profile);
 		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 
-	private setMessagesFromHistory(history: PrivateMessageHistoryDto | null) {
+	private setMessagesFromHistory(history: PrivateMessageHistoryDto | null, profile: ProfileDTO) {
 		this.messages =
 			history?.messages.map((message: ConversationDto): ComponentMessage => {
 				return {
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
-					nickname:
-						message.sender.nickname == this.profile.nickname ? 'me' : message.sender.nickname,
+					nickname: message.sender.nickname == profile.nickname ? 'me' : message.sender.nickname,
 					uuid: uuidV4(),
 					sync: true
 				};
@@ -194,27 +192,27 @@ export class PrivateChatHandler {
 		this.selectedHistory = history;
 	}
 
-	public setSelectedMessages(user: MessageProfileDto | null) {
+	public setSelectedMessages(user: MessageProfileDto | null, profile: ProfileDTO) {
 		if (!user) {
-			this.setMessagesFromHistory(null);
+			this.setMessagesFromHistory(null, profile );
 
 			return;
 		}
 		let selected = this.privateMessageHistory.find((v) => v.id === user.id);
 		if (selected) {
-			this.setMessagesFromHistory(selected);
+			this.setMessagesFromHistory(selected, profile);
 		} else {
 			let newHistory = { ...user, messages: [] };
 			this.privateMessageHistory = [...this.privateMessageHistory, newHistory];
-			this.setMessagesFromHistory(newHistory);
+			this.setMessagesFromHistory(newHistory, profile);
 		}
 	}
 
-	public setSelectedHistory(userId: number) {
+	public setSelectedHistory(userId: number, profile: ProfileDTO) {
 		this.selectedHistory =
 			this.privateMessageHistory.find((v) => {
 				return v.id === userId;
 			}) ?? null;
-		this.setSelectedMessages(this.selectedHistory);
+		this.setSelectedMessages(this.selectedHistory, profile);
 	}
 }

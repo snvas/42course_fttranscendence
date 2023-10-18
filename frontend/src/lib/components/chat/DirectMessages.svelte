@@ -23,14 +23,13 @@
 			<p class="text-xs text-center">{$selectedDirect?.nickname}</p>
 		</div>
 		<div
-			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-md"
+			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-md overflow-auto"
 		>
 			{#each messages as conversation}
 				<div class="w-full flex flex-row justify-between">
 					<div>
 						<p>
-							<!--TODO:  Verificar se authorid é do usuário -->
-							{conversation.nickname == '0' ? 'Me' : conversation.nickname}
+							{conversation.nickname}
 						</p>
 						<p>
 							{conversation.message}
@@ -47,7 +46,7 @@
 			{/each}
 		</div>
 		<form
-			class="border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
+			class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
 		>
 			<input
 				bind:value={message}

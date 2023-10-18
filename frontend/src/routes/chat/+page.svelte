@@ -1,19 +1,32 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import DirectMessages from '$lib/components/DirectMessages.svelte';
+	import DirectMessages from '$lib/components/chat/DirectMessages.svelte';
+	import GroupMessages from '$lib/components/chat/GroupMessages.svelte';
 	import { useAuth, socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import type { PrivateMessageDto, PrivateMessageHistoryDto, ComponentMessage } from '$lib/dtos';
 	import { PrivateChatHandler } from '$lib/privateChatHandler';
-	import { getAvatarFromId } from '$lib/api';
-	import AvatarImage from '$lib/components/AvatarImage.svelte';
+	import { getProfile } from '$lib/api';
+	import DirectList from '$lib/components/chat/DirectList.svelte';
 
 	const auth = useAuth();
 
 	$: if (!$auth.loading && !$auth.session) {
+		$socket.disconnect();
 		goto('/login');
 	}
+
+	let loadProfile = getProfile();
+
+	loadProfile.then((v) => {
+		if (!v) {
+			$socket.disconnect();
+			goto('/login');
+		} else {
+			$profile = v.data;
+		}
+	});
 
 	let panel: 'direct' | 'groups' | 'create-group' = 'direct';
 
@@ -24,10 +37,10 @@
 	*/
 
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
-	let privateChatHandler = new PrivateChatHandler($profile);
+	let privateChatHandler = new PrivateChatHandler();
 
 	function onSelectUserChat(historyId: number) {
-		privateChatHandler.setSelectedHistory(historyId);
+		privateChatHandler.setSelectedHistory(historyId, $profile);
 		$selectedDirect = privateChatHandler.selectedHistory ?? null;
 		updatePrivateVariables();
 	}
@@ -38,22 +51,22 @@
 	}
 
 	privateChatHandler.loading.then((history) => {
-		privateChatHandler.setSelectedMessages($selectedDirect);
+		privateChatHandler.setSelectedMessages($selectedDirect, $profile);
 		updatePrivateVariables();
 		console.log(history);
 	});
 
 	const onPrivateMessage = (message: PrivateMessageDto): void => {
 		console.log(`### received private ${message.message}`);
-		privateChatHandler.recieveMessage(message);
+		privateChatHandler.recieveMessage(message, $profile);
 		updatePrivateVariables();
 	};
 
 	async function sendPrivateMessage(message: string) {
 		if (!$selectedDirect) return;
-		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect);
+		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect, $profile);
 		updatePrivateVariables();
-		await privateChatHandler.confirmSendMessage();
+		await privateChatHandler.confirmSendMessage($profile);
 		updatePrivateVariables();
 	}
 
@@ -76,16 +89,16 @@
 	});
 </script>
 
-<div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-10">
+<div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-5">
 	<div class="flex-none">
 		<PongHeader />
+		<div class="flex flex-col justify-end items-end">
+			<a href="/dashboard">
+				<i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" />
+			</a>
+		</div>
 	</div>
-	<div class="flex flex-col justify-end items-end">
-		<a href="/dashboard">
-			<i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" />
-		</a>
-	</div>
-	<div class="flex flex-col md:flex-row gap-10 p-10 h-full">
+	<div class="flex-1 flex flex-col md:flex-row gap-10 px-10 pb-10 h-0">
 		<div class="gap-15 flex flex-col md:w-1/4 flex-none w-full h-full">
 			<div class="border-4 border-white min-w-fit w-full flex flex-col h-full rounded-3xl">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
@@ -108,21 +121,13 @@
 					</button>
 				</div>
 				{#if panel == 'direct'}
-					<div class="h-full w-full flex flex-col">
-						{#each privateMessageHistory as history}
-							<button
-								on:click={() => onSelectUserChat(history.id)}
-								class="border-b-2 border-x-white h-12 m-2 flex flex-row"
-							>
-								<div class="h-10 w-10">
-									<AvatarImage avatar={getAvatarFromId(history.avatarId ?? null)} />
-								</div>
-								<div class="flex flex-col ml-3">
-									<p class="flex flex-col">{history.nickname}</p>
-								</div>
-							</button>
-						{/each}
-					</div>
+					<DirectList
+						{privateMessageHistory}
+						on:select={(e) => {
+							console.log(e);
+							onSelectUserChat(e.detail);
+						}}
+					/>
 				{:else}
 					<div class="h-full w-full flex flex-col">
 						<!-- {#each groupsPreview as group, i}
@@ -151,7 +156,7 @@
 				{/if}
 			</div>
 		</div>
-		<div class="flex flex-col w-full h-full">
+		<div class="flex-1 flex flex-col w-full h-full">
 			{#if panel == 'direct'}
 				<DirectMessages bind:messages sendMessage={sendPrivateMessage} />
 			{:else if panel == 'groups'}

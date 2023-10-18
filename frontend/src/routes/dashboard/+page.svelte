@@ -53,7 +53,8 @@
 			oponentAvatar: '../../hackathon.png',
 			oponentScore: 2,
 			mineScore: 4
-		},{
+		},
+		{
 			openentNick: 'Teste',
 			oponentAvatar: '../../hackathon.png',
 			oponentScore: 3,
@@ -82,6 +83,7 @@
 	const auth = useAuth();
 
 	$: if (!$auth.loading && !$auth.session) {
+		$socket.disconnect();
 		goto('/login');
 	}
 
@@ -102,8 +104,11 @@
 	let showing: 'chat' | 'history' | 'settings' = 'history';
 
 	loadProfile.then((v) => {
-		if (v) {
-			$profile = v?.data ?? null;
+		if (!v) {
+			$socket.disconnect();
+			goto('/login');
+		} else {
+			$profile = v.data;
 		}
 	});
 

@@ -9,8 +9,6 @@
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
 
 	const dispatch = createEventDispatcher();
-
-	$profile;
 </script>
 
 <div class="border-4 border-white w-full h-full flex flex-col rounded-3xl pb-2">
