@@ -8,7 +8,7 @@ export class MessageProfileDto implements MessageProfile {
   @IsString()
   @IsNotEmpty()
   nickname: string;
-  @IsString()
   @IsOptional()
+  @IsNumber()
   avatarId?: number;
 }

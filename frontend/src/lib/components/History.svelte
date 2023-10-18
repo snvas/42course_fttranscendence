@@ -9,68 +9,9 @@
 		mineScore: number;
 		oponentScore: number;
 	};
-	const matchs: Match[] = [
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 2
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 2
-		},
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 6,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 4
-		},{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 4
-		},
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 1
-		}
-	];
-	export let avatar: Promise<AxiosResponse<Blob> | null>;
+	
+	export let matchs: Match[];
+	export let avatar: Promise<AxiosResponse<Blob> | null> | null;
 </script>
 
 <div class="flex flex-col w-full">
@@ -85,13 +26,13 @@
 			match.mineScore === match.oponentScore ? 'yellow' : 'red'}">
 				<div class="w-full flex flex-row gap-2 items-center justify-center min-w-fit">
 					<img
-						class="avatar max-w-sm aspect-square w-20"
+						class="avatar max-w-sm aspect-square xl:w-20 w-12"
 						src={match.oponentAvatar}
 						alt={match.openentNick}
 						title={match.openentNick}
 					/>
-					<p class="text-5xl p-4">{match.oponentScore} - {match.mineScore}</p>
-					<div class="w-20">
+					<p class="xl:text-5xl lg:text-3xl text-2xl p-4">{match.oponentScore} - {match.mineScore}</p>
+					<div class="xl:w-20 w-12">
 						<AvatarImage {avatar} />
 					</div>
 				</div>

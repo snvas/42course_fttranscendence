@@ -10,13 +10,13 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
-    ports:
-      - "5432:5432"
     networks:
-      - postgres
+      - pong_network
     restart: unless-stopped
 
   pgadmin:
+    depends_on:
+      - postgres
     container_name: pgadmin_container
     image: dpage/pgadmin4
     environment:
@@ -28,11 +28,54 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - postgres
+      - pong_network
+    restart: unless-stopped
+
+  nestjs:
+    depends_on:
+        - postgres
+    build: ./backend
+    image: nestjs
+    container_name: nestjs_container
+    environment:
+      DB_HOST: ${DB_HOST} 
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      APP_PORT: ${APP_PORT}
+      APP_OAUTH2_ENABLED: ${APP_OAUTH2_ENABLED}
+      APP_MOCK_42_USERS: ${APP_MOCK_42_USERS}
+      APP_OAUTH2_CLIENT_ID: ${APP_OAUTH2_CLIENT_ID}
+      APP_OAUTH2_CLIENT_SECRET: ${APP_OAUTH2_CLIENT_SECRET}
+      APP_OAUTH2_CALLBACK_URL: ${APP_OAUTH2_CALLBACK_URL}
+      APP_OAUTH2_REDIRECT: ${APP_OAUTH2_REDIRECT}
+      APP_SESSION_ID: ${APP_SESSION_ID}
+      APP_SESSION_SECRET: ${APP_SESSION_SECRET}
+      APP_SESSION_COOKIE_MAX_AGE: ${APP_SESSION_COOKIE_MAX_AGE}
+      APP_SESSION_CLEANUP_LIMIT: ${APP_SESSION_CLEANUP_LIMIT}
+      APP_CORS_ORIGIN: ${APP_CORS_ORIGIN}
+      APP_TWO_FACTOR_AUTHENTICATION_NAME: ${APP_TWO_FACTOR_AUTHENTICATION_NAME}
+    ports:
+      - "3000:3000"
+    networks:
+        - pong_network
+    restart: unless-stopped
+
+  svelte:
+    depends_on:
+        - nestjs
+    build: ./frontend
+    image: svelte
+    container_name: svelte_container
+    ports:
+        - "3001:3001"
+    networks:
+        - pong_network
     restart: unless-stopped
 
 networks:
-  postgres:
+  pong_network:
     driver: bridge
 
 volumes:
