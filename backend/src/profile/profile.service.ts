@@ -14,6 +14,7 @@ import {
   QueryFailedError,
   QueryRunner,
   Repository,
+  UpdateResult,
 } from 'typeorm';
 import { Profile } from './interfaces/profile.interface';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
@@ -157,7 +158,7 @@ export class ProfileService {
     await this.findByUserId(userId);
 
     try {
-      const updateResult = await this.profileRepository.update(
+      const updateResult: UpdateResult = await this.profileRepository.update(
         { userEntity: { id: userId } },
         profile,
       );

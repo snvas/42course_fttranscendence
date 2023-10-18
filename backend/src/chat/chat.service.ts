@@ -8,7 +8,12 @@ import {
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { GroupMessageDto } from './models/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  QueryFailedError,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import {
   GroupChatEntity,
   GroupMemberEntity,
@@ -35,6 +40,7 @@ import { PlayerStatusSocket } from './types/player-status.socket';
 import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
 import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
 import { ChatRole } from './types/chat-role.type';
+import { ProfileUpdatedResponseDto } from '../profile/models/profile-updated-response.dto';
 
 @Injectable()
 export class ChatService {
@@ -352,6 +358,27 @@ export class ChatService {
       this.logger.error(exception);
       throw exception;
     }
+  }
+
+  public async changeGroupChatPassword(
+    chatId: number,
+    password: { password: string },
+  ): Promise<Partial<ProfileUpdatedResponseDto>> {
+    const updateResult: UpdateResult = await this.groupChatRepository.update(
+      {
+        id: chatId,
+      },
+      {
+        password: hashPassword(password.password),
+      },
+    );
+
+    return updateResult.affected
+      ? {
+          updated: updateResult.affected > 0,
+          affected: updateResult.affected,
+        }
+      : {};
   }
 
   public async addGroupChatMember(

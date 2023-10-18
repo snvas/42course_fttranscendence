@@ -50,7 +50,7 @@ export class ChatManagementGuard implements CanActivate {
     }
 
     this.logger.warn(
-      `### Rejected: The check the users roles: Owner >> Admin >> User`,
+      `### Rejected: Asker [${askerId}] - [${askerRole.role}] cannot do any action on user [${receiverId}] - [${receiverRole.role}]`,
     );
     return false;
   }

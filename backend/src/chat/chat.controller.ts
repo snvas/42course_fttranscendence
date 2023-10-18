@@ -3,9 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -25,11 +28,13 @@ import { ChatOwnerGuard } from './guards/chat-owner-guard';
 import { ChatRole } from './types/chat-role.type';
 import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { ChatManagementGuard } from './guards/chat-management.guard';
+import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @HttpCode(HttpStatus.OK)
   @Get('private/messages/history')
   async getUserPrivateMessagesHistory(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -37,6 +42,7 @@ export class ChatController {
     return await this.chatService.getUserPrivateMessagesHistory(user.id);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get('group/chats/history')
   async getUserGroupChatsHistory(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -44,11 +50,13 @@ export class ChatController {
     return await this.chatService.getUserGroupChatsHistory(user.id);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get('group/chats')
   async getAllGroupChats(): Promise<GroupChatDto[]> {
     return await this.chatService.getAllGroupChats();
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('group/create')
   async createGroupChat(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -57,6 +65,7 @@ export class ChatController {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
   }
 
+  @HttpCode(HttpStatus.OK)
   @UseGuards(ChatOwnerGuard)
   @Delete('group/:chatId')
   async deleteGroupChat(
@@ -66,15 +75,17 @@ export class ChatController {
     return await this.chatService.deleteGroupChatById(chatId, user.id);
   }
 
-  // @UseGuards(ChatOwnerGuard)
-  // @Put('group/:chatId/password')
-  // async updateGroupChatPassword(
-  //   @Req() { user }: { user: FortyTwoUserDto },
-  //   @Body() password: { password: string },
-  // ): Promise<GroupChatDto> {
-  //   return await this.chatService.changeGroupChatPassword(password, user.id);
-  // }
-  //
+  //TODO: testar troca de senha
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ChatOwnerGuard)
+  @Put('group/:chatId/password')
+  async updateGroupChatPassword(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Body() password: { password: string },
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    return await this.chatService.changeGroupChatPassword(chatId, password);
+  }
+
   // @UseGuards(ChatOwnerGuard)
   // @Put('group/:chatId/password')
   // async deleteGroupChatPassword(
@@ -83,6 +94,7 @@ export class ChatController {
   //   return await this.chatService.deleteGroupChatPassword(user.id);
   // }
 
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatOwnerGuard)
   @Post('group/:chatId/admin/:profileId')
   async addGroupChatAdmin(
@@ -94,6 +106,7 @@ export class ChatController {
     } as ChatRole);
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatAdminGuard)
   @Post('group/:chatId/user/:profileId')
   async addGroupChatUser(
@@ -105,6 +118,7 @@ export class ChatController {
     } as ChatRole);
   }
 
+  @HttpCode(HttpStatus.OK)
   @UseGuards(ChatManagementGuard)
   @Delete('group/:chatId/member/:profileId')
   async kickGroupChatMember(
@@ -149,8 +163,9 @@ export class ChatController {
   // ): Promise<GroupMemberDto> {
   //   return await this.chatService.unbanGroupChatMember(chatId, profileId);
   // }
-
   //Debug routes
+
+  @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -160,6 +175,7 @@ export class ChatController {
     return await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('private/:profileId/message')
   async savePrivateMessage(
     @Req() { user }: { user: FortyTwoUserDto },
