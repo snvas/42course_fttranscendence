@@ -44,7 +44,7 @@ export class ChatController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get('group/chats/history')
+  @Get('group/messages/history')
   async getUserGroupChatsHistory(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatHistoryDto[]> {
@@ -92,6 +92,8 @@ export class ChatController {
   ): Promise<Partial<PasswordUpdateResponseDto>> {
     return await this.chatService.deleteGroupChatPassword(chatId);
   }
+
+  //validate group chat password
 
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatOwnerGuard)
@@ -162,8 +164,8 @@ export class ChatController {
   // ): Promise<GroupMemberDto> {
   //   return await this.chatService.unbanGroupChatMember(chatId, profileId);
   // }
-  //Debug routes
 
+  //Debug routes
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(
