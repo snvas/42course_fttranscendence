@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { selectedDirect, socket, useAuth, profile, onlineUsers } from '$lib/stores';
-	import { authService, getProfile, getUserAvatar, getAvatarFromId } from '$lib/api';
+	import { selectedDirect, socket, useAuth, profile, playersStatus, allUsers } from '$lib/stores';
+	import { authService, getProfile, getUserAvatar, getAvatarFromId, readAllUsers } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import Profile from '$lib/components/Profile.svelte';
@@ -89,6 +89,12 @@
 
 	$socket.connect();
 
+	let loadUsers = readAllUsers();
+
+	loadUsers.then((v) => {
+		$allUsers = v;
+	});
+
 	async function onLogout() {
 		$socket.disconnect();
 		await authService.logoutUser();
@@ -114,6 +120,7 @@
 
 	$: avatar = getUserAvatar(loadProfile);
 	$: console.log($selectedDirect);
+	$: console.log($playersStatus);
 </script>
 
 <div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
@@ -146,7 +153,7 @@
 		</div>
 		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
 			<UsersList
-				users={$onlineUsers}
+				users={$playersStatus}
 				getAvatar={getAvatarFromId}
 				on:chat={(e) => onChat(e.detail)}
 			/>
