@@ -5,25 +5,22 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { GroupMessage } from '../interfaces/group-message.interface';
-import { GroupChatEntity } from '../../db/entities';
 import { MessageProfileDto } from './message-profile.dto';
+import { MessageChatDto } from './message-chat.dto';
 
-export class GroupMessageDto implements GroupMessage {
+export class GroupMessageDto {
   @IsNotEmpty()
   @IsNumber()
   id: number;
   @IsNotEmpty()
-  @IsNumber()
-  group_id: number;
+  @ValidateNested()
+  groupChat: MessageChatDto;
   @IsString()
   @IsNotEmpty()
   message: string;
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;
-  @ValidateNested()
-  groupChat: GroupChatEntity;
   @ValidateNested()
   sender: MessageProfileDto;
 }

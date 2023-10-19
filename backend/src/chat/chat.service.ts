@@ -51,8 +51,6 @@ export class ChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    @InjectRepository(GroupMessageEntity)
-    private readonly chatMessageRepository: Repository<GroupMessageEntity>,
     @InjectRepository(GroupChatEntity)
     private readonly groupChatRepository: Repository<GroupChatEntity>,
     @InjectRepository(GroupMessageEntity)
@@ -166,28 +164,57 @@ export class ChatService {
     );
   }
 
-  //TODO: Implement
   public async handleGroupMessage(
     socket: AuthenticatedSocket,
-    message: string,
+    groupMessageDto: GroupMessageDto,
   ): Promise<GroupMessageDto> {
     const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
-
-    const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
-      {
-        message,
-      },
+    const groupChat: GroupChatDto = await this.getGroupChatById(
+      groupMessageDto.groupChat.id,
     );
 
+    if (await this.isGroupMember(groupChat.id, user.id)) {
+      this.logger.error(
+        `### User [${user.id}] is not a member of group chat [${groupChat.id}] for sending messages`,
+      );
+      throw new UnauthorizedException(
+        `Only members of group chat can send messages`,
+      );
+    }
+    const messageEntity: GroupMessageEntity =
+      this.groupMessageRepository.create({
+        groupChat,
+        message: groupMessageDto.message,
+        sender: profile,
+      });
+
     const groupMessageEntity: GroupMessageEntity =
-      await this.chatMessageRepository.save(messageEntity);
+      await this.groupMessageRepository.save(messageEntity);
 
     this.logger.verbose(
       `### Event message: ${JSON.stringify(groupMessageEntity)}`,
     );
 
     return plainToClass(GroupMessageDto, groupMessageEntity);
+  }
+
+  public async getPlayerChatRooms(
+    socket: AuthenticatedSocket,
+  ): Promise<string[]> {
+    const rooms: string[] = await this.getUserGroupChatsHistory(
+      socket.request.user.id,
+    ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
+      groupChatHistory.map(
+        (groupChat: GroupChatHistoryDto): string => groupChat.name,
+      ),
+    );
+
+    this.logger.debug(
+      `### User [${socket.request.user.id}] group chat rooms: [${rooms}]`,
+    );
+
+    return rooms;
   }
 
   public async saveGroupMessage(
@@ -543,7 +570,6 @@ export class ChatService {
     return plainToInstance(GroupChatDto, groupChat);
   }
 
-  //Debug method apagar depois que o frontend estiver pronto
   public async savePrivateMessage(
     senderUserId: number,
     receiverProfileId: number,
@@ -584,11 +610,16 @@ export class ChatService {
     }
 
     const groupMember: GroupMemberEntity | null =
-      await this.groupMemberRepository.findOneBy({
-        profile: {
-          id: profileId,
+      await this.groupMemberRepository.findOneBy([
+        {
+          profile: {
+            id: profileId,
+          },
+          groupChat: {
+            id: chatId,
+          },
         },
-      });
+      ]);
 
     if (!groupMember) {
       this.logger.error(
@@ -709,5 +740,26 @@ export class ChatService {
       });
 
     return !!groupChatEntity;
+  }
+
+  private async isGroupMember(
+    chatId: number,
+    userId: number,
+  ): Promise<boolean> {
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy([
+        {
+          profile: {
+            userEntity: {
+              id: userId,
+            },
+          },
+          groupChat: {
+            id: chatId,
+          },
+        },
+      ]);
+
+    return !!groupMember;
   }
 }

@@ -12,8 +12,8 @@ import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
-import { ConversationDto } from './models/conversation.dto';
 import { PrivateMessageDto } from './models/private-message.dto';
+import { GroupMessageDto } from './models/group-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -43,6 +43,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     await this.chatService.setPlayerStatus(socket, 'online');
+
+    const rooms: string[] = await this.chatService.getPlayerChatRooms(socket);
+
+    socket.join(rooms);
 
     this.server.emit(
       'playersStatus',
@@ -84,8 +88,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         socket.to(receiverSocket).emit('receivePrivateMessage', privateMessage);
       }
 
-      //await new Promise((resolve) => setTimeout(resolve, 5000));
-
       return privateMessage;
     } catch (error) {
       this.logger.error(error);
@@ -94,24 +96,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  @SubscribeMessage('message')
-  async handleMessage(
-    @MessageBody() message: string,
+  @SubscribeMessage('sendGroupMessage')
+  async handleGroupMessage(
+    @MessageBody() message: GroupMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
-  ) {
-    // const messageDto: GroupMessageDto =
-    //  messageDto await this.chatService.handleGroupMessage(socket, message);
+  ): Promise<GroupMessageDto | null> {
+    try {
+      const groupMessage: GroupMessageDto =
+        await this.chatService.handleGroupMessage(socket, message);
 
-    const conversationDto: ConversationDto = {
-      id: 1,
-      message: message,
-      createdAt: new Date(),
-      sender: {
-        id: 1,
-        nickname: 'Teste',
-      },
-    };
+      if (groupMessage.groupChat.name) {
+        socket
+          .to(groupMessage.groupChat.name)
+          .emit('receiveGroupMessage', groupMessage);
+      }
 
-    this.server.emit('message', conversationDto);
+      return groupMessage;
+    } catch (error) {
+      this.logger.error(error);
+      return null;
+    }
   }
 }
