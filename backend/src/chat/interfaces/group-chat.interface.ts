@@ -8,7 +8,7 @@ export interface GroupChat {
   id: number;
   name: string;
   visibility: string;
-  password?: string;
+  password?: string | null;
   owner: ProfileEntity;
   members: GroupMemberEntity[];
   messages: GroupMessageEntity[];

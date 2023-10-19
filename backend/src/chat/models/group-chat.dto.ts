@@ -27,7 +27,7 @@ export class GroupChatDto implements GroupChat {
   @IsString()
   @IsNotEmpty()
   @Exclude()
-  password: string;
+  password: string | null;
   @IsString({ each: true })
   playersStatus: string[];
   @ValidateNested()

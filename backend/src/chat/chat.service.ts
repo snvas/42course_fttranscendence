@@ -40,9 +40,9 @@ import { PlayerStatusSocket } from './types/player-status.socket';
 import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
 import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
 import { ChatRole } from './types/chat-role.type';
-import { ProfileUpdatedResponseDto } from '../profile/models/profile-updated-response.dto';
 import { ChatPasswordDto } from './models/chat-password.dto';
 import { MessageProfile } from './interfaces/message-profile.interface';
+import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
 
 @Injectable()
 export class ChatService {
@@ -109,7 +109,7 @@ export class ChatService {
       this.playerStatusSocket.values(),
     );
 
-    const playerStatusDtos: PlayerStatusDto[] = onlineUserSocket.map(
+    const playerStatus: PlayerStatusDto[] = onlineUserSocket.map(
       (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
         return {
           id: onlineUser.id,
@@ -121,12 +121,12 @@ export class ChatService {
     );
 
     this.logger.debug(
-      `### Online users nicknames: ${playerStatusDtos.map(
+      `### Online users nicknames: ${playerStatus.map(
         (u: PlayerStatusDto) => u.nickname,
       )}`,
     );
 
-    return playerStatusDtos;
+    return playerStatus;
   }
 
   public async getPlayerSocketId(
@@ -366,13 +366,39 @@ export class ChatService {
   public async changeGroupChatPassword(
     chatId: number,
     password: ChatPasswordDto,
-  ): Promise<Partial<ProfileUpdatedResponseDto>> {
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    this.logger.verbose(`### Updating group chat [${chatId}] password`);
+
     const updateResult: UpdateResult = await this.groupChatRepository.update(
       {
         id: chatId,
       },
       {
         password: hashPassword(password.password),
+        visibility: 'private',
+      },
+    );
+
+    return updateResult.affected
+      ? {
+          updated: updateResult.affected > 0,
+          affected: updateResult.affected,
+        }
+      : {};
+  }
+
+  public async deleteGroupChatPassword(
+    chatId: number,
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    this.logger.verbose(`### Removing group chat [${chatId}] password`);
+
+    const updateResult: UpdateResult = await this.groupChatRepository.update(
+      {
+        id: chatId,
+      },
+      {
+        password: null,
+        visibility: 'public',
       },
     );
 
@@ -476,18 +502,7 @@ export class ChatService {
 
   public async deleteGroupChatById(
     id: number,
-    userId: number,
   ): Promise<GroupChatDeletedResponseDto> {
-    const groupChatDto: GroupChatDto = await this.getGroupChatById(id);
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    if (groupChatDto.owner.id != profile.id) {
-      this.logger.error("### 'Group chat not deleted, user is not the owner");
-      throw new NotAcceptableException(
-        'Group chat not deleted, user is not the owner',
-      );
-    }
-
     this.logger.verbose(`### Deleting group chat by id: ${id}`);
 
     const groupChatDeleteResult: DeleteResult =
@@ -694,36 +709,5 @@ export class ChatService {
       });
 
     return !!groupChatEntity;
-  }
-
-  private async isGroupChatAdminMember(
-    userId: number,
-    chatId: number,
-  ): Promise<boolean> {
-    const askerMember: GroupMemberEntity | null =
-      await this.groupMemberRepository.findOneBy({
-        profile: {
-          userEntity: {
-            id: userId,
-          },
-        },
-      });
-
-    if (!askerMember) {
-      this.logger.error(
-        `### User id [${userId}] is not a member from chat [${chatId}]`,
-      );
-      return false;
-    }
-
-    if (askerMember?.role != 'admin') {
-      this.logger.error(
-        `### Member [${askerMember?.id}] is not admin to remove another members from chat`,
-      );
-
-      return false;
-    }
-
-    return true;
   }
 }

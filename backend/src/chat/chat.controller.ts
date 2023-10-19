@@ -71,9 +71,8 @@ export class ChatController {
   @Delete('group/:chatId')
   async deleteGroupChat(
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatDeletedResponseDto> {
-    return await this.chatService.deleteGroupChatById(chatId, user.id);
+    return await this.chatService.deleteGroupChatById(chatId);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -86,13 +85,13 @@ export class ChatController {
     return await this.chatService.changeGroupChatPassword(chatId, password);
   }
 
-  // @UseGuards(ChatOwnerGuard)
-  // @Put('group/:chatId/password')
-  // async deleteGroupChatPassword(
-  //   @Req() { user }: { user: FortyTwoUserDto },
-  // ): Promise<GroupChatDto> {
-  //   return await this.chatService.deleteGroupChatPassword(user.id);
-  // }
+  @UseGuards(ChatOwnerGuard)
+  @Delete('group/:chatId/password')
+  async deleteGroupChatPassword(
+    @Param('chatId', ParseIntPipe) chatId: number,
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    return await this.chatService.deleteGroupChatPassword(chatId);
+  }
 
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatOwnerGuard)
