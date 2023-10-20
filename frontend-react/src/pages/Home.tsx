@@ -1,6 +1,6 @@
 import {useProfile} from "../context/ProfileContext.tsx";
 import {ProfileContextData} from "../context/interfaces/ProfileContextData.ts";
-import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/models/player-status.dto.ts";
 import {useEffect, useState} from "react";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";

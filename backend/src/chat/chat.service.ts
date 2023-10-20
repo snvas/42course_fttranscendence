@@ -6,9 +6,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { GroupMessageDto } from './dto/group-message.dto';
+import { GroupMessageDto } from './models/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  QueryFailedError,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import {
   GroupChatEntity,
   GroupMemberEntity,
@@ -20,20 +25,25 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileDTO } from '../profile/models/profile.dto';
-import { ChatMessageDto } from './dto/chat-message.dto';
+import { ChatMessageDto } from './models/chat-message.dto';
 import { Conversation } from './interfaces/private-conversation.interface';
-import { GroupCreationDto } from './dto/group-creation.dto';
-import { hashPassword } from '../utils/bcrypt';
-import { GroupRoleDto } from './dto/group-role.dto';
-import { PrivateMessageDto } from './dto/private-message.dto';
-import { PrivateMessageHistoryDto } from './dto/private-message-history.dto';
-import { ConversationDto } from './dto/conversation.dto';
-import { GroupChatHistoryDto } from './dto/group-chat-history.dto';
-import { GroupChatDto } from './dto/group-chat.dto';
-import { GroupMemberDto } from './dto/group-member.dto';
-import { PlayerStatusDto } from './dto/player-status.dto';
+import { GroupCreationDto } from './models/group-creation.dto';
+import { comparePassword, hashPassword } from '../utils/bcrypt';
+import { PrivateMessageDto } from './models/private-message.dto';
+import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
+import { ConversationDto } from './models/conversation.dto';
+import { GroupChatHistoryDto } from './models/group-chat-history.dto';
+import { GroupChatDto } from './models/group-chat.dto';
+import { GroupMemberDto } from './models/group-member.dto';
+import { PlayerStatusDto } from './models/player-status.dto';
 import { PlayerStatusSocket } from './types/player-status.socket';
-import { GroupChatDeletedResponseDto } from './dto/group-chat-deleted-response.dto';
+import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
+import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
+import { ChatRole } from './types/chat-role.type';
+import { ChatPasswordDto } from './models/chat-password.dto';
+import { MessageProfile } from './interfaces/message-profile.interface';
+import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
+import { MessageProfileDto } from './models/message-profile.dto';
 
 @Injectable()
 export class ChatService {
@@ -42,8 +52,6 @@ export class ChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    @InjectRepository(GroupMessageEntity)
-    private readonly chatMessageRepository: Repository<GroupMessageEntity>,
     @InjectRepository(GroupChatEntity)
     private readonly groupChatRepository: Repository<GroupChatEntity>,
     @InjectRepository(GroupMessageEntity)
@@ -59,7 +67,7 @@ export class ChatService {
       socket.request.user === undefined ||
       socket.request.user.id === undefined
     ) {
-      this.logger.warn(`### User not authenticated: ${socket.id}`);
+      this.logger.warn(`### User not authenticated: [${socket.id}]`);
       socket.emit('unauthorized', 'User not authenticated');
       socket.disconnect();
       return false;
@@ -100,34 +108,34 @@ export class ChatService {
       this.playerStatusSocket.values(),
     );
 
-    const onlineUsers: PlayerStatusDto[] = onlineUserSocket.map(
+    const playerStatus: PlayerStatusDto[] = onlineUserSocket.map(
       (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
         return {
           id: onlineUser.id,
           nickname: onlineUser.nickname,
           status: onlineUser.status,
           avatarId: onlineUser.avatarId,
-        };
+        } as PlayerStatusDto;
       },
     );
 
     this.logger.debug(
-      `### Online users nicknames: ${onlineUsers.map(
+      `### Online users nicknames: [${playerStatus.map(
         (u: PlayerStatusDto) => u.nickname,
-      )}`,
+      )}]`,
     );
 
-    return onlineUsers;
+    return playerStatus;
   }
 
-  public async getPlayerSocketId(
+  public async getPlayerSocket(
     profileId: number,
-  ): Promise<string | undefined> {
+  ): Promise<AuthenticatedSocket | undefined> {
     const profile: ProfileDTO = await this.profileService.findByProfileId(
       profileId,
     );
 
-    return this.playerStatusSocket.get(profile.id)?.socket.id;
+    return this.playerStatusSocket.get(profile.id)?.socket;
   }
 
   async handlePrivateMessage(
@@ -148,7 +156,7 @@ export class ChatService {
       });
 
     this.logger.debug(
-      `### Saving private message by: ${privateMessageDto.sender.nickname} to ${privateMessageDto.receiver.nickname}`,
+      `### Saving private message by: [${privateMessageDto.sender.nickname}] to [${privateMessageDto.receiver.nickname}]`,
     );
 
     return plainToClass(
@@ -157,66 +165,66 @@ export class ChatService {
     );
   }
 
-  async savePrivateMessage(
-    senderUserId: number,
-    receiverProfileId: number,
-    message: ChatMessageDto,
-  ): Promise<PrivateMessageDto> {
-    const sender: ProfileDTO = await this.profileService.findByUserId(
-      senderUserId,
-    );
-    const receiver: ProfileDTO = await this.profileService.findByProfileId(
-      receiverProfileId,
-    );
-
-    const privateMessageEntity: PrivateMessageEntity =
-      this.privateMessageRepository.create({
-        sender,
-        receiver,
-        message: message.message,
-      });
-
-    this.logger.debug(
-      `### Saving private message by: ${sender.nickname} to ${receiver.nickname}`,
-    );
-
-    return plainToClass(
-      PrivateMessageDto,
-      await this.privateMessageRepository.save(privateMessageEntity),
-    );
-  }
-
-  //TODO: Implement
   public async handleGroupMessage(
     socket: AuthenticatedSocket,
-    message: string,
+    groupMessageDto: GroupMessageDto,
   ): Promise<GroupMessageDto> {
     const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
-
-    const messageEntity: GroupMessageEntity = this.chatMessageRepository.create(
-      {
-        message,
-      },
+    const groupChat: GroupChatEntity = await this.getGroupChatById(
+      groupMessageDto.groupChat.id,
     );
 
+    if (await this.isGroupMember(groupChat.id, user.id)) {
+      this.logger.error(
+        `### User [${user.id}] is not a member of group chat [${groupChat.id}] for sending messages`,
+      );
+      throw new UnauthorizedException(
+        `Only members of group chat can send messages`,
+      );
+    }
+    const messageEntity: GroupMessageEntity =
+      this.groupMessageRepository.create({
+        groupChat,
+        message: groupMessageDto.message,
+        sender: profile,
+      });
+
     const groupMessageEntity: GroupMessageEntity =
-      await this.chatMessageRepository.save(messageEntity);
+      await this.groupMessageRepository.save(messageEntity);
 
     this.logger.verbose(
-      `### Event message: ${JSON.stringify(groupMessageEntity)}`,
+      `### Event message: [${JSON.stringify(groupMessageEntity)}]`,
     );
 
     return plainToClass(GroupMessageDto, groupMessageEntity);
   }
 
-  async saveGroupMessage(
+  public async getPlayerChatRooms(
+    socket: AuthenticatedSocket,
+  ): Promise<string[]> {
+    const rooms: string[] = await this.getUserGroupChatsHistory(
+      socket.request.user.id,
+    ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
+      groupChatHistory.map(
+        (groupChat: GroupChatHistoryDto): string => `${groupChat.id}`,
+      ),
+    );
+
+    this.logger.debug(
+      `### User [${socket.request.user.id}] group chat rooms: [${rooms}]`,
+    );
+
+    return rooms;
+  }
+
+  public async saveGroupMessage(
     chatId: number,
     userId: number,
     message: ChatMessageDto,
   ): Promise<GroupMessageDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     if (
       groupChat.members.filter(
@@ -236,7 +244,7 @@ export class ChatService {
       });
 
     this.logger.verbose(
-      `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
+      `### Saving group message by: [${profile.nickname}] to group [${groupChat.name}]`,
     );
 
     return plainToClass(
@@ -264,7 +272,7 @@ export class ChatService {
             nickname: profile.nickname,
             avatarId: profile.avatarId,
             messages,
-          };
+          } as PrivateMessageHistoryDto;
         },
       );
 
@@ -316,7 +324,15 @@ export class ChatService {
         visibility: groupChat.visibility,
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
-        members: groupChat.members,
+        members: groupChat.members.map(
+          (member: GroupMemberEntity): MessageProfile => {
+            return {
+              id: member.profile.id,
+              nickname: member.profile.nickname,
+              avatarId: member.profile.avatarId,
+            } as MessageProfile;
+          },
+        ),
         messages: groupChat.messages
           .map((message: GroupMessageEntity): ConversationDto => {
             return {
@@ -326,17 +342,18 @@ export class ChatService {
               sender: {
                 id: message.sender.id,
                 nickname: message.sender.nickname,
-              },
+                avatarId: message.sender.avatarId,
+              } as MessageProfile,
             };
           })
           .sort((a: ConversationDto, b: ConversationDto) => {
             return a.createdAt.getTime() - b.createdAt.getTime();
           }),
-      };
+      } as GroupChatHistoryDto;
     });
   }
 
-  async createGroupChat(
+  public async createGroupChat(
     groupCreationDto: GroupCreationDto,
     userId: number,
   ): Promise<GroupChatDto> {
@@ -357,28 +374,32 @@ export class ChatService {
       const groupChatEntity: GroupChatEntity =
         await this.groupChatRepository.save(groupChat);
 
-      const roleDto: GroupRoleDto = {
+      const chatRole: ChatRole = {
         role: 'admin',
       };
 
-      await this.addMemberToGroupChat(
-        userId,
-        groupChatEntity.id,
-        profile.id,
-        roleDto,
-      );
+      await this.addGroupChatMember(groupChatEntity.id, profile.id, chatRole);
 
       this.logger.debug(
-        `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
+        `### Group chat created with name: [${groupChatEntity.name}], visibility: [${groupChatEntity.visibility}] - by [${profile.nickname}]`,
       );
-      return plainToClass(GroupChatDto, groupChatEntity);
+      return {
+        id: groupChatEntity.id,
+        name: groupChatEntity.name,
+        visibility: groupChatEntity.visibility,
+        owner: {
+          id: profile.id,
+          nickname: profile.nickname,
+          avatarId: profile.avatarId,
+        } as MessageProfile,
+      } as GroupChatDto;
     } catch (exception) {
       if (
         exception instanceof QueryFailedError &&
         (await this.isGroupNameExist(groupCreationDto.name))
       ) {
         throw new NotAcceptableException(
-          `Group chat with name ${groupCreationDto.name} already exists`,
+          `Group chat with name [${groupCreationDto.name}] already exists`,
         );
       }
 
@@ -387,25 +408,89 @@ export class ChatService {
     }
   }
 
-  async addMemberToGroupChat(
-    userId: number,
+  public async validateGroupChatPassword(
+    chatId: number,
+    chatPassword: ChatPasswordDto,
+  ): Promise<void> {
+    const groupChat: GroupChatEntity | null =
+      await this.groupChatRepository.findOneBy({
+        id: chatId,
+      });
+
+    if (!groupChat) {
+      this.logger.error(`### Group chat [${chatId}] not found`);
+      throw new NotFoundException(`Group chat not found`);
+    }
+
+    if (!groupChat.password) {
+      this.logger.error(`### Group chat [${chatId}] has no password`);
+      throw new NotAcceptableException(`Group chat has no password`);
+    }
+
+    const result: boolean = comparePassword(
+      chatPassword.password,
+      groupChat.password,
+    );
+
+    if (!result) {
+      this.logger.error(`### Group chat [${chatId}] password is invalid`);
+      throw new UnauthorizedException(`Group chat password is invalid`);
+    }
+  }
+
+  public async changeGroupChatPassword(
+    chatId: number,
+    password: ChatPasswordDto,
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    this.logger.verbose(`### Updating group chat [${chatId}] password`);
+
+    const updateResult: UpdateResult = await this.groupChatRepository.update(
+      {
+        id: chatId,
+      },
+      {
+        password: hashPassword(password.password),
+        visibility: 'private',
+      },
+    );
+
+    return updateResult.affected
+      ? {
+          updated: updateResult.affected > 0,
+          affected: updateResult.affected,
+        }
+      : {};
+  }
+
+  public async deleteGroupChatPassword(
+    chatId: number,
+  ): Promise<Partial<PasswordUpdateResponseDto>> {
+    this.logger.verbose(`### Removing group chat [${chatId}] password`);
+
+    const updateResult: UpdateResult = await this.groupChatRepository.update(
+      {
+        id: chatId,
+      },
+      {
+        password: null,
+        visibility: 'public',
+      },
+    );
+
+    return updateResult.affected
+      ? {
+          updated: updateResult.affected > 0,
+          affected: updateResult.affected,
+        }
+      : {};
+  }
+
+  public async addGroupChatMember(
     chatId: number,
     newMemberProfileId: number,
-    roleDto?: GroupRoleDto,
+    chatRole: ChatRole,
   ): Promise<GroupMemberDto> {
-    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
-
-    if (roleDto?.role === 'admin') {
-      const userProfile: ProfileDTO = await this.profileService.findByUserId(
-        userId,
-      );
-
-      if (groupChat.owner.id !== userProfile.id) {
-        throw new UnauthorizedException(
-          `Only owner of group chat can add admin members`,
-        );
-      }
-    }
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const newMemberProfile: ProfileDTO =
       await this.profileService.findByProfileId(newMemberProfileId);
@@ -413,31 +498,67 @@ export class ChatService {
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
       groupChat,
       profile: newMemberProfile,
-      role: roleDto?.role || 'user',
+      role: chatRole.role,
     });
     groupMember.groupChat = groupChat;
     groupMember.profile = newMemberProfile;
 
     this.logger.debug(
-      `### Adding profile: ${newMemberProfile.nickname} with role: ${groupMember.role} to group chat: ${groupChat.name}`,
+      `### Adding profile: [${newMemberProfile.nickname}] with role: [${groupMember.role}] to group chat: [${groupChat.name}]`,
     );
     try {
-      return plainToClass(
-        GroupMemberDto,
-        await this.groupMemberRepository.save(groupMember),
+      const memberEntity: GroupMemberEntity =
+        await this.groupMemberRepository.save(groupMember);
+
+      return this.createGroupChatMember(
+        memberEntity,
+        groupChat,
+        newMemberProfile,
       );
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
         throw new NotAcceptableException(
-          `Profile ${newMemberProfile.nickname} is already a member of group chat ${groupChat.name}`,
+          `Profile [${newMemberProfile.nickname}] is already a member of group chat [${groupChat.name}]`,
         );
       }
       throw Exception;
     }
   }
 
-  public async getGroupChatById(id: number): Promise<GroupChatDto> {
-    this.logger.verbose(`### Getting group chat by id: ${id}`);
+  public async kickMemberFromGroupChat(
+    chatId: number,
+    profileId: number,
+  ): Promise<GroupMemberDeletedResponse> {
+    const memberToRemove: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy({
+        profile: {
+          id: profileId,
+        },
+      });
+
+    const memberDeleteResult: DeleteResult =
+      await this.groupMemberRepository.delete({ id: memberToRemove?.id });
+
+    if (!memberDeleteResult.affected) {
+      this.logger.log(
+        `### Member [${memberToRemove?.id}] for chat with id [${chatId}] not found`,
+      );
+      throw new NotFoundException(
+        `Member [${memberToRemove?.id}] for group chat with id [${chatId}] not found`,
+      );
+    }
+    this.logger.log(
+      `### Kicked member [${profileId}] from Group chat [${chatId}]`,
+    );
+
+    return {
+      deleted: memberDeleteResult.affected > 0,
+      affected: memberDeleteResult.affected,
+    };
+  }
+
+  public async getGroupChatById(id: number): Promise<GroupChatEntity> {
+    this.logger.verbose(`### Getting group chat by id: [${id}]`);
 
     const groupChat: GroupChatEntity | null =
       await this.groupChatRepository.findOne({
@@ -453,27 +574,16 @@ export class ChatService {
       });
 
     if (!groupChat) {
-      throw new NotFoundException(`Group chat with id ${id} not found`);
+      throw new NotFoundException(`Group chat with id [${id}] not found`);
     }
 
-    return plainToClass(GroupChatDto, groupChat);
+    return groupChat;
   }
 
   public async deleteGroupChatById(
     id: number,
-    userId: number,
   ): Promise<GroupChatDeletedResponseDto> {
-    const groupChatDto: GroupChatDto = await this.getGroupChatById(id);
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    if (groupChatDto.owner.id != profile.id) {
-      this.logger.error("### 'Group chat not deleted, user is not the owner");
-      throw new NotAcceptableException(
-        'Group chat not deleted, user is not the owner',
-      );
-    }
-
-    this.logger.verbose(`### Deleting group chat by id: ${id}`);
+    this.logger.verbose(`### Deleting group chat by id: [${id}]`);
 
     const groupChatDeleteResult: DeleteResult =
       await this.groupChatRepository.delete({
@@ -481,7 +591,7 @@ export class ChatService {
       });
 
     if (!groupChatDeleteResult.affected) {
-      this.logger.log(`### Group chat with id ${id} not found`);
+      this.logger.log(`### Group chat with id [${id}] not found`);
       throw new NotFoundException(`Group chat with id ${id} not found`);
     }
 
@@ -496,7 +606,7 @@ export class ChatService {
   public async getAllGroupChats(): Promise<GroupChatDto[]> {
     this.logger.verbose(`### Getting group all chats`);
 
-    const groupChat: GroupChatEntity[] | null =
+    const groupChats: GroupChatEntity[] | null =
       await this.groupChatRepository.find({
         relations: {
           owner: true,
@@ -506,11 +616,85 @@ export class ChatService {
         },
       });
 
-    if (!groupChat) {
+    if (!groupChats) {
       throw new NotFoundException(`Group chats not found`);
     }
 
-    return plainToInstance(GroupChatDto, groupChat);
+    return groupChats.map((groupChat: GroupChatEntity): GroupChatDto => {
+      return {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: {
+          id: groupChat.owner.id,
+          nickname: groupChat.owner.nickname,
+          avatarId: groupChat.owner.avatarId,
+        } as MessageProfile,
+      } as GroupChatDto;
+    });
+  }
+
+  public async savePrivateMessage(
+    senderUserId: number,
+    receiverProfileId: number,
+    message: ChatMessageDto,
+  ): Promise<PrivateMessageDto> {
+    const sender: ProfileDTO = await this.profileService.findByUserId(
+      senderUserId,
+    );
+    const receiver: ProfileDTO = await this.profileService.findByProfileId(
+      receiverProfileId,
+    );
+
+    const privateMessageEntity: PrivateMessageEntity =
+      this.privateMessageRepository.create({
+        sender,
+        receiver,
+        message: message.message,
+      });
+
+    this.logger.debug(
+      `### Saving private message by: [${sender.nickname}] to [${receiver.nickname}]`,
+    );
+
+    return plainToClass(
+      PrivateMessageDto,
+      await this.privateMessageRepository.save(privateMessageEntity),
+    );
+  }
+
+  public async getGroupMemberRole(
+    chatId: number,
+    profileId: number,
+  ): Promise<ChatRole> {
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+
+    if (profileId === groupChat.owner.id) {
+      return { role: 'owner' };
+    }
+
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy([
+        {
+          profile: {
+            id: profileId,
+          },
+          groupChat: {
+            id: chatId,
+          },
+        },
+      ]);
+
+    if (!groupMember) {
+      this.logger.error(
+        `### Profile id [${profileId}] is not a member from chat [${chatId}]`,
+      );
+      throw new NotAcceptableException(
+        `Profile id [${profileId}] is not a member from chat [${chatId}]`,
+      );
+    }
+
+    return groupMember.role === 'admin' ? { role: 'admin' } : { role: 'user' };
   }
 
   private async getUserPrivateMessages(
@@ -555,7 +739,8 @@ export class ChatService {
         sender: {
           id: message.sender.id,
           nickname: message.sender.nickname,
-        },
+          avatarId: message.sender.avatarId,
+        } as MessageProfile,
       };
     });
   }
@@ -619,5 +804,52 @@ export class ChatService {
       });
 
     return !!groupChatEntity;
+  }
+
+  private async isGroupMember(
+    chatId: number,
+    userId: number,
+  ): Promise<boolean> {
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy([
+        {
+          profile: {
+            userEntity: {
+              id: userId,
+            },
+          },
+          groupChat: {
+            id: chatId,
+          },
+        },
+      ]);
+
+    return !!groupMember;
+  }
+
+  private createGroupChatMember(
+    memberEntity: GroupMemberEntity,
+    groupChat: GroupChatEntity,
+    newMemberProfile: ProfileDTO,
+  ): GroupMemberDto {
+    return {
+      id: memberEntity.id,
+      role: memberEntity.role,
+      groupChat: {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: {
+          id: groupChat.owner.id,
+          nickname: groupChat.owner.nickname,
+          avatarId: groupChat.owner.avatarId,
+        } as MessageProfileDto,
+      } as GroupChatDto,
+      member: {
+        id: newMemberProfile.id,
+        nickname: newMemberProfile.nickname,
+        avatarId: newMemberProfile.avatarId,
+      } as MessageProfileDto,
+    };
   }
 }

@@ -31,6 +31,7 @@ import { AvatarService } from '../avatar/avatar.service';
 import { Response } from 'express';
 import { AvatarEntity } from '../db/entities';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { ProfileNicknameDto } from './models/profile-nickname.dto';
 
 @Controller('profile')
 export class ProfileController {
@@ -66,7 +67,7 @@ export class ProfileController {
   @HttpCode(HttpStatus.CREATED)
   async saveProfile(
     @Req() { user }: { user: FortyTwoUserDto },
-    @Body() body: { nickname: string },
+    @Body() body: ProfileNicknameDto,
   ): Promise<ProfileDTO> {
     return await this.profileService.create(user.id, body.nickname);
   }

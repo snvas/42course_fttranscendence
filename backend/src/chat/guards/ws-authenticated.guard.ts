@@ -4,7 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
+import { AuthenticatedSocket } from '../types/authenticated-socket.type';
 
 //Protect websocket events, except OnGatewayConnection and OnGatewayDisconnect
 

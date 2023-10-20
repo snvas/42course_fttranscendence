@@ -1,9 +1,10 @@
-import { GroupChatEntity, ProfileEntity } from '../../db/entities';
+import { GroupChatEntity } from '../../db/entities';
+import { MessageProfileDto } from '../models/message-profile.dto';
 
 export interface GroupMessage {
   id: number;
   groupChat: GroupChatEntity;
-  sender: ProfileEntity;
+  sender: MessageProfileDto;
   message: string;
   createdAt: Date;
 }

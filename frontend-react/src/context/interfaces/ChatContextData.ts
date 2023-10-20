@@ -1,7 +1,7 @@
-import {PlayerStatusDto} from "../../../../backend/src/chat/dto/player-status.dto.ts";
-import {ConversationDto} from "../../../../backend/src/chat/dto/conversation.dto.ts";
-import {PrivateMessageHistoryDto} from "../../../../backend/src/chat/dto/private-message-history.dto.ts";
-import {PrivateMessageDto} from "../../../../backend/src/chat/dto/private-message.dto.ts";
+import {PlayerStatusDto} from "../../../../backend/src/chat/models/player-status.dto.ts";
+import {ConversationDto} from "../../../../backend/src/chat/models/conversation.dto.ts";
+import {PrivateMessageHistoryDto} from "../../../../backend/src/chat/models/private-message-history.dto.ts";
+import {PrivateMessageDto} from "../../../../backend/src/chat/models/private-message.dto.ts";
 
 export interface ChatContextData {
     sendMessage: (message: string) => void;

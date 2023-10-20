@@ -4,14 +4,14 @@ import {useEffect, useState} from "react";
 import {ProfileContextData} from "../context/interfaces/ProfileContextData.ts";
 import {useProfile} from "../context/ProfileContext.tsx";
 import {ComponentMessage} from "../interfaces/ComponentMessage.ts";
-import {PrivateMessageHistoryDto} from "../../../backend/src/chat/dto/private-message-history.dto.ts";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
 import {v4 as uuidV4} from 'uuid';
-import {ConversationDto} from "../../../backend/src/chat/dto/conversation.dto.ts";
+import {ConversationDto} from "../../../backend/src/chat/models/conversation.dto.ts";
 import {Link, useLocation} from "react-router-dom";
 import {useChat} from "../context/ChatContext.tsx";
 import {ChatContextData} from "../context/interfaces/ChatContextData.ts";
-import {PlayerStatusDto} from "../../../backend/src/chat/dto/player-status.dto.ts";
-import {PrivateMessageDto} from "../../../backend/src/chat/dto/private-message.dto.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/models/player-status.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
 import {parseISO} from "date-fns";
 
 

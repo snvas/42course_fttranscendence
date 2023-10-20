@@ -19,8 +19,8 @@ export class GroupChatEntity implements GroupChat {
   @Column({ unique: true })
   name: string;
 
-  @Column({ unique: true, nullable: true })
-  password?: string;
+  @Column({ type: String, unique: true, nullable: true })
+  password?: string | null;
 
   @Column({ default: 'public' })
   visibility: string;
