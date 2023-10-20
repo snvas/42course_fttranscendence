@@ -3,14 +3,17 @@
 	import type { AxiosResponse } from 'axios';
 	import { createEventDispatcher } from 'svelte';
 	import { profile } from '$lib/stores';
-	import UserAvatarStatus from './UserAvatarStatus.svelte';
+	import UserAvatarStatus from '../UserAvatarStatus.svelte';
+	import { goto } from '$app/navigation';
 
 	export let users: PlayerStatusDto[];
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
 	export let loading: Promise<any>;
 	const dispatch = createEventDispatcher();
 
-	
+	function onSelectUser(id: number) {
+		goto(`public/${id}`);
+	}
 </script>
 
 <div class="border-4 border-white w-full h-full flex flex-col rounded-3xl pb-2">
@@ -26,7 +29,12 @@
 					<div
 						class="w-full border-b border-opacity-20 border-white flex flex-row p-2 gap-4 justify-between items-center"
 					>
-						<UserAvatarStatus {user} {getAvatar}></UserAvatarStatus>
+						<button
+							class=" bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg"
+							on:click={() => onSelectUser(user.id)}
+						>
+							<UserAvatarStatus {user} {getAvatar} />
+						</button>
 						<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
 							<!-- {#if !user.blocked}
 				{#if !user.friend}

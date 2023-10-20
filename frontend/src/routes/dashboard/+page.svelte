@@ -7,7 +7,7 @@
 	import Profile from '$lib/components/Profile.svelte';
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
-	import UsersList from '$lib/components/UsersList.svelte';
+	import UsersList from '$lib/components/lists/UsersList.svelte';
 	import type { PlayerStatusDto } from '$lib/dtos';
 
 	type Match = {

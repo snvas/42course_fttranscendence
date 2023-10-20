@@ -15,7 +15,7 @@
 			on:click={() => dispatch('select', history.id)}
 			class="border-b-2 border-x-white h-12 pr-2 flex flex-row gap-4 items-center justify-between"
 		>
-			<UserAvatarStatus user={history} getAvatar={getAvatarFromId}></UserAvatarStatus>
+			<UserAvatarStatus user={history} getAvatar={getAvatarFromId} />
 			<div class="flex flex-row items-center gap-4 text-center text-xs justify-end flex-wrap">
 				<button class="bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
 					<img src="/bloqueado.png" alt="block this user" class="w-6" />
