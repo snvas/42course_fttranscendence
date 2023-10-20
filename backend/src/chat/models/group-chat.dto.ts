@@ -1,20 +1,14 @@
-import { GroupChat } from '../interfaces/group-chat.interface';
 import {
-  IsDate,
   IsIn,
   IsNotEmpty,
   IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import {
-  GroupMemberEntity,
-  GroupMessageEntity,
-  ProfileEntity,
-} from '../../db/entities';
+import { MessageProfileDto } from './message-profile.dto';
 import { Exclude } from 'class-transformer';
 
-export class GroupChatDto implements GroupChat {
+export class GroupChatDto {
   @IsNotEmpty()
   @IsNumber()
   id: number;
@@ -23,20 +17,9 @@ export class GroupChatDto implements GroupChat {
   name: string;
   @IsIn(['public', 'private'])
   @IsNotEmpty()
-  visibility: 'public' | 'private';
-  @IsString()
-  @IsNotEmpty()
+  visibility: string;
+  @ValidateNested()
+  owner: MessageProfileDto;
   @Exclude()
   password: string | null;
-  @IsString({ each: true })
-  playersStatus: string[];
-  @ValidateNested()
-  members: GroupMemberEntity[];
-  @ValidateNested()
-  messages: GroupMessageEntity[];
-  @ValidateNested()
-  owner: ProfileEntity;
-  @IsDate()
-  @IsNotEmpty()
-  createdAt: Date;
 }

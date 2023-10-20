@@ -1,29 +1,21 @@
-import { ProfileEntity } from 'src/db/entities';
-import { GroupChatEntity } from 'src/db/entities/group-chat.entity';
-import { GroupMember } from '../interfaces/group-member.interface';
 import {
-  IsDate,
   IsNotEmpty,
   IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { MessageProfileDto } from './message-profile.dto';
+import { GroupChatDto } from './group-chat.dto';
 
-export class GroupMemberDto implements GroupMember {
+export class GroupMemberDto {
   @IsNotEmpty()
   @IsNumber()
   id: number;
   @IsString()
   @IsNotEmpty()
   role: string;
-  @IsString()
-  @IsNotEmpty()
-  status: string;
   @ValidateNested()
-  groupChat: GroupChatEntity;
+  groupChat: GroupChatDto;
   @ValidateNested()
-  profile: ProfileEntity;
-  @IsDate()
-  @IsNotEmpty()
-  createdAt: Date;
+  member: MessageProfileDto;
 }

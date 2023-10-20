@@ -43,6 +43,7 @@ import { ChatRole } from './types/chat-role.type';
 import { ChatPasswordDto } from './models/chat-password.dto';
 import { MessageProfile } from './interfaces/message-profile.interface';
 import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
+import { MessageProfileDto } from './models/message-profile.dto';
 
 @Injectable()
 export class ChatService {
@@ -170,7 +171,7 @@ export class ChatService {
   ): Promise<GroupMessageDto> {
     const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
-    const groupChat: GroupChatDto = await this.getGroupChatById(
+    const groupChat: GroupChatEntity = await this.getGroupChatById(
       groupMessageDto.groupChat.id,
     );
 
@@ -223,7 +224,7 @@ export class ChatService {
     message: ChatMessageDto,
   ): Promise<GroupMessageDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     if (
       groupChat.members.filter(
@@ -382,7 +383,16 @@ export class ChatService {
       this.logger.debug(
         `### Group chat created with name: [${groupChatEntity.name}], visibility: [${groupChatEntity.visibility}] - by [${profile.nickname}]`,
       );
-      return plainToClass(GroupChatDto, groupChatEntity);
+      return {
+        id: groupChatEntity.id,
+        name: groupChatEntity.name,
+        visibility: groupChatEntity.visibility,
+        owner: {
+          id: profile.id,
+          nickname: profile.nickname,
+          avatarId: profile.avatarId,
+        } as MessageProfile,
+      } as GroupChatDto;
     } catch (exception) {
       if (
         exception instanceof QueryFailedError &&
@@ -480,7 +490,7 @@ export class ChatService {
     newMemberProfileId: number,
     chatRole: ChatRole,
   ): Promise<GroupMemberDto> {
-    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     const newMemberProfile: ProfileDTO =
       await this.profileService.findByProfileId(newMemberProfileId);
@@ -497,9 +507,13 @@ export class ChatService {
       `### Adding profile: [${newMemberProfile.nickname}] with role: [${groupMember.role}] to group chat: [${groupChat.name}]`,
     );
     try {
-      return plainToClass(
-        GroupMemberDto,
-        await this.groupMemberRepository.save(groupMember),
+      const memberEntity: GroupMemberEntity =
+        await this.groupMemberRepository.save(groupMember);
+
+      return this.createGroupChatMember(
+        memberEntity,
+        groupChat,
+        newMemberProfile,
       );
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
@@ -543,7 +557,7 @@ export class ChatService {
     };
   }
 
-  public async getGroupChatById(id: number): Promise<GroupChatDto> {
+  public async getGroupChatById(id: number): Promise<GroupChatEntity> {
     this.logger.verbose(`### Getting group chat by id: [${id}]`);
 
     const groupChat: GroupChatEntity | null =
@@ -563,7 +577,7 @@ export class ChatService {
       throw new NotFoundException(`Group chat with id [${id}] not found`);
     }
 
-    return plainToClass(GroupChatDto, groupChat);
+    return groupChat;
   }
 
   public async deleteGroupChatById(
@@ -592,7 +606,7 @@ export class ChatService {
   public async getAllGroupChats(): Promise<GroupChatDto[]> {
     this.logger.verbose(`### Getting group all chats`);
 
-    const groupChat: GroupChatEntity[] | null =
+    const groupChats: GroupChatEntity[] | null =
       await this.groupChatRepository.find({
         relations: {
           owner: true,
@@ -602,11 +616,22 @@ export class ChatService {
         },
       });
 
-    if (!groupChat) {
+    if (!groupChats) {
       throw new NotFoundException(`Group chats not found`);
     }
 
-    return plainToInstance(GroupChatDto, groupChat);
+    return groupChats.map((groupChat: GroupChatEntity): GroupChatDto => {
+      return {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: {
+          id: groupChat.owner.id,
+          nickname: groupChat.owner.nickname,
+          avatarId: groupChat.owner.avatarId,
+        } as MessageProfile,
+      } as GroupChatDto;
+    });
   }
 
   public async savePrivateMessage(
@@ -642,7 +667,7 @@ export class ChatService {
     chatId: number,
     profileId: number,
   ): Promise<ChatRole> {
-    const groupChat: GroupChatDto = await this.getGroupChatById(chatId);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     if (profileId === groupChat.owner.id) {
       return { role: 'owner' };
@@ -800,5 +825,31 @@ export class ChatService {
       ]);
 
     return !!groupMember;
+  }
+
+  private createGroupChatMember(
+    memberEntity: GroupMemberEntity,
+    groupChat: GroupChatEntity,
+    newMemberProfile: ProfileDTO,
+  ): GroupMemberDto {
+    return {
+      id: memberEntity.id,
+      role: memberEntity.role,
+      groupChat: {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: {
+          id: groupChat.owner.id,
+          nickname: groupChat.owner.nickname,
+          avatarId: groupChat.owner.avatarId,
+        } as MessageProfileDto,
+      } as GroupChatDto,
+      member: {
+        id: newMemberProfile.id,
+        nickname: newMemberProfile.nickname,
+        avatarId: newMemberProfile.avatarId,
+      } as MessageProfileDto,
+    };
   }
 }
