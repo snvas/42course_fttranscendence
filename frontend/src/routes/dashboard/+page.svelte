@@ -154,9 +154,10 @@
 			</div>
 		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2 order-last">
 			<UsersList
-				users={$onlineUsers}
+				users={$playersStatus}
 				getAvatar={getAvatarFromId}
 				on:chat={(e) => onChat(e.detail)}
+				loading={loadUsers}
 			/>
 		</div>
 		{/await}
