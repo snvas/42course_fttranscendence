@@ -28,7 +28,7 @@ import { ProfileDTO } from '../profile/models/profile.dto';
 import { ChatMessageDto } from './models/chat-message.dto';
 import { Conversation } from './interfaces/private-conversation.interface';
 import { GroupCreationDto } from './models/group-creation.dto';
-import { hashPassword } from '../utils/bcrypt';
+import { comparePassword, hashPassword } from '../utils/bcrypt';
 import { PrivateMessageDto } from './models/private-message.dto';
 import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
 import { ConversationDto } from './models/conversation.dto';
@@ -387,6 +387,36 @@ export class ChatService {
 
       this.logger.error(exception);
       throw exception;
+    }
+  }
+
+  public async validateGroupChatPassword(
+    chatId: number,
+    chatPassword: ChatPasswordDto,
+  ): Promise<void> {
+    const groupChat: GroupChatEntity | null =
+      await this.groupChatRepository.findOneBy({
+        id: chatId,
+      });
+
+    if (!groupChat) {
+      this.logger.error(`### Group chat [${chatId}] not found`);
+      throw new NotFoundException(`Group chat not found`);
+    }
+
+    if (!groupChat.password) {
+      this.logger.error(`### Group chat [${chatId}] has no password`);
+      throw new NotAcceptableException(`Group chat has no password`);
+    }
+
+    const result: boolean = comparePassword(
+      chatPassword.password,
+      groupChat.password,
+    );
+
+    if (!result) {
+      this.logger.error(`### Group chat [${chatId}] password is invalid`);
+      throw new UnauthorizedException(`Group chat password is invalid`);
     }
   }
 

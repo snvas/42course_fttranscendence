@@ -63,8 +63,6 @@ export class ChatController {
     return await this.chatService.getAllGroupChats();
   }
 
-  //validate group chat password
-
   @HttpCode(HttpStatus.CREATED)
   @Post('group/create')
   async createGroupChat(
@@ -101,6 +99,15 @@ export class ChatController {
       } as GroupChatEvent);
 
     return deletedResponse;
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('group/:chatId/password/validate')
+  async validateGroupChatPassword(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Body() password: ChatPasswordDto,
+  ): Promise<void> {
+    return await this.chatService.validateGroupChatPassword(chatId, password);
   }
 
   @HttpCode(HttpStatus.OK)

@@ -79,6 +79,10 @@ class ChatService {
         return this.axiosInstance.delete(`/group/${chatId}`);
     }
 
+    public validateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.post(`/group/${chatId}/password/validate`, {password});
+    }
+
     public updateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
         return this.axiosInstance.put(`/group/${chatId}/password`, {password});
     }
@@ -86,8 +90,6 @@ class ChatService {
     public deleteGroupChatPassword(chatId: number): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
         return this.axiosInstance.delete(`/group/${chatId}/password`);
     }
-
-    //validate group chat password
 
     public addGroupChatAdmin(chatId: number, profileId: number): Promise<AxiosResponse<GroupMemberDto>> {
         return this.axiosInstance.post(`/group/${chatId}/admin/${profileId}`);
