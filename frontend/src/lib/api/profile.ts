@@ -41,3 +41,12 @@ export async function getAvatarFromId(
 		return null;
 	}
 }
+
+export async function readAllUsers() {
+	try {
+		let u: AxiosResponse<ProfileDTO[]> = await profileService.readAllUsers();
+		return u.data;
+	} catch {
+		return [];
+	}
+}

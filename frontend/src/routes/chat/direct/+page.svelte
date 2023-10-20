@@ -1,60 +1,223 @@
 <script lang="ts">
-	import PongHeader from '$lib/components/PongHeader.svelte';
 	import DirectMessages from '$lib/components/chat/DirectMessages.svelte';
-	import GroupMessages from '$lib/components/chat/GroupMessages.svelte';
-	import { useAuth, socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
-	import { goto } from '$app/navigation';
+	import { socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
 	import { onDestroy } from 'svelte';
-	import type { PrivateMessageDto, PrivateMessageHistoryDto, ComponentMessage } from '$lib/dtos';
-	import { PrivateChatHandler } from '$lib/privateChatHandler';
-	import { getAvatarFromId, getProfile } from '$lib/api';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
-	import AvatarImage from '$lib/components/AvatarImage.svelte';
+	import chatService from '$lib/api/services/ChatService';
+	import type {
+		PrivateMessageDto,
+		ConversationDto,
+		MessageProfileDto,
+		PlayerStatusDto,
+		PrivateMessageHistoryDto,
+		ComponentMessage,
+	} from '$lib/dtos';
+	import { getPrivateMessageHistory } from '$lib/api';
+	import { v4 as uuidV4 } from 'uuid';
+	import { parseISO } from 'date-fns';
 
 	let messages: ComponentMessage[] | null = null;
-
-	/*
- 	PrivateHandlers 
-	*/
+	let selectedHistory: PrivateMessageHistoryDto | null = null;
 
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
-	let privateChatHandler = new PrivateChatHandler();
+
+	let loading = getPrivateMessageHistory();
+
+	loading.then((history) => {
+		if (history) {
+			privateMessageHistory = history;
+			setSelectedMessages($selectedDirect);
+		}
+	});
 
 	function onSelectChat(historyId: number) {
-		privateChatHandler.setSelectedHistory(historyId, $profile);
-		$selectedDirect = privateChatHandler.selectedHistory ?? null;
-		updatePrivateVariables();
+		setSelectedHistory(historyId);
+		$selectedDirect = selectedHistory ?? null;
+		setSelectedMessages(selectedHistory);
 	}
 
-	function updatePrivateVariables() {
-		messages = privateChatHandler.messages;
-		privateMessageHistory = privateChatHandler.privateMessageHistory;
+	function setSelectedMessages(user: MessageProfileDto | null) {
+		if (!user) {
+			setMessagesFromHistory(null);
+
+			return;
+		}
+		let selected = privateMessageHistory.find((v) => v.id === user.id);
+		if (selected) {
+			setMessagesFromHistory(selected);
+		} else {
+			let newHistory = { ...user, messages: [] };
+			privateMessageHistory = [...privateMessageHistory, newHistory];
+			setMessagesFromHistory(newHistory);
+		}
 	}
 
-	privateChatHandler.loading.then((history) => {
-		privateChatHandler.setSelectedMessages($selectedDirect, $profile);
-		updatePrivateVariables();
-		console.log(history);
-	});
+	function setSelectedHistory(userId: number) {
+		selectedHistory =
+			privateMessageHistory.find((v) => {
+				return v.id === userId;
+			}) ?? null;
+	}
+
+	function setMessagesFromHistory(history: PrivateMessageHistoryDto | null) {
+		messages =
+			history?.messages.map((message: ConversationDto): ComponentMessage => {
+				return {
+					message: message.message,
+					createdAt: new Date(message.createdAt).toISOString(),
+					nickname: message.sender.nickname == $profile.nickname ? 'me' : message.sender.nickname,
+					uuid: uuidV4(),
+					sync: true
+				};
+			}) ?? null;
+		selectedHistory = history;
+	}
 
 	const onPrivateMessage = (message: PrivateMessageDto): void => {
 		console.log(`### received private ${message.message}`);
-		privateChatHandler.recieveMessage(message, $profile);
-		updatePrivateVariables();
+		if (
+			!privateMessageHistory.find(
+				(history: PrivateMessageHistoryDto): boolean => history.id === message.sender.id
+			)
+		) {
+			const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory;
+
+			console.log(`### prev history: ${JSON.stringify(privateMessageHistory)}`);
+			newHistory.push({
+				id: message.sender.id,
+				nickname: message.sender.nickname,
+				messages: [
+					{
+						id: message.id,
+						message: message.message,
+						sender: {
+							id: message.sender.id,
+							nickname: message.sender.nickname
+						},
+						createdAt: message.createdAt
+					}
+				]
+			});
+
+			console.log(`### new history: ${JSON.stringify(newHistory)}`);
+
+			privateMessageHistory = newHistory;
+		} else {
+			privateMessageHistory = privateMessageHistory.map(
+				(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
+					if (history.id === message.sender.id) {
+						if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
+							return history;
+						}
+
+						history.messages.push({
+							id: message.id,
+							message: message.message,
+							sender: {
+								id: message.sender.id,
+								nickname: message.sender.nickname
+							},
+							createdAt: message.createdAt
+						});
+					}
+					return history;
+				}
+			);
+		}
+		setMessagesFromHistory(selectedHistory);
 	};
 
 	async function sendPrivateMessage(message: string) {
 		if (!$selectedDirect) return;
-		privateChatHandler.sendMessage(message, $onlineUsers, $selectedDirect, $profile);
-		updatePrivateVariables();
-		await privateChatHandler.confirmSendMessage($profile);
-		updatePrivateVariables();
+
+		const messageDate: string = new Date().toISOString();
+		const messageUUID: string = uuidV4();
+
+		const componentMessage: ComponentMessage = {
+			message: message,
+			createdAt: messageDate,
+			nickname: 'me',
+			uuid: messageUUID,
+			sync: false
+		};
+
+		// TODO: online vai se tornar todos os usuários
+		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
+			(playerStatus: PlayerStatusDto): boolean => {
+				return playerStatus.nickname === $selectedDirect!.nickname;
+			}
+		);
+
+		if (!receiver) {
+			const receiverHistory: PrivateMessageHistoryDto | undefined = privateMessageHistory.find(
+				(m: PrivateMessageHistoryDto): boolean => {
+					return m.nickname === $selectedDirect!.nickname;
+				}
+			);
+			if (!receiverHistory) {
+				console.log('Receiver not found');
+				return;
+			}
+			receiver = {
+				id: receiverHistory.id,
+				nickname: receiverHistory.nickname,
+				status: 'offline'
+			};
+		}
+
+		if (!profile) {
+			console.log('Profile not found');
+			return;
+		}
+
+		messages = [...(messages ?? []), componentMessage];
+
+		const privateMessage: PrivateMessageDto = {
+			message,
+			receiver: {
+				id: receiver.id,
+				nickname: receiver.nickname
+			},
+			sender: {
+				id: $profile.id,
+				nickname: $profile.nickname
+			},
+			createdAt: parseISO(messageDate)
+		};
+
+		let backendMessage = await chatService.emitPrivateMessage(privateMessage);
+
+		if (!backendMessage) {
+			console.log('Error when sending private message');
+			return;
+		}
+		const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory.map(
+			(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
+				if (history.id != backendMessage!.receiver.id) {
+					return history;
+				}
+
+				if (history.messages.find((m: ConversationDto): boolean => m.id === backendMessage!.id)) {
+					return history;
+				}
+
+				history.messages.push({
+					id: backendMessage!.id,
+					message: backendMessage!.message,
+					sender: backendMessage!.sender,
+					createdAt: backendMessage!.createdAt
+				});
+
+				return history;
+			}
+		);
+
+		privateMessageHistory = newHistory;
+		setMessagesFromHistory(selectedHistory);
+		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 
-	/*
- 	Sockets 
-	*/
 	$socket.on('receivePrivateMessage', onPrivateMessage);
 
 	onDestroy(() => {
@@ -62,7 +225,7 @@
 	});
 </script>
 
-<ChatLayout>
+<ChatLayout selected="direct">
 	<div class="contents" slot="list">
 		<DirectList
 			{privateMessageHistory}

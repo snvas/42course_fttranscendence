@@ -6,7 +6,6 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import type { PrivateMessageDto, PrivateMessageHistoryDto, ComponentMessage } from '$lib/dtos';
-	import { PrivateChatHandler } from '$lib/privateChatHandler';
 	import { getAvatarFromId, getProfile } from '$lib/api';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
@@ -19,11 +18,8 @@
 	*/
 
 	let groupMessageHistory: PrivateMessageHistoryDto[] = [];
-	let privateChatHandler = new PrivateChatHandler();
 
 	function onSelectChat(historyId: number) {
-		privateChatHandler.setSelectedHistory(historyId, $profile);
-		$selectedDirect = privateChatHandler.selectedHistory ?? null;
 	}
 
 	/*
@@ -45,7 +41,7 @@
 	});
 </script>
 
-<ChatLayout>
+<ChatLayout selected="group">
 	<div class="contents" slot="list">
 		<div class="h-full w-full flex flex-col">
 			{#each groupMessageHistory as history}

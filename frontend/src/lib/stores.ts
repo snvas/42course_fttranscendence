@@ -48,3 +48,7 @@ export let selectedDirect = writable<MessageProfileDto | null>();
 export let profile = writable<ProfileDTO>();
 
 export let onlineUsers = writable<PlayerStatusDto[]>([]);
+
+export let allUsers = writable<ProfileDTO[]>([]);
+
+export let playersStatus = writable<PlayerStatusDto[]>([]);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { selectedDirect, socket, useAuth, profile, onlineUsers } from '$lib/stores';
-	import { authService, getProfile, getUserAvatar, getAvatarFromId } from '$lib/api';
+	import { selectedDirect, socket, useAuth, profile, playersStatus, allUsers } from '$lib/stores';
+	import { authService, getProfile, getUserAvatar, getAvatarFromId, readAllUsers } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import Profile from '$lib/components/Profile.svelte';
@@ -89,6 +89,12 @@
 
 	$socket.connect();
 
+	let loadUsers = readAllUsers();
+
+	loadUsers.then((v) => {
+		$allUsers = v;
+	});
+
 	async function onLogout() {
 		$socket.disconnect();
 		await authService.logoutUser();
@@ -113,7 +119,6 @@
 	});
 
 	$: avatar = getUserAvatar(loadProfile);
-	$: console.log($selectedDirect);
 </script>
 
 <div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
@@ -121,35 +126,40 @@
 		<PongHeader />
 	</div>
 	<div class="flex-1 first-letter:w-full flex h-0 lg:flex-row flex-col gap-10 p-10 min-w-3xl">
-		<div class="flex lg:w-1/3 w-full h-full lg:order-first order-last">
-			{#if showing == 'history'}
-				<History {matchs} {avatar} />
-			{:else if showing == 'settings'}
-				<Settings />
-			{/if}
-		</div>
-		<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
-			<Profile bind:profile={loadProfile} {onLogout} {avatar} />
-
-			<div class="flex flex-row items-center h-full">
-				<Button type="chat" on:click={() => onChat(null)} />
-
-				<Button
-					type="history"
-					on:click={() => {
-						showing = 'history';
-					}}
-				/>
-				<Button type="settings" on:click={() => (showing = 'settings')} />
-				<Button type="play" />
+		{#await loadProfile}
+			<div class="w-full h-full">Carregando</div>
+		{:then}
+			<div class="flex lg:w-1/3 w-full h-full lg:order-first order-last">
+				{#if showing == 'history'}
+					<History {matchs} {avatar} />
+				{:else if showing == 'settings'}
+					<Settings />
+				{/if}
 			</div>
-		</div>
-		<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-			<UsersList
-				users={$onlineUsers}
-				getAvatar={getAvatarFromId}
-				on:chat={(e) => onChat(e.detail)}
-			/>
-		</div>
+			<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
+				<Profile bind:profile={loadProfile} {onLogout} {avatar} />
+
+				<div class="flex flex-row items-center h-full">
+					<Button type="chat" on:click={() => onChat(null)} />
+
+					<Button
+						type="history"
+						on:click={() => {
+							showing = 'history';
+						}}
+					/>
+					<Button type="settings" on:click={() => (showing = 'settings')} />
+					<Button type="play" />
+				</div>
+			</div>
+			<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
+				<UsersList
+					users={$playersStatus ?? []}
+					getAvatar={getAvatarFromId}
+					on:chat={(e) => onChat(e.detail)}
+					loading={loadUsers}
+				/>
+			</div>
+		{/await}
 	</div>
 </div>

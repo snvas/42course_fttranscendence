@@ -3,7 +3,7 @@
 	import { useAuth, socket, profile } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { getProfile } from '$lib/api';
-	
+
 	const auth = useAuth();
 
 	$: if (!$auth.loading && !$auth.session) {
@@ -22,6 +22,7 @@
 		}
 	});
 
+	export let selected: 'direct' | 'group';
 </script>
 
 <div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-5">
@@ -39,7 +40,10 @@
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
 					<!-- TODO: padronizar botões e estilo baseado na variável "showingMessages" -->
 					<button
-						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl"
+						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl {selected ==
+						'direct'
+							? 'text-green-500 '
+							: ''}"
 						on:click={() => {
 							goto('/chat/direct');
 						}}
@@ -47,7 +51,10 @@
 						<p class="text-center">Direct Messages</p>
 					</button>
 					<button
-						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl"
+						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl {selected ==
+							'group'
+								? 'text-green-500 '
+								: ''}"
 						on:click={() => {
 							goto('/chat/group');
 						}}
