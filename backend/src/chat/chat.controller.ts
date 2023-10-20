@@ -57,7 +57,6 @@ export class ChatController {
     return await this.chatService.getUserGroupChatsHistory(user.id);
   }
 
-  //Arrumar DTOs daqui para baixo:
   @HttpCode(HttpStatus.OK)
   @Get('group/chats')
   async getAllGroupChats(): Promise<GroupChatDto[]> {
@@ -75,11 +74,9 @@ export class ChatController {
       user.id,
     );
 
-    (await this.messageGateway.getServer())
-      .to(`${groupCreation.id}`)
-      .emit('groupChatCreated', {
-        chatId: groupCreation.id,
-      } as GroupChatEvent);
+    (await this.messageGateway.getServer()).emit('groupChatCreated', {
+      chatId: groupCreation.id,
+    } as GroupChatEvent);
 
     return groupCreation;
   }
@@ -93,11 +90,9 @@ export class ChatController {
     const deletedResponse: GroupChatDeletedResponseDto =
       await this.chatService.deleteGroupChatById(chatId);
 
-    (await this.messageGateway.getServer())
-      .to(`${chatId}`)
-      .emit('groupChatDeleted', {
-        chatId,
-      } as GroupChatEvent);
+    (await this.messageGateway.getServer()).emit('groupChatDeleted', {
+      chatId,
+    } as GroupChatEvent);
 
     return deletedResponse;
   }
