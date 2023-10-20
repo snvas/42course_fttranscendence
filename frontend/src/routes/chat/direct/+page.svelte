@@ -1,6 +1,6 @@
 <script lang="ts">
 	import DirectMessages from '$lib/components/chat/DirectMessages.svelte';
-	import { socket, selectedDirect, profile, onlineUsers } from '$lib/stores';
+	import { socket, selectedDirect, profile, onlineUsers, playersStatus } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
@@ -11,7 +11,7 @@
 		MessageProfileDto,
 		PlayerStatusDto,
 		PrivateMessageHistoryDto,
-		ComponentMessage,
+		ComponentMessage
 	} from '$lib/dtos';
 	import { getPrivateMessageHistory } from '$lib/api';
 	import { v4 as uuidV4 } from 'uuid';
@@ -21,6 +21,8 @@
 	let selectedHistory: PrivateMessageHistoryDto | null = null;
 
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
+
+	let historyList: PlayerStatusDto[];
 
 	let loading = getPrivateMessageHistory();
 
@@ -220,15 +222,33 @@
 
 	$socket.on('receivePrivateMessage', onPrivateMessage);
 
+	function getHistoryFromStatus(
+		history: PrivateMessageHistoryDto[],
+		playerStatus: PlayerStatusDto[]
+	): PlayerStatusDto[] {
+		if (playerStatus.length == 0) return [];
+		let list: PlayerStatusDto[] = history.map((hist) => {
+			// console.log(playerStatus);
+			return playerStatus.find((usr) => usr.id == hist.id)!;
+		});
+		return list;
+	}
+
+	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
+
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
 	});
+
+	// $: console.log(historyList);
+	// $: console.log(privateMessageHistory);
+	// $: console.log($playersStatus);
 </script>
 
 <ChatLayout selected="direct">
 	<div class="contents" slot="list">
 		<DirectList
-			{privateMessageHistory}
+			{historyList}
 			on:select={(e) => {
 				onSelectChat(e.detail);
 			}}

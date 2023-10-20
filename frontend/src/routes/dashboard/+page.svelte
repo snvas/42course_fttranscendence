@@ -136,7 +136,7 @@
 					<Settings />
 				{/if}
 			</div>
-			<div class="flex flex-col md:w-1/3 w-full h-full md:order-2 order-first gap-10">
+			<div class="flex flex-col lg:w-1/3 w-full h-full lg:order-1 order-first gap-10">
 				<Profile bind:profile={loadProfile} {onLogout} {avatar} />
 
 				<div class="flex flex-row items-center h-full">
@@ -152,7 +152,7 @@
 					<Button type="play" />
 				</div>
 			</div>
-		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2 order-last">
+		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
 			<UsersList
 				users={$playersStatus}
 				getAvatar={getAvatarFromId}
