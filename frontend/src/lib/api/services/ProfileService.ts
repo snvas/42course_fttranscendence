@@ -45,6 +45,12 @@ export class ProfileService {
 	public async getPublicProfile(id: string): Promise<AxiosResponse<ProfileDTO>> {
 		return this.axiosInstance.get(`public/${id}`)
 	}
+	
+	public async readAllUsers(): Promise<AxiosResponse> {
+		return this, this.axiosInstance.get('profiles');
+	}
 }
 
-export const profileService: ProfileService = new ProfileService('http://localhost:3000/api/profile');
+export const profileService: ProfileService = new ProfileService(
+	'http://localhost:3000/api/profile'
+);
