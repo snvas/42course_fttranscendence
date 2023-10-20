@@ -25,9 +25,14 @@ import { GroupMessageDto } from './models/group-message.dto';
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private readonly server: Server;
+
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(private readonly chatService: ChatService) {}
+
+  async getServer(): Promise<Server> {
+    return this.server;
+  }
 
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
@@ -78,14 +83,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<PrivateMessageDto | null> {
     try {
-      const receiverSocket: string | undefined =
-        await this.chatService.getPlayerSocketId(message.receiver.id);
+      const receiverSocket: AuthenticatedSocket | undefined =
+        await this.chatService.getPlayerSocket(message.receiver.id);
 
       const privateMessage: PrivateMessageDto =
         await this.chatService.handlePrivateMessage(message);
 
       if (receiverSocket) {
-        socket.to(receiverSocket).emit('receivePrivateMessage', privateMessage);
+        socket
+          .to(receiverSocket?.id)
+          .emit('receivePrivateMessage', privateMessage);
       }
 
       return privateMessage;

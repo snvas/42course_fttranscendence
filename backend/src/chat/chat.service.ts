@@ -127,14 +127,14 @@ export class ChatService {
     return playerStatus;
   }
 
-  public async getPlayerSocketId(
+  public async getPlayerSocket(
     profileId: number,
-  ): Promise<string | undefined> {
+  ): Promise<AuthenticatedSocket | undefined> {
     const profile: ProfileDTO = await this.profileService.findByProfileId(
       profileId,
     );
 
-    return this.playerStatusSocket.get(profile.id)?.socket.id;
+    return this.playerStatusSocket.get(profile.id)?.socket;
   }
 
   async handlePrivateMessage(
@@ -206,7 +206,7 @@ export class ChatService {
       socket.request.user.id,
     ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
       groupChatHistory.map(
-        (groupChat: GroupChatHistoryDto): string => groupChat.name,
+        (groupChat: GroupChatHistoryDto): string => `${groupChat.id}`,
       ),
     );
 
@@ -495,8 +495,9 @@ export class ChatService {
         `Member [${memberToRemove?.id}] for group chat with id ${chatId} not found`,
       );
     }
-
-    this.logger.log(`### Group chat [${chatId}] deleted`);
+    this.logger.log(
+      `### Kicked member [${profileId}] from Group chat [${chatId}]`,
+    );
 
     return {
       deleted: memberDeleteResult.affected > 0,

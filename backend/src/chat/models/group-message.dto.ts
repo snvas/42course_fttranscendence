@@ -6,7 +6,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { MessageProfileDto } from './message-profile.dto';
-import { MessageChatDto } from './message-chat.dto';
+import { MessageGroupChatDto } from './message-group-chat.dto';
 
 export class GroupMessageDto {
   @IsNotEmpty()
@@ -14,7 +14,7 @@ export class GroupMessageDto {
   id: number;
   @IsNotEmpty()
   @ValidateNested()
-  groupChat: MessageChatDto;
+  groupChat: MessageGroupChatDto;
   @IsString()
   @IsNotEmpty()
   message: string;
