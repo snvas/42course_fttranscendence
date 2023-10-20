@@ -225,7 +225,7 @@
 	});
 </script>
 
-<ChatLayout>
+<ChatLayout selected="direct">
 	<div class="contents" slot="list">
 		<DirectList
 			{privateMessageHistory}

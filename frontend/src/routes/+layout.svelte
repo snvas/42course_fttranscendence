@@ -9,7 +9,6 @@
 	async function updateAllPlayersStatus() {
 		$allUsers = await readAllUsers();
 
-		let result: PlayerStatusDto[] = [];
 		let online: PlayerStatusDto[] = [];
 		let offline: PlayerStatusDto[] = [];
 
@@ -26,8 +25,7 @@
 				});
 			}
 		}
-		result = [...online, ...offline];
-		$playersStatus = result;
+		$playersStatus = [...online, ...offline];
 	}
 
 	const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
