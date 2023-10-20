@@ -57,6 +57,7 @@ export class ChatController {
     return await this.chatService.getUserGroupChatsHistory(user.id);
   }
 
+  //Arrumar DTOs daqui para baixo:
   @HttpCode(HttpStatus.OK)
   @Get('group/chats')
   async getAllGroupChats(): Promise<GroupChatDto[]> {

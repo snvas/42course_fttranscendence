@@ -66,7 +66,7 @@ export class ChatService {
       socket.request.user === undefined ||
       socket.request.user.id === undefined
     ) {
-      this.logger.warn(`### User not authenticated: ${socket.id}`);
+      this.logger.warn(`### User not authenticated: [${socket.id}]`);
       socket.emit('unauthorized', 'User not authenticated');
       socket.disconnect();
       return false;
@@ -119,9 +119,9 @@ export class ChatService {
     );
 
     this.logger.debug(
-      `### Online users nicknames: ${playerStatus.map(
+      `### Online users nicknames: [${playerStatus.map(
         (u: PlayerStatusDto) => u.nickname,
-      )}`,
+      )}]`,
     );
 
     return playerStatus;
@@ -155,7 +155,7 @@ export class ChatService {
       });
 
     this.logger.debug(
-      `### Saving private message by: ${privateMessageDto.sender.nickname} to ${privateMessageDto.receiver.nickname}`,
+      `### Saving private message by: [${privateMessageDto.sender.nickname}] to [${privateMessageDto.receiver.nickname}]`,
     );
 
     return plainToClass(
@@ -193,7 +193,7 @@ export class ChatService {
       await this.groupMessageRepository.save(messageEntity);
 
     this.logger.verbose(
-      `### Event message: ${JSON.stringify(groupMessageEntity)}`,
+      `### Event message: [${JSON.stringify(groupMessageEntity)}]`,
     );
 
     return plainToClass(GroupMessageDto, groupMessageEntity);
@@ -243,7 +243,7 @@ export class ChatService {
       });
 
     this.logger.verbose(
-      `### Saving group message by: ${profile.nickname} to group ${groupChat.name}}`,
+      `### Saving group message by: [${profile.nickname}] to group [${groupChat.name}]`,
     );
 
     return plainToClass(
@@ -323,7 +323,15 @@ export class ChatService {
         visibility: groupChat.visibility,
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
-        members: groupChat.members,
+        members: groupChat.members.map(
+          (member: GroupMemberEntity): MessageProfile => {
+            return {
+              id: member.profile.id,
+              nickname: member.profile.nickname,
+              avatarId: member.profile.avatarId,
+            } as MessageProfile;
+          },
+        ),
         messages: groupChat.messages
           .map((message: GroupMessageEntity): ConversationDto => {
             return {
@@ -372,7 +380,7 @@ export class ChatService {
       await this.addGroupChatMember(groupChatEntity.id, profile.id, chatRole);
 
       this.logger.debug(
-        `### Group chat created with name: ${groupChatEntity.name}, visibility: ${groupChatEntity.visibility} - by ${profile.nickname}`,
+        `### Group chat created with name: [${groupChatEntity.name}], visibility: [${groupChatEntity.visibility}] - by [${profile.nickname}]`,
       );
       return plainToClass(GroupChatDto, groupChatEntity);
     } catch (exception) {
@@ -381,7 +389,7 @@ export class ChatService {
         (await this.isGroupNameExist(groupCreationDto.name))
       ) {
         throw new NotAcceptableException(
-          `Group chat with name ${groupCreationDto.name} already exists`,
+          `Group chat with name [${groupCreationDto.name}] already exists`,
         );
       }
 
@@ -486,7 +494,7 @@ export class ChatService {
     groupMember.profile = newMemberProfile;
 
     this.logger.debug(
-      `### Adding profile: ${newMemberProfile.nickname} with role: ${groupMember.role} to group chat: ${groupChat.name}`,
+      `### Adding profile: [${newMemberProfile.nickname}] with role: [${groupMember.role}] to group chat: [${groupChat.name}]`,
     );
     try {
       return plainToClass(
@@ -496,7 +504,7 @@ export class ChatService {
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
         throw new NotAcceptableException(
-          `Profile ${newMemberProfile.nickname} is already a member of group chat ${groupChat.name}`,
+          `Profile [${newMemberProfile.nickname}] is already a member of group chat [${groupChat.name}]`,
         );
       }
       throw Exception;
@@ -519,10 +527,10 @@ export class ChatService {
 
     if (!memberDeleteResult.affected) {
       this.logger.log(
-        `### Member [${memberToRemove?.id}] for chat with id ${chatId} not found`,
+        `### Member [${memberToRemove?.id}] for chat with id [${chatId}] not found`,
       );
       throw new NotFoundException(
-        `Member [${memberToRemove?.id}] for group chat with id ${chatId} not found`,
+        `Member [${memberToRemove?.id}] for group chat with id [${chatId}] not found`,
       );
     }
     this.logger.log(
@@ -536,7 +544,7 @@ export class ChatService {
   }
 
   public async getGroupChatById(id: number): Promise<GroupChatDto> {
-    this.logger.verbose(`### Getting group chat by id: ${id}`);
+    this.logger.verbose(`### Getting group chat by id: [${id}]`);
 
     const groupChat: GroupChatEntity | null =
       await this.groupChatRepository.findOne({
@@ -552,7 +560,7 @@ export class ChatService {
       });
 
     if (!groupChat) {
-      throw new NotFoundException(`Group chat with id ${id} not found`);
+      throw new NotFoundException(`Group chat with id [${id}] not found`);
     }
 
     return plainToClass(GroupChatDto, groupChat);
@@ -561,7 +569,7 @@ export class ChatService {
   public async deleteGroupChatById(
     id: number,
   ): Promise<GroupChatDeletedResponseDto> {
-    this.logger.verbose(`### Deleting group chat by id: ${id}`);
+    this.logger.verbose(`### Deleting group chat by id: [${id}]`);
 
     const groupChatDeleteResult: DeleteResult =
       await this.groupChatRepository.delete({
@@ -569,7 +577,7 @@ export class ChatService {
       });
 
     if (!groupChatDeleteResult.affected) {
-      this.logger.log(`### Group chat with id ${id} not found`);
+      this.logger.log(`### Group chat with id [${id}] not found`);
       throw new NotFoundException(`Group chat with id ${id} not found`);
     }
 
@@ -621,7 +629,7 @@ export class ChatService {
       });
 
     this.logger.debug(
-      `### Saving private message by: ${sender.nickname} to ${receiver.nickname}`,
+      `### Saving private message by: [${sender.nickname}] to [${receiver.nickname}]`,
     );
 
     return plainToClass(

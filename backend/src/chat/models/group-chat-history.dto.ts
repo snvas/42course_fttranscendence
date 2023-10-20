@@ -9,7 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { GroupMemberEntity } from '../../db/entities';
+import { MessageProfileDto } from './message-profile.dto';
 
 export class GroupChatHistoryDto implements GroupChatHistory {
   @IsNumber()
@@ -30,7 +30,7 @@ export class GroupChatHistoryDto implements GroupChatHistory {
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
-  members: GroupMemberEntity[];
+  members: MessageProfileDto[];
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
