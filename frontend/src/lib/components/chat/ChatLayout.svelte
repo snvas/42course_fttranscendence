@@ -25,7 +25,7 @@
 	export let selected: 'direct' | 'group';
 </script>
 
-<div class="h-full min-h-screen w-screen flex flex-col md:h-screen gap-5">
+<div class="h-full min-h-screen w-screen flex flex-col lg:h-screen gap-5">
 	<div class="flex-none">
 		<PongHeader />
 		<div class="flex flex-col justify-end items-end">
@@ -34,8 +34,8 @@
 			</a>
 		</div>
 	</div>
-	<div class="flex-1 flex flex-col md:flex-row gap-10 px-10 pb-10 h-0">
-		<div class="gap-15 flex flex-col md:w-1/4 flex-none w-full h-full">
+	<div class="flex-1 flex flex-col lg:flex-row gap-10 px-10 pb-10 h-0">
+		<div class="gap-15 flex flex-col lg:w-1/4 flex-none w-full h-full">
 			<div class="border-4 border-white min-w-fit w-full flex flex-col h-full rounded-3xl">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
 					<!-- TODO: padronizar botões e estilo baseado na variável "showingMessages" -->

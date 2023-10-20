@@ -1,5 +1,5 @@
 import { render, cleanup } from '@testing-library/svelte';
-import UsersList from '$lib/components/UsersList.svelte';
+import UsersList from '$lib/components/lists/UsersList.svelte';
 
 // Limpar após cada teste
 afterEach(cleanup);
