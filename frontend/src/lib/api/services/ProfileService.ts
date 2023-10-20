@@ -42,6 +42,10 @@ export class ProfileService {
 		return this.axiosInstance.delete('');
 	}
 
+	public async getPublicProfile(id: string): Promise<AxiosResponse<ProfileDTO>> {
+		return this.axiosInstance.get(`public/${id}`);
+	}
+
 	public async readAllUsers(): Promise<AxiosResponse> {
 		return this, this.axiosInstance.get('profiles');
 	}

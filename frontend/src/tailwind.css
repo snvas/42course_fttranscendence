@@ -124,4 +124,7 @@
 		@apply text-white;
 		@apply lg:text-4xl text-2xl;
 	}
+	.icon-link{
+		@apply text-white;
+	}
 }

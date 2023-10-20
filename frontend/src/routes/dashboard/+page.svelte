@@ -152,14 +152,14 @@
 					<Button type="play" />
 				</div>
 			</div>
-			<div class="gap-15 flex flex-col justify-start md:w-1/3 w-full h-full md:order-2 order-last">
-				<UsersList
-					users={$playersStatus ?? []}
-					getAvatar={getAvatarFromId}
-					on:chat={(e) => onChat(e.detail)}
-					loading={loadUsers}
-				/>
-			</div>
+		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2 order-last">
+			<UsersList
+				users={$playersStatus}
+				getAvatar={getAvatarFromId}
+				on:chat={(e) => onChat(e.detail)}
+				loading={loadUsers}
+			/>
+		</div>
 		{/await}
 	</div>
 </div>

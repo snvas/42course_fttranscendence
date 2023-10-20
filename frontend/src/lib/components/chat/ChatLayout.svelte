@@ -48,7 +48,7 @@
 							goto('/chat/direct');
 						}}
 					>
-						<p class="text-center">Direct Messages</p>
+						<p class="text-center text-sm">Direct Messages</p>
 					</button>
 					<button
 						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl {selected ==

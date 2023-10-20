@@ -4,7 +4,7 @@
 	import AvatarImage from './AvatarImage.svelte';
 	import Button from '$lib/components/Button.svelte';
 
-	export let onLogout: () => Promise<void>;
+	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
 </script>
@@ -21,9 +21,11 @@
 				<p class="lg:text-2xl text-xl text-red-700 flex flex-col">Lose: 3</p>
 			</div>
 		{/await}
+		{#if onLogout}
 		<div class="flex-none">
 			<Button type="logout" on:click={onLogout} />
 		</div>
+		{/if}
 	</div>
 	<div class="w-full min-w-fit flex border-4 border-white justify-center items-center rounded-md h-10">
 		<p class="">LEVEL 2 - 23%</p>
