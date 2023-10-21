@@ -3,6 +3,7 @@
 	import type { PlayerStatusDto } from '$lib/dtos';
 	import { getAvatarFromId } from '$lib/api';
 	import UserAvatarStatus from '../UserAvatarStatus.svelte';
+	import ListButton from '../lists/ListButton.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -17,14 +18,8 @@
 		>
 			<UserAvatarStatus user={history} getAvatar={getAvatarFromId} />
 			<div class="flex flex-row items-center gap-4 text-center text-xs justify-end flex-wrap">
-				<button class="bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
-					<img src="/bloqueado.png" alt="block this user" class="w-6" />
-					<p class="text-center text-xs">BLOCK</p>
-				</button>
-				<button class="bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
-					<img src="/pingue-pongue.png" alt="let's play" class="w-6" />
-					<p class="text-center text-xs">PLAY</p>
-				</button>
+				<ListButton on:click={() => dispatch('block', history.id)} type="block" />
+				<ListButton on:click={() => dispatch('play', history.id)} type="play" />
 			</div>
 		</button>
 	{/each}
