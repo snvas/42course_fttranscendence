@@ -116,7 +116,34 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() password: Partial<ChatPasswordDto>,
   ): Promise<GroupMemberDto> {
-    return await this.chatService.joinGroupChat(chatId, user.id, password);
+    const groupMemberDto: GroupMemberDto = await this.chatService.joinGroupChat(
+      chatId,
+      user.id,
+      password,
+    );
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.JOINED_GROUP_CHAT_MEMBER, {
+        chatId,
+      } as GroupChatEvent);
+
+    return groupMemberDto;
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('group/:chatId/leave')
+  async leaveGroupChat(
+    @Req() { user }: { user: FortyTwoUserDto },
+    @Param('chatId', ParseIntPipe) chatId: number,
+  ): Promise<void> {
+    await this.chatService.leaveGroupChat(chatId, user.id);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.LEAVE_GROUP_CHAT_MEMBER, {
+        chatId,
+      } as GroupChatEvent);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -125,8 +152,8 @@ export class ChatController {
   async updateGroupChatPassword(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() password: ChatPasswordDto,
-  ): Promise<Partial<PasswordUpdateResponseDto>> {
-    const passwordUpdate: Partial<PasswordUpdateResponseDto> =
+  ): Promise<PasswordUpdateResponseDto> {
+    const passwordUpdate: PasswordUpdateResponseDto =
       await this.chatService.changeGroupChatPassword(chatId, password);
 
     (await this.messageGateway.getServer())
@@ -207,7 +234,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
     const deletedResponse: GroupMemberDeletedResponse =
-      await this.chatService.kickMemberFromGroupChat(chatId, profileId);
+      await this.chatService.removeMemberFromGroupChat(chatId, profileId);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)

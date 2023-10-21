@@ -82,9 +82,13 @@ class ChatService {
 
     public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
         if (password) {
-            return this.axiosInstance.post(`/group/${chatId}/password/validate`, {password});
+            return this.axiosInstance.post(`/group/${chatId}/join`, {password});
         }
-        return this.axiosInstance.post(`/group/${chatId}/password/validate`);
+        return this.axiosInstance.post(`/group/${chatId}/join`);
+    }
+
+    public leaveGroupChat(chatId: number): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.delete(`/group/${chatId}/leave`);
     }
 
     public updateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<PasswordUpdateResponseDto>> {

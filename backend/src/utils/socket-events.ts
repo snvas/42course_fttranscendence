@@ -8,6 +8,8 @@ export const socketEvent = {
   GROUP_CHAT_DELETED: 'groupChatDeleted',
   GROUP_CHAT_PASSWORD_UPDATED: 'groupChatPasswordUpdated',
   GROUP_CHAT_PASSWORD_DELETED: 'groupChatPasswordDeleted',
+  JOINED_GROUP_CHAT_MEMBER: 'joinedGroupChatMember',
+  LEAVE_GROUP_CHAT_MEMBER: 'leaveGroupChatMember',
   ADDED_GROUP_CHAT_MEMBER: 'addedGroupChatMember',
   KICKED_GROUP_CHAT_MEMBER: 'kickedGroupChatMember',
 };

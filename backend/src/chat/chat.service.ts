@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -417,6 +418,22 @@ export class ChatService {
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
+    const member: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy({
+        profile: {
+          id: profile.id,
+        },
+      });
+
+    if (member) {
+      this.logger.error(
+        `### User [${profile.nickname}] is already a member of group chat [${groupChat.name}]`,
+      );
+      throw new NotAcceptableException(
+        `User is already a member of group chat`,
+      );
+    }
+
     if (groupChat.visibility === 'private') {
       if (!groupChat.password) {
         this.logger.error(`### Group chat [${chatId}] has no password`);
@@ -438,7 +455,6 @@ export class ChatService {
         throw new UnauthorizedException(`Group chat password is invalid`);
       }
     }
-
     const chatRole: ChatRole = {
       role: 'user',
     };
@@ -446,10 +462,27 @@ export class ChatService {
     return await this.addGroupChatMember(groupChat.id, profile.id, chatRole);
   }
 
+  public async leaveGroupChat(chatId: number, userId: number) {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+
+    if (groupChat.owner.id === profile.id) {
+      this.logger.error(
+        `### Group chat [${chatId}] owner [${profile.nickname}] cannot leave the chat`,
+      );
+      throw new NotAcceptableException(
+        `Group chat owner cannot leave the chat`,
+      );
+    }
+
+    return await this.removeMemberFromGroupChat(chatId, profile.id);
+  }
+
   public async changeGroupChatPassword(
     chatId: number,
     password: ChatPasswordDto,
-  ): Promise<Partial<PasswordUpdateResponseDto>> {
+  ): Promise<PasswordUpdateResponseDto> {
     this.logger.verbose(`### Updating group chat [${chatId}] password`);
 
     const updateResult: UpdateResult = await this.groupChatRepository.update(
@@ -462,12 +495,15 @@ export class ChatService {
       },
     );
 
-    return updateResult.affected
-      ? {
-          updated: updateResult.affected > 0,
-          affected: updateResult.affected,
-        }
-      : {};
+    if (!updateResult.affected) {
+      this.logger.error(`### Group chat [${chatId}] not found`);
+      throw new NotFoundException(`Group chat [${chatId}] not found`);
+    }
+
+    return {
+      updated: updateResult.affected > 0,
+      affected: updateResult.affected,
+    };
   }
 
   public async deleteGroupChatPassword(
@@ -533,7 +569,7 @@ export class ChatService {
     }
   }
 
-  public async kickMemberFromGroupChat(
+  public async removeMemberFromGroupChat(
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberDeletedResponse> {
@@ -544,16 +580,20 @@ export class ChatService {
         },
       });
 
-    const memberDeleteResult: DeleteResult =
-      await this.groupMemberRepository.delete({ id: memberToRemove?.id });
-
-    if (!memberDeleteResult.affected) {
+    if (!memberToRemove) {
       this.logger.log(
-        `### Member [${memberToRemove?.id}] for chat with id [${chatId}] not found`,
+        `### Member [${profileId}] to remove for chat with id [${chatId}] not found`,
       );
       throw new NotFoundException(
-        `Member [${memberToRemove?.id}] for group chat with id [${chatId}] not found`,
+        `Member [${profileId}] for group chat with id [${chatId}] not found`,
       );
+    }
+
+    const memberDeleteResult: DeleteResult =
+      await this.groupMemberRepository.delete(memberToRemove.id);
+
+    if (!memberDeleteResult.affected) {
+      throw new InternalServerErrorException('Member not deleted');
     }
     this.logger.log(
       `### Kicked member [${profileId}] from Group chat [${chatId}]`,
