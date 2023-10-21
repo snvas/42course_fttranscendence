@@ -67,7 +67,12 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('group/create')
   async createGroupChat(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req()
+    {
+      user,
+    }: {
+      user: FortyTwoUserDto;
+    },
     @Body() groupCreationDto: GroupCreationDto,
   ): Promise<GroupChatDto> {
     const groupCreation: GroupChatDto = await this.chatService.createGroupChat(
@@ -104,13 +109,14 @@ export class ChatController {
     return deletedResponse;
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('group/:chatId/password/validate')
-  async validateGroupChatPassword(
+  @HttpCode(HttpStatus.CREATED)
+  @Post('group/:chatId/join')
+  async joinGroupChat(
+    @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Body() password: ChatPasswordDto,
-  ): Promise<void> {
-    return await this.chatService.validateGroupChatPassword(chatId, password);
+    @Body() password: Partial<ChatPasswordDto>,
+  ): Promise<GroupMemberDto> {
+    return await this.chatService.joinGroupChat(chatId, user.id, password);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -253,7 +259,12 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req()
+    {
+      user,
+    }: {
+      user: FortyTwoUserDto;
+    },
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() messageDto: ChatMessageDto,
   ): Promise<GroupMessageDto> {
@@ -263,7 +274,12 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('private/:profileId/message')
   async savePrivateMessage(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req()
+    {
+      user,
+    }: {
+      user: FortyTwoUserDto;
+    },
     @Param('profileId', ParseIntPipe) profileId: number,
     @Body() messageDto: ChatMessageDto,
   ): Promise<PrivateMessageDto> {

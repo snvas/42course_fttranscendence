@@ -10,6 +10,7 @@ import {GroupMemberDto} from "../../../backend/src/chat/models/group-member.dto.
 import {
     GroupMemberDeletedResponse
 } from "../../../backend/src/chat/interfaces/group-member-deleted-response.interface.ts";
+import {ChatPasswordDto} from "../../../backend/src/chat/models/chat-password.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
@@ -79,8 +80,11 @@ class ChatService {
         return this.axiosInstance.delete(`/group/${chatId}`);
     }
 
-    public validateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<void>> {
-        return this.axiosInstance.post(`/group/${chatId}/password/validate`, {password});
+    public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
+        if (password) {
+            return this.axiosInstance.post(`/group/${chatId}/password/validate`, {password});
+        }
+        return this.axiosInstance.post(`/group/${chatId}/password/validate`);
     }
 
     public updateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<PasswordUpdateResponseDto>> {

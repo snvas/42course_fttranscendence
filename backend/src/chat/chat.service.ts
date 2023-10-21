@@ -408,34 +408,42 @@ export class ChatService {
     }
   }
 
-  public async validateGroupChatPassword(
+  public async joinGroupChat(
     chatId: number,
-    chatPassword: ChatPasswordDto,
-  ): Promise<void> {
-    const groupChat: GroupChatEntity | null =
-      await this.groupChatRepository.findOneBy({
-        id: chatId,
-      });
+    userId: number,
+    requestPassword: Partial<ChatPasswordDto>,
+  ): Promise<GroupMemberDto> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
-    if (!groupChat) {
-      this.logger.error(`### Group chat [${chatId}] not found`);
-      throw new NotFoundException(`Group chat not found`);
+    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+
+    if (groupChat.visibility === 'private') {
+      if (!groupChat.password) {
+        this.logger.error(`### Group chat [${chatId}] has no password`);
+        throw new NotAcceptableException(`Group chat has no password`);
+      }
+
+      if (!requestPassword.password) {
+        this.logger.error(`### Group chat [${chatId}] password is required`);
+        throw new UnauthorizedException(`Group chat password is required`);
+      }
+
+      const result: boolean = comparePassword(
+        requestPassword.password,
+        groupChat.password,
+      );
+
+      if (!result) {
+        this.logger.error(`### Group chat [${chatId}] password is invalid`);
+        throw new UnauthorizedException(`Group chat password is invalid`);
+      }
     }
 
-    if (!groupChat.password) {
-      this.logger.error(`### Group chat [${chatId}] has no password`);
-      throw new NotAcceptableException(`Group chat has no password`);
-    }
+    const chatRole: ChatRole = {
+      role: 'user',
+    };
 
-    const result: boolean = comparePassword(
-      chatPassword.password,
-      groupChat.password,
-    );
-
-    if (!result) {
-      this.logger.error(`### Group chat [${chatId}] password is invalid`);
-      throw new UnauthorizedException(`Group chat password is invalid`);
-    }
+    return await this.addGroupChatMember(groupChat.id, profile.id, chatRole);
   }
 
   public async changeGroupChatPassword(
@@ -510,7 +518,7 @@ export class ChatService {
       const memberEntity: GroupMemberEntity =
         await this.groupMemberRepository.save(groupMember);
 
-      return this.createGroupChatMember(
+      return this.createGroupMemberDto(
         memberEntity,
         groupChat,
         newMemberProfile,
@@ -827,7 +835,7 @@ export class ChatService {
     return !!groupMember;
   }
 
-  private createGroupChatMember(
+  private createGroupMemberDto(
     memberEntity: GroupMemberEntity,
     groupChat: GroupChatEntity,
     newMemberProfile: ProfileDTO,

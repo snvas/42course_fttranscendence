@@ -9,6 +9,7 @@ import {ConversationDto} from "../../../backend/src/chat/models/conversation.dto
 import {AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
 import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
+import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -21,7 +22,6 @@ interface WebSocketProviderProps {
 export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     // const { user } = useContext(AuthContext) as AuthContextData;
     // const { profile } = useProfile() as ProfileContextData;
-    const [messages, setMessages] = useState<ConversationDto[]>([]);
     const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
     const [privateMessageHistory, setPrivateMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
@@ -63,10 +63,11 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             navigate("/login");
         };
 
-        const onMessage = (message: ConversationDto): void => {
-            console.log(`### received chat message ${JSON.stringify(message)}`);
 
-            setMessages((messages: ConversationDto[]) => [...messages, message]);
+        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
+            console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
+
+            setPlayersStatus(onlineUsers);
         };
 
         const onPrivateMessage = (message: PrivateMessageDto): void => {
@@ -120,25 +121,22 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             });
         }
 
-        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
-            console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
-
-            setPlayersStatus(onlineUsers);
-        };
+        const onGroupMessage = (groupMessage: GroupMessageDto): void => {
+            console.log(`### received group message ${groupMessage.message}`);
+        }
 
         socket.on("connect", onConnect);
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
-        socket.on("message", onMessage);
-        socket.on("receivePrivateMessage", onPrivateMessage);
         socket.on("playersStatus", onPlayersStatus);
-
+        socket.on("receivePrivateMessage", onPrivateMessage);
+        socket.on("receiveGroupMessage", onGroupMessage);
+        
         return () => {
             socket.off("connect");
             socket.off("error");
-            socket.off("message");
-            socket.off("receivePrivateMessage")
             socket.off("playersStatus");
+            socket.off("receivePrivateMessage")
             socket.disconnect();
         };
     }, []);
@@ -200,7 +198,6 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         updatePrivateMessageHistory,
         updatePrivateMessageHistoryFromMessageDto,
         privateMessageHistory,
-        messages,
         playersStatus
     };
 
