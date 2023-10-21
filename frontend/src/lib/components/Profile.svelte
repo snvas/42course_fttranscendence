@@ -10,44 +10,59 @@
 </script>
 
 <div class="flex flex-col w-full h-full gap-10">
-	<div class="flex w-full gap-4">
-		{#await profile then profile}
+	{#await profile}
+		Loading
+	{:then profile}
+		<div class="flex w-full gap-4">
 			<div class="flex-initial flex-shrink-0 lg:w-28 w-16">
 				<AvatarImage {avatar} />
 			</div>
 			<div class="flex-1 flex flex-col">
 				<p class="lg:text-3xl text-2xl">{profile?.data.nickname}</p>
-				<p class="lg:text-2xl text-xl text-green-700 flex flex-col">Win: 3</p>
-				<p class="lg:text-2xl text-xl text-red-700 flex flex-col">Lose: 3</p>
+				<p class="lg:text-2xl text-xl text-green-700 flex flex-col">Win: {profile?.data.wins}</p>
+				<p class="lg:text-2xl text-xl text-yellow-700 flex flex-col">
+					Draws: {profile?.data.draws}
+				</p>
+				<p class="lg:text-2xl text-xl text-red-700 flex flex-col">Lose: {profile?.data.losses}</p>
 			</div>
-		{/await}
-		{#if onLogout}
-		<div class="flex-none">
-			<Button type="logout" on:click={onLogout} />
-		</div>
-		{/if}
-	</div>
-	<div class="w-full min-w-fit flex border-4 border-white justify-center items-center rounded-md h-10">
-		<p class="">LEVEL 2 - 23%</p>
-	</div>
-	<div class="flex flex-row w-full min-w-fit">
-		<p class="mb-5">ACHIEVEMENTS</p>
-	</div>
-	<div class="flex flex-row h-20 w-full min-w-fit gap-5">
-		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-		>
-			<p class="">8 Wins</p>
+			{#if onLogout}
+				<div class="flex-none">
+					<Button type="logout" on:click={onLogout} />
+				</div>
+			{/if}
 		</div>
 		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
+			class="w-full min-w-fit flex border-4 border-white justify-center items-center rounded-md h-10"
 		>
-			<p class="">4 Lose</p>
+			<!-- TODO: level? -->
+			<p class="">LEVEL 2 - 23%</p>
 		</div>
-		<div
-			class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-		>
-			<p class="">12 Matchs</p>
+		<div class="flex flex-row w-full min-w-fit">
+			<p class="mb-5">ACHIEVEMENTS</p>
 		</div>
-	</div>
+		<div class="flex flex-row h-20 w-full min-w-fit gap-5">
+			<div
+				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
+			>
+				<p class="">{profile?.data.wins} Wins</p>
+			</div>
+			<div
+				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
+			>
+				<p class="">{profile?.data.losses} Lose</p>
+			</div>
+			<div
+				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
+			>
+				<p class="">{profile?.data.draws} Draws</p>
+			</div>
+			<div
+				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
+			>
+				<p class="">
+					{(profile?.data.draws ?? 0) + (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
+				</p>
+			</div>
+		</div>
+	{/await}
 </div>

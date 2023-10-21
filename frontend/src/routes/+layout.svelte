@@ -5,18 +5,24 @@
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
 	import { readAllUsers } from '$lib/api';
+	import { page } from '$app/stores';
 
 	async function updateAllPlayersStatus() {
+		if ($page.url.pathname == '/login') {
+			return;
+		}
 		$allUsers = await readAllUsers();
 
 		let online: PlayerStatusDto[] = [];
 		let offline: PlayerStatusDto[] = [];
 
+		let temp: PlayerStatusDto | null;
 		for (let user of $allUsers) {
-			if ($onlineUsers.find((v) => v.id == user.id)) {
+			temp = $onlineUsers.find((v) => v.id == user.id) ?? null;
+			if (temp) {
 				online.push({
 					...user,
-					status: 'online'
+					status: temp.status
 				});
 			} else {
 				offline.push({
