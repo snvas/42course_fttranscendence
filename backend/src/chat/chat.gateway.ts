@@ -14,6 +14,7 @@ import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private-message.dto';
 import { GroupMessageDto } from './models/group-message.dto';
+import { socketEvent } from '../utils/socket-events';
 
 @WebSocketGateway({
   cors: {
@@ -54,7 +55,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.join(rooms);
 
     this.server.emit(
-      'playersStatus',
+      socketEvent.PLAYERS_STATUS,
       await this.chatService.getPlayersStatus(),
     );
   }
@@ -71,13 +72,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.chatService.removePlayerStatus(socket);
 
     socket.broadcast.emit(
-      'playersStatus',
+      socketEvent.PLAYERS_STATUS,
       await this.chatService.getPlayersStatus(),
     );
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  @SubscribeMessage('sendPrivateMessage')
+  @SubscribeMessage(socketEvent.SEND_PRIVATE_MESSAGE)
   async handlePrivateMessage(
     @MessageBody() message: PrivateMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
@@ -92,7 +93,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (receiverSocket) {
         socket
           .to(receiverSocket?.id)
-          .emit('receivePrivateMessage', privateMessage);
+          .emit(socketEvent.RECEIVE_PRIVATE_MESSAGE, privateMessage);
       }
 
       return privateMessage;
@@ -103,7 +104,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UseGuards(WsAuthenticatedGuard)
-  @SubscribeMessage('sendGroupMessage')
+  @SubscribeMessage(socketEvent.SEND_GROUP_MESSAGE)
   async handleGroupMessage(
     @MessageBody() message: GroupMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
@@ -115,7 +116,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (groupMessage.groupChat.name) {
         socket
           .to(groupMessage.groupChat.name)
-          .emit('receiveGroupMessage', groupMessage);
+          .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
       }
 
       return groupMessage;

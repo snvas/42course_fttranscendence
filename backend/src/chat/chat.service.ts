@@ -32,9 +32,6 @@ import { comparePassword, hashPassword } from '../utils/bcrypt';
 import { PrivateMessageDto } from './models/private-message.dto';
 import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
 import { ConversationDto } from './models/conversation.dto';
-import { GroupChatHistoryDto } from './models/group-chat-history.dto';
-import { GroupChatDto } from './models/group-chat.dto';
-import { GroupMemberDto } from './models/group-member.dto';
 import { PlayerStatusDto } from './models/player-status.dto';
 import { PlayerStatusSocket } from './types/player-status.socket';
 import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
@@ -44,6 +41,9 @@ import { ChatPasswordDto } from './models/chat-password.dto';
 import { MessageProfile } from './interfaces/message-profile.interface';
 import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
 import { MessageProfileDto } from './models/message-profile.dto';
+import { GroupChatHistoryDto } from './models/group-chat-history.dto';
+import { GroupChatDto } from './models/group-chat.dto';
+import { GroupMemberDto } from './models/group-member.dto';
 
 @Injectable()
 export class ChatService {

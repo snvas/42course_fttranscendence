@@ -18,9 +18,6 @@ import { GroupCreationDto } from './models/group-creation.dto';
 import { ChatMessageDto } from './models/chat-message.dto';
 import { PrivateMessageDto } from './models/private-message.dto';
 import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
-import { GroupChatHistoryDto } from './models/group-chat-history.dto';
-import { GroupChatDto } from './models/group-chat.dto';
-import { GroupMemberDto } from './models/group-member.dto';
 import { GroupMessageDto } from './models/group-message.dto';
 import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
 import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
@@ -33,6 +30,10 @@ import { ChatPasswordDto } from './models/chat-password.dto';
 import { ChatGateway } from './chat.gateway';
 import { GroupChatMemberEventDto } from './models/group-chat-member-event.dto';
 import { GroupChatEvent } from './interfaces/group-chat-event.interface';
+import { GroupChatHistoryDto } from './models/group-chat-history.dto';
+import { GroupChatDto } from './models/group-chat.dto';
+import { GroupMemberDto } from './models/group-member.dto';
+import { socketEvent } from '../utils/socket-events';
 
 @Controller('chat')
 export class ChatController {
@@ -74,9 +75,12 @@ export class ChatController {
       user.id,
     );
 
-    (await this.messageGateway.getServer()).emit('groupChatCreated', {
-      chatId: groupCreation.id,
-    } as GroupChatEvent);
+    (await this.messageGateway.getServer()).emit(
+      socketEvent.GROUP_CHAT_CREATED,
+      {
+        chatId: groupCreation.id,
+      } as GroupChatEvent,
+    );
 
     return groupCreation;
   }
@@ -90,9 +94,12 @@ export class ChatController {
     const deletedResponse: GroupChatDeletedResponseDto =
       await this.chatService.deleteGroupChatById(chatId);
 
-    (await this.messageGateway.getServer()).emit('groupChatDeleted', {
-      chatId,
-    } as GroupChatEvent);
+    (await this.messageGateway.getServer()).emit(
+      socketEvent.GROUP_CHAT_DELETED,
+      {
+        chatId,
+      } as GroupChatEvent,
+    );
 
     return deletedResponse;
   }
@@ -118,7 +125,7 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit('groupPasswordUpdated', {
+      .emit(socketEvent.GROUP_CHAT_PASSWORD_UPDATED, {
         chatId,
       } as GroupChatEvent);
 
@@ -135,7 +142,7 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit('groupPasswordDeleted', {
+      .emit(socketEvent.GROUP_CHAT_PASSWORD_DELETED, {
         chatId,
       } as GroupChatEvent);
 
@@ -156,7 +163,7 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit('addedGroupChatMember', {
+      .emit(socketEvent.ADDED_GROUP_CHAT_MEMBER, {
         chatId,
         profileId,
       } as GroupChatMemberEventDto);
@@ -178,7 +185,7 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit('addedGroupChatMember', {
+      .emit(socketEvent.ADDED_GROUP_CHAT_MEMBER, {
         chatId,
         profileId,
       } as GroupChatMemberEventDto);
@@ -198,7 +205,7 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit('kickedGroupMember', {
+      .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
         chatId,
         profileId,
       } as GroupChatMemberEventDto);
