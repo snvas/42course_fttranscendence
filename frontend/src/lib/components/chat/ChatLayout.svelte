@@ -21,6 +21,12 @@
 			$profile = v.data;
 		}
 	});
+	import type {
+		GroupCreationDto,
+		ComponentMessage
+	} from '$lib/dtos';
+
+	export let messages: ComponentMessage[] | null;
 
 	export let selected: 'direct' | 'group';
 </script>
@@ -66,7 +72,11 @@
 			</div>
 		</div>
 		<div class="flex-1 flex flex-col w-full h-full">
-			<slot name="messages" />
+			
+				<slot name="messages" />
+			{#if messages == null}
+				<slot name="create"/>
+			{/if}
 		</div>
 	</div>
 </div>
