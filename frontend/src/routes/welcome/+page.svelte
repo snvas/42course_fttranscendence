@@ -87,6 +87,7 @@
 			<p class="text-red-500">
 				{alert}
 			</p>
+			<form class="flex flex-col gap-10 items-center">
 			<input
 				bind:value={nickname}
 				placeholder="Choose your nickname"
@@ -95,6 +96,7 @@
 			<button disabled={isLoading} class="btn-primary w-1/4 min-w-fit" on:click={onCreateProfile}>
 				{alert == alerts.profileExist ? 'Go to home' : 'Submit'}
 			</button>
+		</form>
 		{:else}
 			<div class="md:w-48 w-24">
 				{#if imageFile}

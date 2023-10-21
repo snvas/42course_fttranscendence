@@ -8,6 +8,7 @@ export * from '../../../../backend/src/chat/models/private-message.dto';
 export * from '../../../../backend/src/chat/models/conversation.dto';
 export * from '../../../../backend/src/chat/models/message-profile.dto';
 export * from '../../../../backend/src/chat/models/player-status.dto';
+export * from '../../../../backend/src/chat/models/group-creation.dto'
 
 export type ComponentMessage = {
 	message: string;
