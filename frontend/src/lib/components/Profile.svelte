@@ -18,9 +18,9 @@
 				<AvatarImage {avatar} />
 			</div>
 			<div class="flex-1 flex flex-col">
-				<p class="lg:text-3xl text-2xl">{profile?.data.nickname}</p>
-				<p class="lg:text-2xl text-xl text-green-700 flex flex-col">Win: {profile?.data.wins}</p>
-				<p class="lg:text-2xl text-xl text-yellow-700 flex flex-col">
+				<p class="lg:text-3xl md:text-2xl sm:text-xl text-lg">{profile?.data.nickname}</p>
+				<p class="lg:text-2xl text-md text-green-700 flex flex-col">Win: {profile?.data.wins}</p>
+				<p class="lg:text-2xl text-md text-yellow-700 flex flex-col">
 					Draws: {profile?.data.draws}
 				</p>
 				<p class="lg:text-2xl text-xl text-red-700 flex flex-col">Lose: {profile?.data.losses}</p>

@@ -101,6 +101,10 @@
 		goto('/login');
 	}
 
+	async function onGame(){
+		goto('/game');
+	}
+
 	async function onChat(user: PlayerStatusDto | null) {
 		$selectedDirect = user;
 		goto('/chat/direct');
@@ -125,7 +129,7 @@
 	<div class="flex-none">
 		<PongHeader />
 	</div>
-	<div class="flex-1 first-letter:w-full flex h-0 lg:flex-row flex-col gap-10 p-10 min-w-3xl">
+	<div class="flex-1 first-letter:w-full flex h-0 lg:flex-row flex-col gap-10 lg:p-10 p-2 min-w-3xl">
 		{#await loadProfile}
 			<div class="w-full h-full">Carregando</div>
 		{:then}
@@ -149,7 +153,7 @@
 						}}
 					/>
 					<Button type="settings" on:click={() => (showing = 'settings')} />
-					<Button type="play" />
+					<Button type="play" on:click={() => onGame()} />
 				</div>
 			</div>
 		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
