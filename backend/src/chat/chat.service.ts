@@ -45,6 +45,9 @@ import { MessageProfileDto } from './models/message-profile.dto';
 import { GroupChatHistoryDto } from './models/group-chat-history.dto';
 import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
+import { UpdateMemberRoleDto } from './models/update-member-role.dto';
+import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
+import { GroupProfile } from './interfaces/group-profile.interface';
 
 @Injectable()
 export class ChatService {
@@ -326,12 +329,13 @@ export class ChatService {
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
         members: groupChat.members.map(
-          (member: GroupMemberEntity): MessageProfile => {
+          (member: GroupMemberEntity): GroupProfile => {
             return {
               id: member.profile.id,
               nickname: member.profile.nickname,
               avatarId: member.profile.avatarId,
-            } as MessageProfile;
+              role: member.role,
+            } as GroupProfile;
           },
         ),
         messages: groupChat.messages
@@ -410,12 +414,10 @@ export class ChatService {
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
-    const member: GroupMemberEntity | null =
-      await this.groupMemberRepository.findOneBy({
-        profile: {
-          id: profile.id,
-        },
-      });
+    const member: GroupMemberEntity = await this.getGroupChatMember(
+      profile.id,
+      chatId,
+    );
 
     if (member) {
       this.logger.error(
@@ -572,28 +574,7 @@ export class ChatService {
     profileId: number,
   ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
     const memberToRemove: GroupMemberEntity | null =
-      await this.groupMemberRepository.findOne({
-        where: {
-          profile: {
-            id: profileId,
-          },
-        },
-        relations: {
-          groupChat: {
-            owner: true,
-          },
-          profile: true,
-        },
-      });
-
-    if (!memberToRemove) {
-      this.logger.log(
-        `### Member [${profileId}] to remove for chat with id [${chatId}] not found`,
-      );
-      throw new NotFoundException(
-        `Member [${profileId}] for group chat with id [${chatId}] not found`,
-      );
-    }
+      await this.getGroupChatMember(profileId, chatId);
 
     const memberDeleteResult: DeleteResult =
       await this.groupMemberRepository.delete(memberToRemove.id);
@@ -714,6 +695,41 @@ export class ChatService {
     );
   }
 
+  public async updateGroupChatMemberRole(
+    chatId: number,
+    profileId: number,
+    chatRole: UpdateMemberRoleDto,
+  ): Promise<GroupMemberDto & MemberRoleUpdatedResponseDto> {
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
+
+    const updatedMember: UpdateResult = await this.groupMemberRepository.update(
+      {
+        id: groupMember.id,
+      },
+      {
+        role: chatRole.role,
+      },
+    );
+
+    if (!updatedMember.affected) {
+      this.logger.error(`### Role of member [${profileId}] not updated`);
+      throw new InternalServerErrorException('Member not updated');
+    }
+
+    return {
+      updated: updatedMember.affected > 0,
+      affected: updatedMember.affected,
+      ...this.createGroupMemberDto(
+        groupMember,
+        groupMember.groupChat,
+        groupMember.profile,
+      ),
+    };
+  }
+
   public async getGroupMemberRole(
     chatId: number,
     profileId: number,
@@ -724,26 +740,10 @@ export class ChatService {
       return { role: 'owner' };
     }
 
-    const groupMember: GroupMemberEntity | null =
-      await this.groupMemberRepository.findOneBy([
-        {
-          profile: {
-            id: profileId,
-          },
-          groupChat: {
-            id: chatId,
-          },
-        },
-      ]);
-
-    if (!groupMember) {
-      this.logger.error(
-        `### Profile id [${profileId}] is not a member from chat [${chatId}]`,
-      );
-      throw new NotAcceptableException(
-        `Profile id [${profileId}] is not a member from chat [${chatId}]`,
-      );
-    }
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
 
     return groupMember.role === 'admin' ? { role: 'admin' } : { role: 'user' };
   }
@@ -752,6 +752,40 @@ export class ChatService {
     const groupChat: GroupChatEntity = await this.getGroupChatById(id);
 
     return this.createGroupChatDto(groupChat, groupChat.owner);
+  }
+
+  private async getGroupChatMember(
+    profileId: number,
+    chatId: number,
+  ): Promise<GroupMemberEntity> {
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOne({
+        where: {
+          profile: {
+            id: profileId,
+          },
+          groupChat: {
+            id: chatId,
+          },
+        },
+        relations: {
+          groupChat: {
+            owner: true,
+          },
+          profile: true,
+        },
+      });
+
+    if (!groupMember) {
+      this.logger.log(
+        `### Member [${profileId}] to remove for chat with id [${chatId}] not found`,
+      );
+      throw new NotFoundException(
+        `Member [${profileId}] for group chat with id [${chatId}] not found`,
+      );
+    }
+
+    return groupMember;
   }
 
   private async getUserPrivateMessages(

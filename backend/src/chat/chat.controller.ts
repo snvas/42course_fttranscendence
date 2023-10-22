@@ -33,6 +33,8 @@ import { GroupChatHistoryDto } from './models/group-chat-history.dto';
 import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
 import { socketEvent } from '../utils/socket-events';
+import { UpdateMemberRoleDto } from './models/update-member-role.dto';
+import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -69,17 +71,17 @@ export class ChatController {
     @Req() { user }: { user: FortyTwoUserDto },
     @Body() groupCreationDto: GroupCreationDto,
   ): Promise<GroupChatDto> {
-    const GroupChat: GroupChatDto = await this.chatService.createGroupChat(
+    const groupChat: GroupChatDto = await this.chatService.createGroupChat(
       groupCreationDto,
       user.id,
     );
 
     (await this.messageGateway.getServer()).emit(
       socketEvent.GROUP_CHAT_CREATED,
-      GroupChat,
+      groupChat,
     );
 
-    return GroupChat;
+    return groupChat;
   }
 
   @HttpCode(HttpStatus.OK)
@@ -177,6 +179,32 @@ export class ChatController {
     return passwordUpdate;
   }
 
+  @UseGuards(ChatOwnerGuard)
+  @HttpCode(HttpStatus.OK)
+  @Put('group/:chatId/member/:profileId/role')
+  async updateGroupChatMemberRole(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+    @Body() role: UpdateMemberRoleDto,
+  ): Promise<MemberRoleUpdatedResponseDto> {
+    const groupMember: GroupMemberDto & MemberRoleUpdatedResponseDto =
+      await this.chatService.updateGroupChatMemberRole(chatId, profileId, role);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, {
+        id: groupMember.id,
+        role: groupMember.role,
+        groupChat: groupMember.groupChat,
+        member: groupMember.member,
+      } as GroupMemberDto);
+
+    return {
+      updated: groupMember.updated,
+      affected: groupMember.affected,
+    } as MemberRoleUpdatedResponseDto;
+  }
+
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatOwnerGuard)
   @Post('group/:chatId/admin/:profileId')
@@ -214,21 +242,6 @@ export class ChatController {
 
     return groupMember;
   }
-
-  // async updateGroupChatMemberRole(
-  //   chatId: number,
-  //   profileId: number,
-  //   role: 'user' | 'admin',
-  // ): Promise<GroupMemberDto> {
-  //   const groupMember: GroupMemberDto =
-  //     await this.chatService.updateGroupChatMemberRole(chatId, profileId, role);
-  //
-  //   (await this.messageGateway.getServer())
-  //     .to(`${chatId}`)
-  //     .emit(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, GroupMemberDto);
-  //
-  //   return groupMember;
-  // }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(ChatManagementGuard)

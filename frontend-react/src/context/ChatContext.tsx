@@ -161,6 +161,10 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             console.log(`### received kicked group chat member ${JSON.stringify(groupMemberDto)}`);
         }
 
+        const onUpdatedGroupChatMemberRole = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
+        }
+
         socket.on("connect", onConnect);
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
@@ -175,6 +179,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         socket.on("leaveGroupChatMember", onLeaveGroupChatMember);
         socket.on("addedGroupChatMember", onAddedGroupChatMember);
         socket.on("kickedGroupChatMember", onKickedGroupChatMember);
+        socket.off("groupChatMemberRoleUpdated", onUpdatedGroupChatMemberRole);
 
 
         return (): void => {
