@@ -19,8 +19,7 @@
 
 	let groupMessageHistory: PrivateMessageHistoryDto[] = [];
 
-	function onSelectChat(historyId: number) {
-	}
+	function onSelectChat(historyId: number) {}
 
 	/*
  	GroupHandlers 
@@ -39,11 +38,17 @@
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
 	});
+
+	async function onCreateGroup() {
+		//await GroupCreationDto;
+		goto('/chat/group/create');
+	}
 </script>
 
 <ChatLayout selected="group">
-	<div class="contents" slot="list">
-		<div class="h-full w-full flex flex-col">
+	<div class="h-full w-full flex flex-col p-2" slot="list">
+		<div class="h-full w-full flex flex-col grow">
+			a
 			{#each groupMessageHistory as history}
 				<button
 					on:click={() => onSelectChat(history.id)}
@@ -58,9 +63,15 @@
 				</button>
 			{/each}
 		</div>
+			<button
+				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
+				on:click={onCreateGroup}
+			>
+				Criar um Grupo
+			</button>
 	</div>
 
-	<div class="contents" slot="messages" >
+	<div class="contents" slot="messages">
 		<GroupMessages bind:messages />
 	</div>
 </ChatLayout>

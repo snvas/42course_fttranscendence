@@ -9,7 +9,7 @@
 	<Image />
 {:then avatar}
 	{#if avatar}
-		<img class="w-full aspect-square" src={URL.createObjectURL(avatar?.data)} alt="avatar" />
+		<img class="w-full aspect-square rounded-full" src={URL.createObjectURL(avatar?.data)} alt="avatar" />
 	{:else}
 		<Image />
 	{/if}

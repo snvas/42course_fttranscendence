@@ -24,7 +24,7 @@
 			<p class="lg:text-lg text-sm text-center">{$selectedDirect?.nickname}</p>
 		</div>
 		<div
-			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-md overflow-auto"
+			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
 		>
 			{#each messages as conversation}
 				<div class="w-full flex flex-row justify-between">

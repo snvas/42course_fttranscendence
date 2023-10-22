@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type { PrivateMessageHistoryDto,PrivateMessageDto } from '$lib/dtos'
+import { socketEvent } from './SocketsEvents';
 
 class ChatService {
 	private readonly socket: Socket;
@@ -32,7 +33,7 @@ class ChatService {
 
 	public emitPrivateMessage(message: PrivateMessageDto): Promise<PrivateMessageDto> {
 		return new Promise<PrivateMessageDto>((resolve): void => {
-			this.socket?.emit('sendPrivateMessage', message, (ack: PrivateMessageDto): void => {
+			this.socket?.emit(socketEvent.SEND_PRIVATE_MESSAGE, message, (ack: PrivateMessageDto): void => {
 				resolve(ack);
 			});
 		});
