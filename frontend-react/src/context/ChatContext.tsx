@@ -12,7 +12,7 @@ import {PrivateMessageDto} from "../../../backend/src/chat/models/private-messag
 import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
 import {GroupChatEvent} from "../../../backend/src/chat/interfaces/group-chat-event.interface.ts";
 import {GroupChatDto} from "../../../backend/src/chat/models/group-chat.dto.ts";
-import {GroupChatMemberEventDto} from "../../../backend/src/chat/models/group-chat-member-event.dto.ts";
+import {GroupMemberDto} from "../../../backend/src/chat/models/group-member.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -145,20 +145,20 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
         }
 
-        const onJoinedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
-            console.log(`### received joined group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        const onJoinedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received joined group chat member ${JSON.stringify(groupMemberDto)}`);
         }
 
-        const onLeaveGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
-            console.log(`### received leave group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        const onLeaveGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received leave group chat member ${JSON.stringify(groupMemberDto)}`);
         }
 
-        const onAddedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
-            console.log(`### received added group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        const onAddedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received added group chat member ${JSON.stringify(groupMemberDto)}`);
         }
 
-        const onKickedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
-            console.log(`### received kicked group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        const onKickedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received kicked group chat member ${JSON.stringify(groupMemberDto)}`);
         }
 
         socket.on("connect", onConnect);

@@ -12,4 +12,5 @@ export const socketEvent = {
   LEAVE_GROUP_CHAT_MEMBER: 'leaveGroupChatMember',
   ADDED_GROUP_CHAT_MEMBER: 'addedGroupChatMember',
   KICKED_GROUP_CHAT_MEMBER: 'kickedGroupChatMember',
+  GROUP_CHAT_MEMBER_ROLE_UPDATED: 'groupChatMemberRoleUpdated',
 };
