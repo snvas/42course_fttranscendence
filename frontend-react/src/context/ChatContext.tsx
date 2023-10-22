@@ -10,6 +10,9 @@ import {AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
 import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
 import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
+import {GroupChatEvent} from "../../../backend/src/chat/interfaces/group-chat-event.interface.ts";
+import {GroupChatDto} from "../../../backend/src/chat/models/group-chat.dto.ts";
+import {GroupChatMemberEventDto} from "../../../backend/src/chat/models/group-chat-member-event.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -122,7 +125,40 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         }
 
         const onGroupMessage = (groupMessage: GroupMessageDto): void => {
-            console.log(`### received group message ${groupMessage.message}`);
+            console.log(`### received group message ${JSON.stringify(groupMessage.message)}`);
+        }
+
+        const onGroupChatCreated = (groupChatDto: GroupChatDto): void => {
+            console.log(`### received group chat created ${JSON.stringify(groupChatDto)}`);
+        }
+
+        //When the group chat password is deleted, the group chat visibility is set to public
+        const onGroupChatPasswordDeleted = (groupChatDto: GroupChatDto): void => {
+            console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
+        }
+
+        const onGroupChatDeleted = (groupChatEvent: GroupChatEvent): void => {
+            console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
+        }
+
+        const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEvent): void => {
+            console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
+        }
+
+        const onJoinedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
+            console.log(`### received joined group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        }
+
+        const onLeaveGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
+            console.log(`### received leave group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        }
+
+        const onAddedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
+            console.log(`### received added group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
+        }
+
+        const onKickedGroupChatMember = (groupChatMemberEventDto: GroupChatMemberEventDto): void => {
+            console.log(`### received kicked group chat member ${JSON.stringify(groupChatMemberEventDto)}`);
         }
 
         socket.on("connect", onConnect);
@@ -131,12 +167,30 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         socket.on("playersStatus", onPlayersStatus);
         socket.on("receivePrivateMessage", onPrivateMessage);
         socket.on("receiveGroupMessage", onGroupMessage);
-        
-        return () => {
+        socket.on("groupChatCreated", onGroupChatCreated);
+        socket.on("groupChatDeleted", onGroupChatDeleted);
+        socket.on("groupChatPasswordUpdated", onGroupChatPasswordUpdated);
+        socket.on("groupChatPasswordDeleted", onGroupChatPasswordDeleted);
+        socket.on("joinedGroupChatMember", onJoinedGroupChatMember);
+        socket.on("leaveGroupChatMember", onLeaveGroupChatMember);
+        socket.on("addedGroupChatMember", onAddedGroupChatMember);
+        socket.on("kickedGroupChatMember", onKickedGroupChatMember);
+
+
+        return (): void => {
             socket.off("connect");
             socket.off("error");
             socket.off("playersStatus");
-            socket.off("receivePrivateMessage")
+            socket.off("receivePrivateMessage");
+            socket.off("receiveGroupMessage");
+            socket.off("groupChatCreated");
+            socket.off("groupChatDeleted");
+            socket.off("groupChatPasswordUpdated");
+            socket.off("groupChatPasswordDeleted");
+            socket.off("joinedGroupChatMember");
+            socket.off("leaveGroupChatMember");
+            socket.off("addedGroupChatMember");
+            socket.off("kickedGroupChatMember");
             socket.disconnect();
         };
     }, []);
