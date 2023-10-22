@@ -396,7 +396,7 @@ export class ChatService {
     const groupChat: GroupChatEntity = this.groupChatRepository.create({
       name: groupCreationDto.name,
       owner: profile,
-      visibility: groupCreationDto.visibility,
+      visibility: password ? 'private' : 'public',
       password: password,
     });
 

@@ -12,6 +12,7 @@ import {
 } from "../../../backend/src/chat/interfaces/group-member-deleted-response.interface.ts";
 import {ChatPasswordDto} from "../../../backend/src/chat/models/chat-password.dto.ts";
 import {MemberRoleUpdatedResponseDto} from "../../../backend/src/chat/models/member-role-updated-response.dto.ts";
+import {GroupCreationDto} from "../../../backend/src/chat/models/group-creation.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
@@ -73,8 +74,8 @@ class ChatService {
         return this.axiosInstance.get("/group/chats");
     }
 
-    public createGroupChat(): Promise<AxiosResponse<GroupChatDto>> {
-        return this.axiosInstance.post("/group/create");
+    public createGroupChat(groupCreationDto: GroupCreationDto): Promise<AxiosResponse<GroupChatDto>> {
+        return this.axiosInstance.post("/group/create", groupCreationDto);
     }
 
     public deleteGroupChat(chatId: number): Promise<AxiosResponse<GroupChatDeletedResponseDto>> {
