@@ -11,6 +11,7 @@ import {
     GroupMemberDeletedResponse
 } from "../../../backend/src/chat/interfaces/group-member-deleted-response.interface.ts";
 import {ChatPasswordDto} from "../../../backend/src/chat/models/chat-password.dto.ts";
+import {MemberRoleUpdatedResponseDto} from "../../../backend/src/chat/models/member-role-updated-response.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
@@ -105,6 +106,10 @@ class ChatService {
 
     public addGroupChatUser(chatId: number, profileId: number): Promise<AxiosResponse<GroupMemberDto>> {
         return this.axiosInstance.post(`/group/${chatId}/user/${profileId}`);
+    }
+
+    public updateGroupChatMemberRole(chatId: number, profileId: number, role: string): Promise<AxiosResponse<MemberRoleUpdatedResponseDto>> {
+        return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, {role});
     }
 
     public kickGroupChatMember(chatId: number, profileId: number): Promise<AxiosResponse<GroupMemberDeletedResponse>> {
