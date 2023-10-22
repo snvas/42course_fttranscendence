@@ -5,6 +5,7 @@
 	import { profile } from '$lib/stores';
 	import UserAvatarStatus from '../UserAvatarStatus.svelte';
 	import { goto } from '$app/navigation';
+	import ListButton from './ListButton.svelte';
 
 	export let users: PlayerStatusDto[];
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
@@ -43,27 +44,11 @@
 						<p class="text-center">FRIEND</p>
 					</button>
 				{/if} -->
-							<button
-								class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1"
-								on:click={() => dispatch('chat', user)}
-							>
-								<img src="/bate-papo-de-texto.png" alt="let's chat" />
-								<p class="text-center">CHAT</p>
-							</button>
-							<button
-								class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1"
-								on:click={() => dispatch('block', user.id)}
-							>
-								<img src="/bloqueado.png" alt="block this user" width="90%" />
-								<p class="text-center">BLOCK</p>
-							</button>
-							<button
-								class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1"
-								on:click={() => dispatch('play', user.id)}
-							>
-								<img src="/pingue-pongue.png" alt="let's play" />
-								<p class="text-center">PLAY</p>
-							</button>
+							<ListButton on:click={() => dispatch('chat', user)} type="chat" />
+							<ListButton on:click={() => dispatch('block', user.id)} type="block" />
+							<ListButton on:click={() => dispatch('play', user.id)} type="play" />
+							<ListButton on:click={() => dispatch('friend', user.id)} type="friend" />
+
 							<!-- {:else}
 				<button class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
 					<img src="/bloqueado.png" alt="block this user" width="90%" />

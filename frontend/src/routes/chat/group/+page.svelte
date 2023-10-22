@@ -60,7 +60,7 @@
 		</div>
 	</div>
 
-	<div class="contents" slot="messages">
+	<div class="contents" slot="messages" >
 		<GroupMessages bind:messages />
 	</div>
 </ChatLayout>
