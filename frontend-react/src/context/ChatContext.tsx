@@ -9,6 +9,10 @@ import {ConversationDto} from "../../../backend/src/chat/models/conversation.dto
 import {AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
 import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
+import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
+import {GroupChatEvent} from "../../../backend/src/chat/interfaces/group-chat-event.interface.ts";
+import {GroupChatDto} from "../../../backend/src/chat/models/group-chat.dto.ts";
+import {GroupMemberDto} from "../../../backend/src/chat/models/group-member.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -21,7 +25,6 @@ interface WebSocketProviderProps {
 export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
     // const { user } = useContext(AuthContext) as AuthContextData;
     // const { profile } = useProfile() as ProfileContextData;
-    const [messages, setMessages] = useState<ConversationDto[]>([]);
     const [playersStatus, setPlayersStatus] = useState<PlayerStatusDto[]>([]);
     const [privateMessageHistory, setPrivateMessageHistory] = useState<PrivateMessageHistoryDto[]>([]);
     const navigate: NavigateFunction = useNavigate();
@@ -63,10 +66,11 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             navigate("/login");
         };
 
-        const onMessage = (message: ConversationDto): void => {
-            console.log(`### received chat message ${JSON.stringify(message)}`);
 
-            setMessages((messages: ConversationDto[]) => [...messages, message]);
+        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
+            console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
+
+            setPlayersStatus(onlineUsers);
         };
 
         const onPrivateMessage = (message: PrivateMessageDto): void => {
@@ -120,25 +124,78 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             });
         }
 
-        const onPlayersStatus = (onlineUsers: PlayerStatusDto[]): void => {
-            console.log(`### received online users ${JSON.stringify(onlineUsers)}`);
+        const onGroupMessage = (groupMessage: GroupMessageDto): void => {
+            console.log(`### received group message ${JSON.stringify(groupMessage.message)}`);
+        }
 
-            setPlayersStatus(onlineUsers);
-        };
+        const onGroupChatCreated = (groupChatDto: GroupChatDto): void => {
+            console.log(`### received group chat created ${JSON.stringify(groupChatDto)}`);
+        }
+
+        //When the group chat password is deleted, the group chat visibility is set to public
+        const onGroupChatPasswordDeleted = (groupChatDto: GroupChatDto): void => {
+            console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
+        }
+
+        const onGroupChatDeleted = (groupChatEvent: GroupChatEvent): void => {
+            console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
+        }
+
+        const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEvent): void => {
+            console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
+        }
+
+        const onJoinedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received joined group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
+        const onLeaveGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received leave group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
+        const onAddedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received added group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
+        const onKickedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received kicked group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
+        const onUpdatedGroupChatMemberRole = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
+        }
 
         socket.on("connect", onConnect);
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
-        socket.on("message", onMessage);
-        socket.on("receivePrivateMessage", onPrivateMessage);
         socket.on("playersStatus", onPlayersStatus);
+        socket.on("receivePrivateMessage", onPrivateMessage);
+        socket.on("receiveGroupMessage", onGroupMessage);
+        socket.on("groupChatCreated", onGroupChatCreated);
+        socket.on("groupChatDeleted", onGroupChatDeleted);
+        socket.on("groupChatPasswordUpdated", onGroupChatPasswordUpdated);
+        socket.on("groupChatPasswordDeleted", onGroupChatPasswordDeleted);
+        socket.on("joinedGroupChatMember", onJoinedGroupChatMember);
+        socket.on("leaveGroupChatMember", onLeaveGroupChatMember);
+        socket.on("addedGroupChatMember", onAddedGroupChatMember);
+        socket.on("kickedGroupChatMember", onKickedGroupChatMember);
+        socket.off("groupChatMemberRoleUpdated", onUpdatedGroupChatMemberRole);
 
-        return () => {
+
+        return (): void => {
             socket.off("connect");
             socket.off("error");
-            socket.off("message");
-            socket.off("receivePrivateMessage")
             socket.off("playersStatus");
+            socket.off("receivePrivateMessage");
+            socket.off("receiveGroupMessage");
+            socket.off("groupChatCreated");
+            socket.off("groupChatDeleted");
+            socket.off("groupChatPasswordUpdated");
+            socket.off("groupChatPasswordDeleted");
+            socket.off("joinedGroupChatMember");
+            socket.off("leaveGroupChatMember");
+            socket.off("addedGroupChatMember");
+            socket.off("kickedGroupChatMember");
             socket.disconnect();
         };
     }, []);
@@ -200,7 +257,6 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         updatePrivateMessageHistory,
         updatePrivateMessageHistoryFromMessageDto,
         privateMessageHistory,
-        messages,
         playersStatus
     };
 

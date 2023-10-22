@@ -154,7 +154,7 @@ export class ProfileService {
   async update(
     userId: number,
     profile: Partial<Profile>,
-  ): Promise<Partial<ProfileUpdatedResponseDto>> {
+  ): Promise<ProfileUpdatedResponseDto> {
     await this.findByUserId(userId);
 
     try {
@@ -164,12 +164,16 @@ export class ProfileService {
       );
 
       this.logger.log(`Profile updated for user [${userId}]`);
-      return updateResult.affected
-        ? {
-            updated: updateResult.affected > 0,
-            affected: updateResult.affected,
-          }
-        : {};
+
+      if (!updateResult.affected) {
+        this.logger.error(`### User [${userId}] not found, nothing to update`);
+        throw new NotFoundException(`User [${userId}] not found`);
+      }
+
+      return {
+        updated: updateResult.affected > 0,
+        affected: updateResult.affected,
+      };
     } catch (Exception) {
       if (
         Exception instanceof QueryFailedError &&
