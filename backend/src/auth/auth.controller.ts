@@ -54,14 +54,14 @@ export class AuthController {
     const hasProfile: boolean = await this.profileService.userHasProfile(user);
 
     if (!hasProfile) {
-      res.redirect(redirectUrl + '/welcome');
+      return res.redirect(redirectUrl + '/welcome');
     }
 
     if (user.otpEnabled) {
-      res.redirect(redirectUrl + '/validate-otp');
+      return res.redirect(redirectUrl + '/validate-otp');
     }
 
-    res.redirect(redirectUrl);
+    return res.redirect(redirectUrl);
   }
 
   @Get('logout')

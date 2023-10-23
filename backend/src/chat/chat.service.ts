@@ -135,11 +135,36 @@ export class ChatService {
   public async getPlayerSocket(
     profileId: number,
   ): Promise<AuthenticatedSocket | undefined> {
-    const profile: ProfileDTO = await this.profileService.findByProfileId(
+    return this.playerStatusSocket.get(profileId)?.socket;
+  }
+
+  public async addPlayerRoom(profileId: number, room: string): Promise<void> {
+    const socket: AuthenticatedSocket | undefined = await this.getPlayerSocket(
       profileId,
     );
 
-    return this.playerStatusSocket.get(profile.id)?.socket;
+    if (!socket) {
+      return;
+    }
+
+    socket.join(room);
+
+    this.logger.verbose(`### Player [${profileId}] joined room [${room}]`);
+  }
+
+  public async removePlayerRoom(
+    profileId: number,
+    room: string,
+  ): Promise<void> {
+    const socket: AuthenticatedSocket | undefined = await this.getPlayerSocket(
+      profileId,
+    );
+
+    if (!socket) {
+      return;
+    }
+
+    socket.leave(room);
   }
 
   async handlePrivateMessage(
@@ -371,7 +396,7 @@ export class ChatService {
     const groupChat: GroupChatEntity = this.groupChatRepository.create({
       name: groupCreationDto.name,
       owner: profile,
-      visibility: groupCreationDto.visibility,
+      visibility: password ? 'private' : 'public',
       password: password,
     });
 
@@ -414,12 +439,7 @@ export class ChatService {
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
-    const member: GroupMemberEntity = await this.getGroupChatMember(
-      profile.id,
-      chatId,
-    );
-
-    if (member) {
+    if (await this.isGroupMember(groupChat.id, profile.id)) {
       this.logger.error(
         `### User [${profile.nickname}] is already a member of group chat [${groupChat.name}]`,
       );
@@ -554,6 +574,8 @@ export class ChatService {
       const memberEntity: GroupMemberEntity =
         await this.groupMemberRepository.save(groupMember);
 
+      this.addPlayerRoom(newMemberProfile.id, `${chatId}`);
+
       return this.createGroupMemberDto(
         memberEntity,
         groupChat,
@@ -585,6 +607,8 @@ export class ChatService {
     this.logger.log(
       `### Kicked member [${profileId}] from Group chat [${chatId}]`,
     );
+
+    this.removePlayerRoom(profileId, `${chatId}`);
 
     return {
       deleted: memberDeleteResult.affected > 0,
@@ -700,6 +724,8 @@ export class ChatService {
     profileId: number,
     chatRole: UpdateMemberRoleDto,
   ): Promise<GroupMemberDto & MemberRoleUpdatedResponseDto> {
+    this.logger.verbose(`### Updating group chat [${chatId}] member role`);
+
     const groupMember: GroupMemberEntity = await this.getGroupChatMember(
       profileId,
       chatId,
@@ -778,7 +804,7 @@ export class ChatService {
 
     if (!groupMember) {
       this.logger.log(
-        `### Member [${profileId}] to remove for chat with id [${chatId}] not found`,
+        `### Member [${profileId}] for chat with id [${chatId}] not found`,
       );
       throw new NotFoundException(
         `Member [${profileId}] for group chat with id [${chatId}] not found`,

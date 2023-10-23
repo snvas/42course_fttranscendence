@@ -179,7 +179,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         socket.on("leaveGroupChatMember", onLeaveGroupChatMember);
         socket.on("addedGroupChatMember", onAddedGroupChatMember);
         socket.on("kickedGroupChatMember", onKickedGroupChatMember);
-        socket.off("groupChatMemberRoleUpdated", onUpdatedGroupChatMemberRole);
+        socket.on("groupChatMemberRoleUpdated", onUpdatedGroupChatMemberRole);
 
 
         return (): void => {
@@ -196,6 +196,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             socket.off("leaveGroupChatMember");
             socket.off("addedGroupChatMember");
             socket.off("kickedGroupChatMember");
+            socket.off("groupChatMemberRoleUpdated");
             socket.disconnect();
         };
     }, []);

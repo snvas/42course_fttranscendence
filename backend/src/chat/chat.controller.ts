@@ -35,6 +35,7 @@ import { GroupMemberDto } from './models/group-member.dto';
 import { socketEvent } from '../utils/socket-events';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
 import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
+import { Server } from 'socket.io';
 
 @Controller('chat')
 export class ChatController {
@@ -93,12 +94,13 @@ export class ChatController {
     const deletedResponse: GroupChatDeletedResponseDto =
       await this.chatService.deleteGroupChatById(chatId);
 
-    (await this.messageGateway.getServer()).emit(
-      socketEvent.GROUP_CHAT_DELETED,
-      {
-        chatId,
-      } as GroupChatEvent,
-    );
+    const server: Server = await this.messageGateway.getServer();
+
+    server.emit(socketEvent.GROUP_CHAT_DELETED, {
+      chatId,
+    } as GroupChatEvent);
+
+    server.in(`${chatId}`).disconnectSockets();
 
     return deletedResponse;
   }
@@ -317,7 +319,14 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() messageDto: ChatMessageDto,
   ): Promise<GroupMessageDto> {
-    return await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
+    const groupMessage: GroupMessageDto =
+      await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
+
+    return groupMessage;
   }
 
   @HttpCode(HttpStatus.CREATED)
