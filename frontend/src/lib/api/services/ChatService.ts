@@ -81,7 +81,6 @@ class ChatService {
 		return this.axiosInstance.get('/group/chats');
 	}
 
-	// TODO:
 	public createGroupChat(group: GroupCreationDto): Promise<AxiosResponse<GroupChatDto>> {
 		return this.axiosInstance.post('/group/create', group);
 	}
