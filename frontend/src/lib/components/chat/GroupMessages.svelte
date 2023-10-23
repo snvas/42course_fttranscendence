@@ -29,12 +29,14 @@
 </script>
 
 <div class="w-full h-full flex flex-row gap-10">
-	<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
-		{#if messages == null}
+	{#if messages == null}
+		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 			<div class="flex flex-col w-full items-center gap-3 p-20">
-				<p class="text-lg text-gray-400 flex">Nenhum grupo selecionado</p>
+				<p class="text-lg text-gray-400 flex">any group selected</p>
 			</div>
-		{:else}
+		</div>
+	{:else}
+		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 			<div class="border-2 border-white h-10 m-2 flex items-center justify-center">
 				<p class="text-xs text-center">{selectedGroup.name}</p>
 			</div>
@@ -64,16 +66,16 @@
 			<div class="border-2 border-white m-2 flex items-center justify-center bg-white">
 				<input placeholder="Enter the Message" class="text-center" />
 			</div>
-		{/if}
-	</div>
-	<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
-		MEMBERS
-		{#if selectedGroup}
-			{#each selectedGroup.members as member}
-				<div>
-					{member.name}
-				</div>
-			{/each}
-		{/if}
-	</div>
+		</div>
+		<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
+			MEMBERS
+			{#if selectedGroup}
+				{#each selectedGroup.members as member}
+					<div>
+						{member.name}
+					</div>
+				{/each}
+			{/if}
+		</div>
+	{/if}
 </div>

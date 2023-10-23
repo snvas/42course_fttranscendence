@@ -145,7 +145,6 @@
 			sync: false
 		};
 
-		// TODO: online vai se tornar todos os usuários
 		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
 			(playerStatus: PlayerStatusDto): boolean => {
 				return playerStatus.nickname === $selectedDirect!.nickname;

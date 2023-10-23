@@ -17,8 +17,9 @@
 
 <div class="border-4 border-white w-full h-full flex flex-col rounded-3xl">
 	{#if messages == null}
-		<!-- TODO: Tela de "Selecione uma conversa" -->
-		null
+		<div class="flex flex-col w-full items-center gap-3 p-20">
+			<p class="text-lg text-gray-400 flex">any conversation selected</p>
+		</div>
 	{:else}
 		<div class="border-2 border-white h-10 m-2 flex items-center justify-center rounded-md">
 			<p class="lg:text-lg text-sm text-center">{$selectedDirect?.nickname}</p>
@@ -38,16 +39,16 @@
 						{#if !conversation.sync}
 							Loading
 						{:else}
-						<div class="flex flex-row items-center gap-3 text-xs  text-gray-400">
-						{formatDistanceToNow(
-							new Date(
-								parseISO(conversation.createdAt).getTime() -
-									parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
-							)
-						)}
-						ago
-							<img src="/mensagem-recebida.png" class="w-10" alt="mensagem recebida"/>
-						</div>
+							<div class="flex flex-row items-center gap-3 text-xs text-gray-400">
+								{formatDistanceToNow(
+									new Date(
+										parseISO(conversation.createdAt).getTime() -
+											parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
+									)
+								)}
+								ago
+								<img src="/mensagem-recebida.png" class="w-10" alt="mensagem recebida" />
+							</div>
 						{/if}
 					</p>
 				</div>
