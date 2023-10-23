@@ -6,6 +6,7 @@
 	import '../tailwind.css';
 	import { readAllUsers } from '$lib/api';
 	import { page } from '$app/stores';
+	import { socketEvent } from '$lib/api/services/SocketsEvents';
 
 	async function updateAllPlayersStatus() {
 		if ($page.url.pathname == '/login') {
@@ -58,7 +59,7 @@
 	$socket.on('connect', onConnect);
 	$socket.on('exception', onException);
 	$socket.on('unauthorized', onUnauthorized);
-	$socket.on('playersStatus', onPlayersStatus);
+	$socket.on(socketEvent.PLAYERS_STATUS, onPlayersStatus);
 
 	onDestroy(() => {
 		$socket.off('connect');

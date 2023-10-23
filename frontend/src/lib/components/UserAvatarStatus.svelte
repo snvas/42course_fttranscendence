@@ -13,12 +13,13 @@
 	};
 </script>
 
-<div class="flex flex-row gap-4 items-center">
-	<div class="w-12">
+<div class="flex flex-row gap-1 xl:gap-4 items-center">
+	<div class="w-12 flex-none">
 		<AvatarImage avatar={getAvatar(user.avatarId ?? null)} />
 	</div>
-	<div class="flex flex-col justify-start items-start">
-		<p class="flex flex-col">{user.nickname}</p>
+	<div class="flex-1 flex flex-col items-start w-0">
+		<p class=" text-start w-full truncate">{user.nickname}</p>
+
 		<div class="flex items-center gap-2">
 			<!-- {#if user.blocked}
 				<div class="text-red-800 text-xs">Blocked</div>
@@ -26,7 +27,7 @@
 			<p class="{statusColor[user.status]} text-xs">{user.status}</p>
 			<!-- {#if user.friend} -->
 			<!-- <div class="text-gray-600 text-xs">|</div>
-			<div class="text-gray-600 text-xs">Friend</div> -->
+					<div class="text-gray-600 text-xs">Friend</div> -->
 			<!-- {/if} -->
 			<!--{/if} -->
 		</div>

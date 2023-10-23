@@ -10,7 +10,7 @@
 	export let historyList: PlayerStatusDto[];
 </script>
 
-<div class="h-full w-full flex flex-col">
+<div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
 	{#each historyList as history}
 		<button
 			on:click={() => dispatch('select', history.id)}
