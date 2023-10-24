@@ -3,4 +3,6 @@ export interface GroupProfile {
   nickname: string;
   avatarId: number;
   role: string;
+  isMuted: boolean;
+  isBanned: boolean;
 }

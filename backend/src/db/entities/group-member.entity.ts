@@ -19,6 +19,12 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: 'user' })
   role: string;
 
+  @Column({ default: false })
+  isMuted: boolean;
+
+  @Column({ default: false })
+  isBanned: boolean;
+
   @ManyToOne(() => GroupChatEntity, (chat) => chat.members, {
     onDelete: 'CASCADE',
   })

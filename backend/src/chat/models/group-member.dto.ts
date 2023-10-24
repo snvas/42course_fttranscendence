@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -14,8 +15,14 @@ export class GroupMemberDto {
   @IsString()
   @IsNotEmpty()
   role: string;
+  @IsBoolean()
+  @IsNotEmpty()
+  isMuted: boolean;
+  @IsBoolean()
+  @IsNotEmpty()
+  isBanned: boolean;
   @ValidateNested()
   groupChat: GroupChatDto;
   @ValidateNested()
-  member: MessageProfileDto;
+  profile: MessageProfileDto;
 }

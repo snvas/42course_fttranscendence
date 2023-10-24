@@ -28,7 +28,6 @@ import { ChatManagementGuard } from './guards/chat-management.guard';
 import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
 import { ChatPasswordDto } from './models/chat-password.dto';
 import { ChatGateway } from './chat.gateway';
-import { GroupChatEvent } from './interfaces/group-chat-event.interface';
 import { GroupChatHistoryDto } from './models/group-chat-history.dto';
 import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
@@ -36,6 +35,7 @@ import { socketEvent } from '../utils/socket-events';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
 import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
 import { Server } from 'socket.io';
+import { GroupChatEventDto } from './models/group-chat-event.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -98,7 +98,7 @@ export class ChatController {
 
     server.emit(socketEvent.GROUP_CHAT_DELETED, {
       chatId,
-    } as GroupChatEvent);
+    } as GroupChatEventDto);
 
     server.in(`${chatId}`).disconnectSockets();
 
@@ -139,8 +139,10 @@ export class ChatController {
       .emit(socketEvent.LEAVE_GROUP_CHAT_MEMBER, {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
+        isMuted: deletedResponseAndMember.isMuted,
+        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
-        member: deletedResponseAndMember.member,
+        profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
   }
 
@@ -158,7 +160,7 @@ export class ChatController {
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_PASSWORD_UPDATED, {
         chatId,
-      } as GroupChatEvent);
+      } as GroupChatEventDto);
 
     return passwordUpdate;
   }
@@ -197,8 +199,10 @@ export class ChatController {
       .emit(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, {
         id: groupMember.id,
         role: groupMember.role,
+        isMuted: groupMember.isMuted,
+        isBanned: groupMember.isBanned,
         groupChat: groupMember.groupChat,
-        member: groupMember.member,
+        profile: groupMember.profile,
       } as GroupMemberDto);
 
     return {
@@ -263,8 +267,10 @@ export class ChatController {
       .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
+        isMuted: deletedResponseAndMember.isMuted,
+        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
-        member: deletedResponseAndMember.member,
+        profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
 
     return {

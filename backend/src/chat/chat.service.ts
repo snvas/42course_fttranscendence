@@ -360,6 +360,8 @@ export class ChatService {
               nickname: member.profile.nickname,
               avatarId: member.profile.avatarId,
               role: member.role,
+              isMuted: member.isMuted,
+              isBanned: member.isBanned,
             } as GroupProfile;
           },
         ),
@@ -952,6 +954,8 @@ export class ChatService {
     return {
       id: memberEntity.id,
       role: memberEntity.role,
+      isMuted: memberEntity.isMuted,
+      isBanned: memberEntity.isBanned,
       groupChat: {
         id: groupChat.id,
         name: groupChat.name,
@@ -962,7 +966,7 @@ export class ChatService {
           avatarId: groupChat.owner.avatarId,
         } as MessageProfileDto,
       } as GroupChatDto,
-      member: {
+      profile: {
         id: newMemberProfile.id,
         nickname: newMemberProfile.nickname,
         avatarId: newMemberProfile.avatarId,

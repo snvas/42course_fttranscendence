@@ -1,5 +1,11 @@
 import { GroupProfile } from '../interfaces/group-profile.interface';
-import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class GroupProfileDto implements GroupProfile {
   @IsNumber()
@@ -15,4 +21,10 @@ export class GroupProfileDto implements GroupProfile {
   @IsString()
   @IsIn(['user', 'admin', 'owner'])
   role: string;
+  @IsNotEmpty()
+  @IsBoolean()
+  isBanned: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  isMuted: boolean;
 }
