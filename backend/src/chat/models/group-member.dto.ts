@@ -19,8 +19,6 @@ export class GroupMemberDto {
   @IsNotEmpty()
   isMuted: boolean;
   @IsBoolean()
-  @IsNotEmpty()
-  isBanned: boolean;
   @ValidateNested()
   groupChat: GroupChatDto;
   @ValidateNested()

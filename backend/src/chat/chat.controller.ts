@@ -33,7 +33,7 @@ import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
 import { socketEvent } from '../utils/socket-events';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
-import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
+import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
 import { Server } from 'socket.io';
 import { GroupChatEventDto } from './models/group-chat-event.dto';
 
@@ -140,7 +140,6 @@ export class ChatController {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
         isMuted: deletedResponseAndMember.isMuted,
-        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
         profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
@@ -190,8 +189,8 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
     @Body() role: UpdateMemberRoleDto,
-  ): Promise<MemberRoleUpdatedResponseDto> {
-    const groupMember: GroupMemberDto & MemberRoleUpdatedResponseDto =
+  ): Promise<MemberUpdatedResponseDto> {
+    const groupMember: GroupMemberDto & MemberUpdatedResponseDto =
       await this.chatService.updateGroupChatMemberRole(chatId, profileId, role);
 
     (await this.messageGateway.getServer())
@@ -200,15 +199,13 @@ export class ChatController {
         id: groupMember.id,
         role: groupMember.role,
         isMuted: groupMember.isMuted,
-        isBanned: groupMember.isBanned,
-        groupChat: groupMember.groupChat,
         profile: groupMember.profile,
       } as GroupMemberDto);
 
     return {
       updated: groupMember.updated,
       affected: groupMember.affected,
-    } as MemberRoleUpdatedResponseDto;
+    } as MemberUpdatedResponseDto;
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -268,7 +265,6 @@ export class ChatController {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
         isMuted: deletedResponseAndMember.isMuted,
-        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
         profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
@@ -279,14 +275,31 @@ export class ChatController {
     } as GroupMemberDeletedResponse;
   }
 
-  // @UseGuards(ChatManagementGuard)
-  // @Post('group/:chatId/mute/:profileId')
-  // async muteGroupChatMember(
-  //   @Param('chatId', ParseIntPipe) chatId: number,
-  //   @Param('profileId', ParseIntPipe) profileId: number,
-  // ): Promise<GroupMemberDto> {
-  //   return await this.chatService.muteGroupChatMember(chatId, profileId);
-  // }
+  @UseGuards(ChatManagementGuard)
+  @Post('group/:chatId/mute/:profileId')
+  async muteGroupChatMember(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MemberUpdatedResponseDto> {
+    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+      await this.chatService.muteGroupChatMember(chatId, profileId);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_MUTED, {
+        id: updatedResponseMember.id,
+        role: updatedResponseMember.role,
+        isMuted: updatedResponseMember.isMuted,
+        groupChat: updatedResponseMember.groupChat,
+        profile: updatedResponseMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      updated: updatedResponseMember.updated,
+      affected: updatedResponseMember.affected,
+    } as MemberUpdatedResponseDto;
+  }
+
   //
   // @UseGuards(ChatManagementGuard)
   // @Post('group/:chatId/unmute/:profileId')

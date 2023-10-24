@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private-message.dto';
@@ -121,7 +121,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       return groupMessage;
     } catch (error) {
-      this.logger.error(error);
+      if (error instanceof UnauthorizedException) {
+        this.logger.debug(
+          `Unauthorized group message from sender [${message.sender.id}]`,
+        );
+      } else {
+        this.logger.error(error);
+      }
       return null;
     }
   }
