@@ -1,8 +1,8 @@
+import { MessageProfile } from './message-profile.interface';
+
 export interface GroupProfile {
   id: number;
-  nickname: string;
-  avatarId: number;
+  profile: MessageProfile;
   role: string;
   isMuted: boolean;
-  isBanned: boolean;
 }

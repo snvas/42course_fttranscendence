@@ -1,5 +1,4 @@
 import { GroupChatHistory } from '../interfaces/group-chat-history.interface';
-import { Conversation } from '../interfaces/private-conversation.interface';
 import {
   IsArray,
   IsDate,
@@ -9,7 +8,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { MessageProfileDto } from './message-profile.dto';
+import { ConversationDto } from './conversation.dto';
+import { GroupProfileDto } from './group-profile.dto';
 
 export class GroupChatHistoryDto implements GroupChatHistory {
   @IsNumber()
@@ -30,9 +30,9 @@ export class GroupChatHistoryDto implements GroupChatHistory {
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
-  members: MessageProfileDto[];
+  members: GroupProfileDto[];
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
-  messages: Conversation[];
+  messages: ConversationDto[];
 }

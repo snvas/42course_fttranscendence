@@ -47,7 +47,7 @@ import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
 import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
-import { GroupProfile } from './interfaces/group-profile.interface';
+import { GroupProfileDto } from './models/group-profile.dto';
 
 @Injectable()
 export class ChatService {
@@ -355,14 +355,17 @@ export class ChatService {
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
         members: groupChat.members.map(
-          (member: GroupMemberEntity): GroupProfile => {
+          (member: GroupMemberEntity): GroupProfileDto => {
             return {
-              id: member.profile.id,
-              nickname: member.profile.nickname,
-              avatarId: member.profile.avatarId,
+              id: member.id,
+              profile: {
+                id: member.profile.id,
+                nickname: member.profile.nickname,
+                avatarId: member.profile.avatarId,
+              },
               role: member.role,
               isMuted: member.isMuted,
-            } as GroupProfile;
+            } as GroupProfileDto;
           },
         ),
         messages: groupChat.messages
