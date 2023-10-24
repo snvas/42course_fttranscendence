@@ -46,8 +46,8 @@ import { GroupChatHistoryDto } from './models/group-chat-history.dto';
 import { GroupChatDto } from './models/group-chat.dto';
 import { GroupMemberDto } from './models/group-member.dto';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
-import { MemberRoleUpdatedResponseDto } from './models/member-role-updated-response.dto';
-import { GroupProfile } from './interfaces/group-profile.interface';
+import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
+import { GroupProfileDto } from './models/group-profile.dto';
 
 @Injectable()
 export class ChatService {
@@ -204,14 +204,15 @@ export class ChatService {
       groupMessageDto.groupChat.id,
     );
 
-    if (await this.isGroupMember(groupChat.id, user.id)) {
+    if (await this.isNotMutedGroupMember(groupChat.id, user.id)) {
       this.logger.error(
-        `### User [${user.id}] is not a member of group chat [${groupChat.id}] for sending messages`,
+        `### Cant sent message: user [${user.id}] is not a member or is muted in group chat [${groupChat.id}]`,
       );
       throw new UnauthorizedException(
-        `Only members of group chat can send messages`,
+        `Only non muted members of group chat can send messages`,
       );
     }
+
     const messageEntity: GroupMessageEntity =
       this.groupMessageRepository.create({
         groupChat,
@@ -354,13 +355,17 @@ export class ChatService {
         owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
         members: groupChat.members.map(
-          (member: GroupMemberEntity): GroupProfile => {
+          (member: GroupMemberEntity): GroupProfileDto => {
             return {
-              id: member.profile.id,
-              nickname: member.profile.nickname,
-              avatarId: member.profile.avatarId,
+              id: member.id,
+              profile: {
+                id: member.profile.id,
+                nickname: member.profile.nickname,
+                avatarId: member.profile.avatarId,
+              },
               role: member.role,
-            } as GroupProfile;
+              isMuted: member.isMuted,
+            } as GroupProfileDto;
           },
         ),
         messages: groupChat.messages
@@ -494,6 +499,20 @@ export class ChatService {
     }
 
     return await this.removeMemberFromGroupChat(chatId, profile.id);
+  }
+
+  public async muteGroupChatMember(
+    chatId: number,
+    profileId: number,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    return await this.handleMute(profileId, chatId, true);
+  }
+
+  public async unmuteGroupChatMember(
+    chatId: number,
+    profileId: number,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    return await this.handleMute(profileId, chatId, false);
   }
 
   public async changeGroupChatPassword(
@@ -723,7 +742,7 @@ export class ChatService {
     chatId: number,
     profileId: number,
     chatRole: UpdateMemberRoleDto,
-  ): Promise<GroupMemberDto & MemberRoleUpdatedResponseDto> {
+  ): Promise<GroupMemberDto & MemberUpdatedResponseDto> {
     this.logger.verbose(`### Updating group chat [${chatId}] member role`);
 
     const groupMember: GroupMemberEntity = await this.getGroupChatMember(
@@ -778,6 +797,48 @@ export class ChatService {
     const groupChat: GroupChatEntity = await this.getGroupChatById(id);
 
     return this.createGroupChatDto(groupChat, groupChat.owner);
+  }
+
+  private async handleMute(
+    profileId: number,
+    chatId: number,
+    mute: boolean,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
+
+    const updatedMemberResult: UpdateResult =
+      await this.groupMemberRepository.update(
+        {
+          id: groupMember.id,
+        },
+        {
+          isMuted: mute,
+        },
+      );
+
+    if (!updatedMemberResult.affected) {
+      this.logger.error(
+        `### Member [${profileId}] not mute status not update to [${mute}]`,
+      );
+      throw new InternalServerErrorException('Member not muted');
+    }
+
+    this.logger.verbose(
+      `### Member [${profileId}] mute status changed to [${mute}]`,
+    );
+
+    return {
+      updated: updatedMemberResult.affected > 0,
+      affected: updatedMemberResult.affected,
+      ...this.createGroupMemberDto(
+        groupMember,
+        groupMember.groupChat,
+        groupMember.profile,
+      ),
+    };
   }
 
   private async getGroupChatMember(
@@ -923,6 +984,26 @@ export class ChatService {
     return !!groupChatEntity;
   }
 
+  private async isNotMutedGroupMember(
+    chatId: number,
+    userId: number,
+  ): Promise<boolean> {
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOneBy([
+        {
+          profile: {
+            id: userId,
+          },
+          groupChat: {
+            id: chatId,
+          },
+          isMuted: false,
+        },
+      ]);
+
+    return !!groupMember;
+  }
+
   private async isGroupMember(
     chatId: number,
     userId: number,
@@ -952,6 +1033,7 @@ export class ChatService {
     return {
       id: memberEntity.id,
       role: memberEntity.role,
+      isMuted: memberEntity.isMuted,
       groupChat: {
         id: groupChat.id,
         name: groupChat.name,
@@ -962,7 +1044,7 @@ export class ChatService {
           avatarId: groupChat.owner.avatarId,
         } as MessageProfileDto,
       } as GroupChatDto,
-      member: {
+      profile: {
         id: newMemberProfile.id,
         nickname: newMemberProfile.nickname,
         avatarId: newMemberProfile.avatarId,

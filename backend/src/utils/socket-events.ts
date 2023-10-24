@@ -13,4 +13,6 @@ export const socketEvent = {
   ADDED_GROUP_CHAT_MEMBER: 'addedGroupChatMember',
   KICKED_GROUP_CHAT_MEMBER: 'kickedGroupChatMember',
   GROUP_CHAT_MEMBER_ROLE_UPDATED: 'groupChatMemberRoleUpdated',
+  GROUP_CHAT_MEMBER_MUTED: 'groupChatMemberMuted',
+  GROUP_CHAT_MEMBER_UNMUTED: 'groupChatMemberUnmuted',
 };

@@ -165,6 +165,14 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
         }
 
+        const onGroupChatMemberMuted = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received muted group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
+        const onGroupChatMemberUnmuted = (groupMemberDto: GroupMemberDto): void => {
+            console.log(`### received unmuted group chat member ${JSON.stringify(groupMemberDto)}`);
+        }
+
         socket.on("connect", onConnect);
         socket.on("exception", onException);
         socket.on("unauthorized", onUnauthorized);
@@ -180,6 +188,8 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
         socket.on("addedGroupChatMember", onAddedGroupChatMember);
         socket.on("kickedGroupChatMember", onKickedGroupChatMember);
         socket.on("groupChatMemberRoleUpdated", onUpdatedGroupChatMemberRole);
+        socket.on("groupChatMemberMuted", onGroupChatMemberMuted);
+        socket.on("groupChatMemberUnmuted", onGroupChatMemberUnmuted);
 
 
         return (): void => {
@@ -197,6 +207,8 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             socket.off("addedGroupChatMember");
             socket.off("kickedGroupChatMember");
             socket.off("groupChatMemberRoleUpdated");
+            socket.off("groupChatMemberMuted");
+            socket.off("groupChatMemberUnmuted");
             socket.disconnect();
         };
     }, []);

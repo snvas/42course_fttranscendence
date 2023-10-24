@@ -1,18 +1,26 @@
 import { GroupProfile } from '../interfaces/group-profile.interface';
-import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { MessageProfileDto } from './message-profile.dto';
 
 export class GroupProfileDto implements GroupProfile {
-  @IsNumber()
   @IsNotEmpty()
+  @IsNumber()
   id: number;
+  @ValidateNested()
   @IsNotEmpty()
-  @IsString()
-  nickname: string;
-  @IsNumber()
-  @IsNotEmpty()
-  avatarId: number;
+  profile: MessageProfileDto;
   @IsNotEmpty()
   @IsString()
   @IsIn(['user', 'admin', 'owner'])
   role: string;
+  @IsNotEmpty()
+  @IsBoolean()
+  isMuted: boolean;
 }
