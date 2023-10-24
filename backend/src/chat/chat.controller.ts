@@ -276,7 +276,7 @@ export class ChatController {
   }
 
   @UseGuards(ChatManagementGuard)
-  @Post('group/:chatId/mute/:profileId')
+  @Put('group/:chatId/mute/:profileId')
   async muteGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
@@ -300,25 +300,31 @@ export class ChatController {
     } as MemberUpdatedResponseDto;
   }
 
-  //
-  // @UseGuards(ChatManagementGuard)
-  // @Post('group/:chatId/unmute/:profileId')
-  // async unmuteGroupChatMember(
-  //   @Param('chatId', ParseIntPipe) chatId: number,
-  //   @Param('profileId', ParseIntPipe) profileId: number,
-  // ): Promise<GroupMemberDto> {
-  //   return await this.chatService.unmuteGroupChatMember(chatId, profileId);
-  // }
-  //
-  // @UseGuards(ChatManagementGuard)
-  // @Post('group/:chatId/ban/:profileId')
-  // async banGroupChatMember(
-  //   @Param('chatId', ParseIntPipe) chatId: number,
-  //   @Param('profileId', ParseIntPipe) profileId: number,
-  // ): Promise<GroupMemberDto> {
-  //   return await this.chatService.banGroupChatMember(chatId, profileId);
-  // }
-  //
+  @UseGuards(ChatManagementGuard)
+  @Put('group/:chatId/unmute/:profileId')
+  async unmuteGroupChatMember(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MemberUpdatedResponseDto> {
+    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+      await this.chatService.unmuteGroupChatMember(chatId, profileId);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_UNMUTED, {
+        id: updatedResponseMember.id,
+        role: updatedResponseMember.role,
+        isMuted: updatedResponseMember.isMuted,
+        groupChat: updatedResponseMember.groupChat,
+        profile: updatedResponseMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      updated: updatedResponseMember.updated,
+      affected: updatedResponseMember.affected,
+    } as MemberUpdatedResponseDto;
+  }
+
   // @UseGuards(ChatManagementGuard)
   // @Post('group/:chatId/unban/:profileId')
   // async unbanGroupChatMember(

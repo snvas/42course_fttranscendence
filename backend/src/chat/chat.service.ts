@@ -505,37 +505,14 @@ export class ChatService {
     chatId: number,
     profileId: number,
   ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
-    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
-      profileId,
-      chatId,
-    );
+    return await this.handleMute(profileId, chatId, true);
+  }
 
-    const updatedMemberResult: UpdateResult =
-      await this.groupMemberRepository.update(
-        {
-          id: groupMember.id,
-        },
-        {
-          isMuted: true,
-        },
-      );
-
-    if (!updatedMemberResult.affected) {
-      this.logger.error(`### Member [${profileId}] not muted`);
-      throw new InternalServerErrorException('Member not muted');
-    }
-
-    this.logger.verbose(`### Member [${profileId}] muted`);
-
-    return {
-      updated: updatedMemberResult.affected > 0,
-      affected: updatedMemberResult.affected,
-      ...this.createGroupMemberDto(
-        groupMember,
-        groupMember.groupChat,
-        groupMember.profile,
-      ),
-    };
+  public async unmuteGroupChatMember(
+    chatId: number,
+    profileId: number,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    return await this.handleMute(profileId, chatId, false);
   }
 
   public async changeGroupChatPassword(
@@ -820,6 +797,48 @@ export class ChatService {
     const groupChat: GroupChatEntity = await this.getGroupChatById(id);
 
     return this.createGroupChatDto(groupChat, groupChat.owner);
+  }
+
+  private async handleMute(
+    profileId: number,
+    chatId: number,
+    mute: boolean,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
+
+    const updatedMemberResult: UpdateResult =
+      await this.groupMemberRepository.update(
+        {
+          id: groupMember.id,
+        },
+        {
+          isMuted: mute,
+        },
+      );
+
+    if (!updatedMemberResult.affected) {
+      this.logger.error(
+        `### Member [${profileId}] not mute status not update to [${mute}]`,
+      );
+      throw new InternalServerErrorException('Member not muted');
+    }
+
+    this.logger.verbose(
+      `### Member [${profileId}] mute status changed to [${mute}]`,
+    );
+
+    return {
+      updated: updatedMemberResult.affected > 0,
+      affected: updatedMemberResult.affected,
+      ...this.createGroupMemberDto(
+        groupMember,
+        groupMember.groupChat,
+        groupMember.profile,
+      ),
+    };
   }
 
   private async getGroupChatMember(
