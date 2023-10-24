@@ -1,35 +1,26 @@
 <script lang="ts">
 	import chatService from '$lib/api/services/ChatService';
-	import type { GroupCreationDto, ComponentMessage } from '$lib/dtos';
-
+	import type { GroupCreationDto, ComponentMessage, MessageProfileDto } from '$lib/dtos';
 	import { goto } from '$app/navigation';
+	import { selectedGroup } from '$lib/stores';
+	import { formatDistanceToNow, parseISO } from 'date-fns';
 
 	export let messages: ComponentMessage[] | null;
+	export let members: MessageProfileDto[];
 
-	// TODO: vai ser importado usando store
-	type SelectedGroup = {
-		name: string;
-		id: number;
-		members: {
-			id: number;
-			name: string;
-		}[];
+	export let sendMessage: (message: string) => void;
+
+	let onSendMessage = () => {
+		sendMessage(message);
+		message = '';
 	};
 
-	let selectedGroup: SelectedGroup = {
-		name: 'triste teste',
-		id: 200,
-		members: [
-			{
-				id: 1,
-				name: 'tristonho'
-			}
-		]
-	};
+	let message: string = '';
+
 </script>
 
 <div class="w-full h-full flex flex-row gap-10">
-	{#if messages == null}
+	{#if messages == null || !$selectedGroup}
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 			<div class="flex flex-col w-full items-center gap-3 p-20">
 				<p class="text-lg text-gray-400 flex">any group selected</p>
@@ -37,45 +28,56 @@
 		</div>
 	{:else}
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
-			<div class="border-2 border-white h-10 m-2 flex items-center justify-center">
-				<p class="text-xs text-center">{selectedGroup.name}</p>
-			</div>
 			<div
-				class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start"
-			>
-				{#each messages as conversation}
-					<div class="w-full flex flex-row justify-between">
-						<div>
-							<p>
-								{conversation.nickname}
-							</p>
-							<p>
-								{conversation.message}
-							</p>
-						</div>
-						<p>
-							{#if !conversation.sync}
-								Loading
-							{:else}
-								Recieved
-							{/if}
+			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
+		>
+			{#each messages as conversation}
+				<div class="w-full flex flex-row justify-between">
+					<div>
+						<p class="text-xs text-gray-400">{conversation.nickname}</p>
+						<p class="text-lg">
+							{conversation.message}
 						</p>
 					</div>
-				{/each}
-			</div>
-			<div class="border-2 border-white m-2 flex items-center justify-center bg-white">
-				<input placeholder="Enter the Message" class="text-center" />
-			</div>
+					<p>
+						{#if !conversation.sync}
+							Loading
+						{:else}
+							<div class="flex flex-row items-center gap-3 text-xs text-gray-400">
+								{formatDistanceToNow(
+									new Date(
+										parseISO(conversation.createdAt).getTime() -
+											parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
+									)
+								)}
+								ago
+								<img src="/mensagem-recebida.png" class="w-10" alt="mensagem recebida" />
+							</div>
+						{/if}
+					</p>
+				</div>
+			{/each}
+		</div>
+		<form
+			class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
+		>
+			<input
+				bind:value={message}
+				placeholder="Enter the Message"
+				class="text-center w-full h-full text-black text-xl"
+			/>
+			<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
+				SEND
+			</button>
+		</form>
 		</div>
 		<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
 			MEMBERS
-			{#if selectedGroup}
-				{#each selectedGroup.members as member}
+				{#each members as member}
 					<div>
-						{member.name}
+						{member.nickname}
 					</div>
 				{/each}
-			{/if}
 		</div>
 	{/if}
 </div>

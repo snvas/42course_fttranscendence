@@ -14,7 +14,6 @@
 		ComponentMessage
 	} from '$lib/dtos';
 	import { getPrivateMessageHistory } from '$lib/api';
-	import { v4 as uuidV4 } from 'uuid';
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 
@@ -70,7 +69,6 @@
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
 					nickname: message.sender.nickname == $profile.nickname ? 'me' : message.sender.nickname,
-					uuid: uuidV4(),
 					sync: true
 				};
 			}) ?? null;
@@ -135,13 +133,11 @@
 		if (!$selectedDirect) return;
 
 		const messageDate: string = new Date().toISOString();
-		const messageUUID: string = uuidV4();
 
 		const componentMessage: ComponentMessage = {
 			message: message,
 			createdAt: messageDate,
 			nickname: 'me',
-			uuid: messageUUID,
 			sync: false
 		};
 

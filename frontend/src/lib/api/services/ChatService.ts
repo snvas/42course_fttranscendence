@@ -11,7 +11,8 @@ import type {
 	GroupMemberDto,
 	MemberRoleUpdatedResponseDto,
 	GroupMemberDeletedResponse,
-	GroupCreationDto
+	GroupCreationDto,
+	GroupChatHistoryDto
 } from '$lib/dtos';
 import { socketEvent } from './SocketsEvents';
 
@@ -72,11 +73,10 @@ class ChatService {
 	}
 
 	// TODO:
-	public getGroupMessageHistory(): Promise<AxiosResponse<GroupMessageDto[]>> {
+	public getGroupMessageHistory(): Promise<AxiosResponse<GroupChatHistoryDto[]>> {
 		return this.axiosInstance.get('/group/messages/history');
 	}
 
-	// TODO:
 	public getAllGroupChats(): Promise<AxiosResponse<GroupChatDto[]>> {
 		return this.axiosInstance.get('/group/chats');
 	}

@@ -17,11 +17,12 @@ export * from '../../../../backend/src/chat/models/group-member.dto';
 export * from '../../../../backend/src/chat/interfaces/group-member-deleted-response.interface';
 export * from '../../../../backend/src/chat/models/chat-password.dto';
 export * from '../../../../backend/src/chat/models/member-role-updated-response.dto';
+export * from '../../../../backend/src/chat/models/group-chat-history.dto';
+export * from '../../../../backend/src/chat/models/group-chat-event.dto'
 
 export type ComponentMessage = {
 	message: string;
 	createdAt: string;
 	nickname: string;
-	uuid: string;
 	sync: boolean;
 };
