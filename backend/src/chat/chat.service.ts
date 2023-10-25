@@ -857,25 +857,22 @@ export class ChatService {
     chatId: number,
     ban: boolean,
   ): Promise<GroupMemberDto> {
-    const groupMember: GroupMemberEntity = ban
-      ? await this.getGroupChatMember(profileId, chatId)
-      : await this.getBannedGroupChatMember(profileId, chatId);
-
+    let groupMember: GroupMemberEntity;
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
-    groupChat.bannedMembers = ban
-      ? [...groupChat.bannedMembers, groupMember]
-      : groupChat.bannedMembers.filter(
-          (member: GroupMemberEntity): boolean =>
-            member.profile.id !== profileId,
-        );
-
-    groupChat.members = ban
-      ? groupChat.members.filter(
-          (member: GroupMemberEntity): boolean =>
-            member.profile.id !== profileId,
-        )
-      : [...groupChat.members, groupMember];
+    if (ban) {
+      groupMember = await this.getGroupChatMember(profileId, chatId);
+      groupChat.bannedMembers = [...groupChat.bannedMembers, groupMember];
+      groupChat.members = groupChat.members.filter(
+        (member: GroupMemberEntity): boolean => member.profile.id !== profileId,
+      );
+    } else {
+      groupMember = await this.getBannedGroupChatMember(profileId, chatId);
+      groupChat.bannedMembers = groupChat.bannedMembers.filter(
+        (member: GroupMemberEntity): boolean => member.profile.id !== profileId,
+      );
+      [...groupChat.members, groupMember];
+    }
 
     await this.groupChatRepository.save(groupChat);
 
