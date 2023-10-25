@@ -126,7 +126,7 @@ export class ChatController {
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('group/:chatId/leave')
+  @Delete('group/:chatId/leave')
   async leaveGroupChat(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId', ParseIntPipe) chatId: number,

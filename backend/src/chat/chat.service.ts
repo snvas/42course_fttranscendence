@@ -48,6 +48,7 @@ import { GroupMemberDto } from './models/group-member.dto';
 import { UpdateMemberRoleDto } from './models/update-member-role.dto';
 import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
 import { GroupProfileDto } from './models/group-profile.dto';
+import { MessageGroupChatDto } from './models/message-group-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -188,10 +189,24 @@ export class ChatService {
       `### Saving private message by: [${privateMessageDto.sender.nickname}] to [${privateMessageDto.receiver.nickname}]`,
     );
 
-    return plainToClass(
-      PrivateMessageDto,
-      await this.privateMessageRepository.save(privateMessageEntity),
-    );
+    const privateMessageDb: PrivateMessageEntity =
+      await this.privateMessageRepository.save(privateMessageEntity);
+
+    return {
+      id: privateMessageDb.id,
+      message: privateMessageDb.message,
+      createdAt: privateMessageDb.createdAt,
+      sender: {
+        id: privateMessageDb.sender.id,
+        nickname: privateMessageDb.sender.nickname,
+        avatarId: privateMessageDb.sender.avatarId,
+      } as MessageProfileDto,
+      receiver: {
+        id: privateMessageDb.receiver.id,
+        nickname: privateMessageDb.receiver.nickname,
+        avatarId: privateMessageDb.receiver.avatarId,
+      } as MessageProfileDto,
+    } as PrivateMessageDto;
   }
 
   public async handleGroupMessage(
@@ -213,21 +228,34 @@ export class ChatService {
       );
     }
 
-    const messageEntity: GroupMessageEntity =
+    const groupMessageEntity: GroupMessageEntity =
       this.groupMessageRepository.create({
         groupChat,
         message: groupMessageDto.message,
         sender: profile,
       });
 
-    const groupMessageEntity: GroupMessageEntity =
-      await this.groupMessageRepository.save(messageEntity);
+    const groupMessageEntityDb: GroupMessageEntity =
+      await this.groupMessageRepository.save(groupMessageEntity);
 
     this.logger.verbose(
-      `### Event message: [${JSON.stringify(groupMessageEntity)}]`,
+      `### Saving group message by: [${profile.nickname}] to group [${groupChat.name}]`,
     );
 
-    return plainToClass(GroupMessageDto, groupMessageEntity);
+    return {
+      id: groupMessageEntityDb.id,
+      message: groupMessageEntityDb.message,
+      createdAt: groupMessageEntityDb.createdAt,
+      sender: {
+        id: groupMessageEntityDb.sender.id,
+        nickname: groupMessageEntityDb.sender.nickname,
+        avatarId: groupMessageEntityDb.sender.avatarId,
+      } as MessageProfileDto,
+      groupChat: {
+        id: groupMessageEntityDb.groupChat.id,
+        name: groupMessageEntityDb.groupChat.name,
+      } as MessageGroupChatDto,
+    } as GroupMessageDto;
   }
 
   public async getPlayerChatRooms(
@@ -789,17 +817,10 @@ export class ChatService {
       return { role: 'owner' };
     }
 
-    let groupMember: GroupMemberEntity;
-
-    try {
-      groupMember = await this.getGroupChatMember(profileId, chatId);
-    } catch (Exception) {
-      if (Exception instanceof NotFoundException) {
-        groupMember = await this.getBannedGroupChatMember(profileId, chatId);
-      } else {
-        throw Exception;
-      }
-    }
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
 
     return groupMember.role === 'admin' ? { role: 'admin' } : { role: 'user' };
   }
@@ -863,15 +884,11 @@ export class ChatService {
     if (ban) {
       groupMember = await this.getGroupChatMember(profileId, chatId);
       groupChat.bannedMembers = [...groupChat.bannedMembers, groupMember];
-      groupChat.members = groupChat.members.filter(
-        (member: GroupMemberEntity): boolean => member.profile.id !== profileId,
-      );
     } else {
       groupMember = await this.getBannedGroupChatMember(profileId, chatId);
       groupChat.bannedMembers = groupChat.bannedMembers.filter(
         (member: GroupMemberEntity): boolean => member.profile.id !== profileId,
       );
-      [...groupChat.members, groupMember];
     }
 
     await this.groupChatRepository.save(groupChat);
