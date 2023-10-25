@@ -2,9 +2,8 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import p5 from 'p5';
 	import { onMount } from 'svelte';
-	//import type { Sketch } from 'p5';
-	//import loadSound from 'p5/lib/addons/p5.sound';
-
+	import { socket } from '$lib/stores';
+	
 	let width = 800;
 	let height = 600;
 
@@ -18,13 +17,17 @@
 
 	function sketch(p5: p5) {
 		let game: Game;
+		let hitSound: p5.SoundFile;
 		let ball1: Ball;
 		let player1: Player;
 		let player2: Player;
+		let speedBoost: SpeedBoost;
+		//let sizeIncrease : SizeIncrease;
 
 		p5.setup = () => {
 			p5.createCanvas(width, height);
 			game = new Game();
+			hitSound = p5.loadSound('PingPongHitBall.mp3'); //
 			ball1 = new Ball(game);
 			player1 = new Player(1);
 			player2 = new Player(2);
@@ -32,6 +35,8 @@
 			p5.textSize(32);
 			p5.textAlign(p5.CENTER, p5.CENTER);
 			p5.fill(255);
+			speedBoost = new SpeedBoost();
+			//sizeIncrease = new SizeIncrease(Math.random() < 0.5 ? 1: 2); // Escolha aleatória entre os dois jogadores
 		};
 
 		p5.draw = () => {
@@ -39,6 +44,7 @@
 			p5.rect(width / 2, 0, 5, height);
 			player1.drawPlayer();
 			player2.drawPlayer();
+			
 			let scoreText = `${game.pointP1}  |  ${game.pointP2}`;
 			p5.text(scoreText, width / 6, 40);
 			if (game.winner) {
@@ -52,8 +58,29 @@
 				ball1.checkWalls();
 				player1.movePlayer();
 				player2.movePlayer();
+				speedBoost.draw();
+				//sizeIncrease.draw();
 				ball1.checkColisionPlayer(player1);
 				ball1.checkColisionPlayer(player2);
+
+				if (speedBoost.active && ball1.positionX - ball1.diam/2 < speedBoost.positionX + speedBoost.size &&
+					ball1.positionX + ball1.diam / 2 > speedBoost.positionX &&
+					ball1.positionY - ball1.diam / 2 < speedBoost.positionY + speedBoost.size &&
+					ball1.positionY - ball1.diam / 2 > speedBoost.positionY) {
+						speedBoost.activateEffect(ball1, player1, player2);
+						speedBoost.active = false;
+					}
+				/*if (sizeIncrease.active){
+					let player = sizeIncrease.playerId == 1 ? player1 : player2;
+					if (player.positionX < sizeIncrease.positionX + sizeIncrease.size &&
+						player.positionX + player.widthP > sizeIncrease.positionX &&
+						player.positionY < sizeIncrease.positionY + sizeIncrease.size * 2 &&
+						player.positionY + player.heightP > sizeIncrease.positionY) {
+							sizeIncrease.activateEffect(ball1, player1, player2);
+							sizeIncrease.active = false;
+						} 
+				}*/
+				
 			} else {
 				if (!game.running && !game.winner) {
 					if (p5.keyIsDown(p5.ENTER)) {
@@ -73,20 +100,20 @@
 			public yminor: number;
 			public ymajor: number;
 			public xref: number;
-			public sound: any;
+			public sound: p5.SoundFile;
 
 			constructor(game: Game) {
 				this.positionX = width / 2;
 				this.positionY = height / 2;
-				this.velocityX = p5.random([-5, -3, 3, 5]);
-				this.velocityY = p5.random([-5, -3, 3, 5]);
+				this.velocityX = p5.random([-5, 13, 33, 50]);
+				this.velocityY = p5.random([-5, 13, 33, 50]);
 				this.diam = 20;
 				this.game = game;
 				this.yminor = 0;
 				this.ymajor = 0;
 				this.xref = 0;
 				this.resetVelocity();
-				//this.sound = new p5.SoundFile("/PingPongBallHit.mp3");
+				this.sound = hitSound;
 			}
 
 			draw() {
@@ -97,6 +124,7 @@
 				this.positionX += this.velocityX;
 				this.positionY += this.velocityY;
 			}
+
 			checkWalls() {
 				if (this.positionX - this.diam / 2 <= 0) {
 					//pontuar jogador 2
@@ -139,9 +167,11 @@
 					// Ajuste a posição da bola para evitar colisões consecutivas
 					if (player.id == 1) {
 						this.positionX = playerRight + this.diam / 2;
+						this.sound.play();
 						collision = true;
 					} else {
 						this.positionX = playerLeft - this.diam / 2;
+						this.sound.play();
 						collision = true;
 					}
 
@@ -167,6 +197,7 @@
 				this.positionY = height / 2;
 				this.resetVelocity();
 			}
+
 			resetVelocity() {
 				// Escolha um ângulo aleatório entre 30 e 60 graus (em radianos)
 				// Isso garante que a bola não vá diretamente para cima ou para baixo
@@ -236,8 +267,108 @@
 						}
 					}
 				}
+				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
+					socket.emit('player-move', {
+						playerId: this.id,
+						positionY: this.positionY
+					});
+				}*/
 			}
 		}
+
+		class PowerUp {
+			public positionX: number;
+			public positionY: number;
+			public size: number;
+			public active: boolean;
+			protected duration: number;
+			protected cooldown: number;
+
+			constructor() {
+				this.size = 60;
+				this.active = false;
+				this.duration = 10000;
+				this.cooldown = 10000;
+				setTimeout(() => this.setRandomPosition(), this.duration);
+				this.positionX = 0;
+				this.positionY = 0;
+			}
+
+			setRandomPosition(){
+				if (game.pointP1 >= 2 || game.pointP2 >= 2){
+					this.positionX = p5.random(50, width - 50);
+					this.positionY = p5.random(50, height - 50);
+					this.active = true;
+					setTimeout(() => {
+						this.active = false;
+						setTimeout(() => this.setRandomPosition(), this.cooldown);
+					}, this.duration);
+				} else {
+					setTimeout(() => this.setRandomPosition(), 1000);
+				}
+			}
+
+			draw() {
+				if (this.active){
+					p5.push();
+					p5.fill(255, 0, 0); //Red for SpeedBoost
+					p5.rect(this.positionX, this.positionY, this.size, this.size);
+					p5.pop();
+				}
+			}
+
+			activateEffect(ball: Ball, player1: Player, player2: Player) {}
+		}
+
+		class SpeedBoost extends PowerUp {
+			constructor() {
+				super();
+			}
+
+			activateEffect(ball: Ball, player1: Player, player2: Player) {
+				ball.velocityX *= 2;
+				ball.velocityY *= 2;
+				setTimeout(() => {
+					ball.velocityX /= 2;
+					ball.velocityY /= 2;
+				}, 5000); //efeito dura 5 segundos
+			}
+
+			draw() {
+				if (this.active){
+					p5.push();
+					p5.fill(255, 0, 0); //Red for SpeedBoost
+					p5.rect(this.positionX, this.positionY, this.size, this.size);
+					p5.pop();
+				}
+			}
+		}
+
+		/*class SizeIncrease extends PowerUp {
+			public playerId: number;
+
+			constructor(playerId: number){
+				super();
+				this.playerId = playerId;
+			}
+
+			activateEffect(ball: Ball, player1: Player, player2: Player) {
+				let player = this.playerId == 1 ? player1 : player2;
+				player.heightP *= 1.5;
+				setTimeout(() => {
+					player.heightP /= 1.5;
+				}, 5000);
+			}
+
+			draw() {
+				if (this.active){
+					p5.push();
+					p5.fill(0, 0, 255); //Blue for SizeIncrease
+					p5.rect(this.positionX, this.positionY, this.size, this.size * 2);
+					p5.pop();
+				}
+			}
+		}*/
 
 		class Game {
 			public running: boolean;
@@ -279,6 +410,7 @@
 				}
 				p5.print('Pontos p1: ' + this.pointP1 + ' /Pontos p2: ' + this.pointP2);
 			}
+
 			gameOver(winner: number) {
 				this.running = false; // Para o jogo
 				this.winner = winner; // Armazena o ID do jogador vencedor
@@ -290,6 +422,7 @@
 			restartPoints() {
 				this.pointP1 = this.pointP2 = 0;
 			}
+
 			restart() {
 				this.running = false;
 				this.pointP1 = 0;
@@ -306,11 +439,34 @@
 
 	let gameNew;
 
-	onMount(() => {
-		let element: HTMLElement = window.document.getElementById('p5-container');
+	onMount(async () => {
+		/*
+		socket.on('game-state', (data) => {
+				gameState.set(data);
+
+				ball1.positionX = data.ball.x;
+				ball1.positionY = data.ball.y;
+				player1.positionY = data.player1.y;
+				player2.positionY = data.player2.y;
+		});*/
+
+		let element: HTMLElement | null = window.document.getElementById('p5-container');
+		if (!element){
+			return;
+		}
+		(<any>window).p5 = p5;
+		await import('p5/lib/addons/p5.sound');
+		console.log('Loaded Sound');
 		gameNew = new p5(sketch, element);
-		element.style.backgroundColor = 'white';
 	});
+
+	/*function handlePlayerMove(direction:string){
+		socket.emit('player-move', {direction});
+	}
+	$:gameState;*/
+
+	$socket;
+
 </script>
 
 <div class="h-screen flex flex-col">

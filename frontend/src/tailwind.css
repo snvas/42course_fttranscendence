@@ -128,4 +128,17 @@
 	.icon-link{
 		@apply text-white;
 	}
+
+	::-webkit-scrollbar {
+		@apply w-3;
+	  }
+	
+	::-webkit-scrollbar-track {
+		@apply rounded-l-full;
+		
+	  }
+	
+	::-webkit-scrollbar-thumb {
+		@apply bg-[#ffffff] hover:bg-[#c52127] rounded-l-full;
+	}
 }
