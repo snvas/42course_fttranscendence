@@ -9,10 +9,10 @@ import type {
 	ChatPasswordDto,
 	PasswordUpdateResponseDto,
 	GroupMemberDto,
-	MemberRoleUpdatedResponseDto,
 	GroupMemberDeletedResponse,
 	GroupCreationDto,
-	GroupChatHistoryDto
+	GroupChatHistoryDto,
+	UpdateMemberRoleDto
 } from '$lib/dtos';
 import { socketEvent } from './SocketsEvents';
 
@@ -40,6 +40,10 @@ class ChatService {
 		return this.socket;
 	}
 
+	public disconnect(): void {
+		this.socket?.disconnect();
+	}
+
 	public emitMessage(message: string): void {
 		this.socket?.emit('message', message);
 	}
@@ -58,21 +62,16 @@ class ChatService {
 
 	public emitGroupMessage(message: GroupMessageDto): Promise<GroupMessageDto> {
 		return new Promise<GroupMessageDto>((resolve): void => {
-			this.socket?.emit('sendGroupMessage', message, (ack: GroupMessageDto): void => {
+			this.socket?.emit(socketEvent.SEND_GROUP_MESSAGE, message, (ack: GroupMessageDto): void => {
 				resolve(ack);
 			});
 		});
-	}
-
-	public disconnect(): void {
-		this.socket?.disconnect();
 	}
 
 	public getPrivateMessageHistory(): Promise<AxiosResponse<PrivateMessageHistoryDto[]>> {
 		return this.axiosInstance.get('/private/messages/history');
 	}
 
-	// TODO:
 	public getGroupMessageHistory(): Promise<AxiosResponse<GroupChatHistoryDto[]>> {
 		return this.axiosInstance.get('/group/messages/history');
 	}
@@ -139,7 +138,7 @@ class ChatService {
 		chatId: number,
 		profileId: number,
 		role: string
-	): Promise<AxiosResponse<MemberRoleUpdatedResponseDto>> {
+	): Promise<AxiosResponse<UpdateMemberRoleDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, { role });
 	}
 

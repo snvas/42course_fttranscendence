@@ -10,13 +10,15 @@
 		GroupChatHistoryDto,
 		GroupChatEventDto,
 		GroupMemberDto,
-
-		MessageProfileDto
-
+		GroupProfileDto,
+		MessageProfileDto,
+		ConversationDto
 	} from '$lib/dtos';
-	import { getAvatarFromId, getProfile, readAllGroupChats, readChatHistory } from '$lib/api';
+	import { getProfile, readAllGroupChats, readChatHistory } from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
+	import { parseISO } from 'date-fns';
+	import chatService from '$lib/api/services/ChatService';
 
 	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
@@ -24,7 +26,7 @@
 
 	let messages: ComponentMessage[] | null = null;
 	// TODO: vai mudar o tipo para exibir o role
-	let members: MessageProfileDto[] = [];
+	let members: GroupProfileDto[] = [];
 
 	let groupsList: Promise<GroupChatDto[]>;
 	let groupChatHistory: Promise<GroupChatHistoryDto[]>;
@@ -39,11 +41,8 @@
 
 	async function setSelectedMessagesMembers() {
 		await groupsList;
-		let resHistory = await groupChatHistory;
 
-		console.log('history', resHistory);
-
-		let selectedHistory = resHistory.find((history) => history.id == $selectedGroup?.id) ?? null;
+		let selectedHistory = (await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
 		console.log('selected', selectedHistory);
 		messages =
 			selectedHistory?.messages.map((message) => {
@@ -54,7 +53,61 @@
 					sync: true
 				};
 			}) ?? null;
-		members = selectedHistory?.members ?? []
+		members = selectedHistory?.members ?? [];
+	}
+
+	async function sendMessage(message: string) {
+		if (!$selectedGroup) return;
+		let selected = $selectedGroup;
+
+		const componentMessage: ComponentMessage = {
+			message: message,
+			createdAt: new Date().toISOString(),
+			nickname: 'me',
+			sync: false
+		};
+
+		if (!profile) {
+			console.log('Profile not found');
+			return;
+		}
+
+		messages = [...(messages ?? []), componentMessage];
+
+		const groupMessage: GroupMessageDto = {
+			message,
+			groupChat: selected,
+			createdAt: parseISO(componentMessage.createdAt),
+			sender: {
+				id: $profile.id,
+				nickname: $profile.nickname
+			}
+		};
+
+		let backendMessage = await chatService.emitGroupMessage(groupMessage);
+
+		if (!backendMessage) {
+			console.log('Error when sending group message');
+			return;
+		}
+
+		const newHistory: GroupChatHistoryDto[] = (await groupChatHistory).map(
+			(history: GroupChatHistoryDto): GroupChatHistoryDto => {
+				if (history.id != backendMessage.groupChat.id) {
+					return history;
+				}
+				if (history.messages.find((m: ConversationDto) => m.id === backendMessage.id)) {
+					return history;
+				}
+				history.messages.push(backendMessage);
+
+				return history;
+			}
+		);
+
+		groupChatHistory = Promise.resolve(newHistory);
+		console.log(`Group message sent: ${JSON.stringify(backendMessage)}`);
+		setSelectedMessagesMembers()
 	}
 
 	async function onCreateGroup() {
@@ -128,10 +181,11 @@
 
 	groupsList = loadAllGroups();
 	groupChatHistory = loadHistory();
+	setSelectedMessagesMembers();
 
 	$: $selectedGroup, setSelectedMessagesMembers();
 	$: console.log('groupChatHistory', groupChatHistory);
-	$: console.log('selectedGroup', $selectedGroup);
+	// $: console.log('selectedGroup', $selectedGroup);
 	$: console.log('messages', messages);
 </script>
 
@@ -161,6 +215,6 @@
 	</div>
 
 	<div class="contents" slot="messages">
-		<GroupMessages bind:messages {members} sendMessage={null} />
+		<GroupMessages bind:messages {members} {sendMessage} />
 	</div>
 </ChatLayout>

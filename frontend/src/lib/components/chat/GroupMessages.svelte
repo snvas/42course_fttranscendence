@@ -1,12 +1,12 @@
 <script lang="ts">
 	import chatService from '$lib/api/services/ChatService';
-	import type { GroupCreationDto, ComponentMessage, MessageProfileDto } from '$lib/dtos';
+	import type { GroupProfileDto, ComponentMessage, MessageProfileDto } from '$lib/dtos';
 	import { goto } from '$app/navigation';
 	import { selectedGroup } from '$lib/stores';
 	import { formatDistanceToNow, parseISO } from 'date-fns';
 
 	export let messages: ComponentMessage[] | null;
-	export let members: MessageProfileDto[];
+	export let members: GroupProfileDto[];
 
 	export let sendMessage: (message: string) => void;
 
@@ -75,7 +75,7 @@
 			MEMBERS
 				{#each members as member}
 					<div>
-						{member.nickname}
+						{member.profile.nickname}
 					</div>
 				{/each}
 		</div>
