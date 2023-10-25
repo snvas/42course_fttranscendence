@@ -21,12 +21,6 @@
 			$profile = v.data;
 		}
 	});
-	import type {
-		GroupCreationDto,
-		ComponentMessage
-	} from '$lib/dtos';
-
-	export let messages: ComponentMessage[] | null;
 
 	export let selected: 'direct' | 'group';
 </script>
@@ -42,9 +36,8 @@
 	</div>
 	<div class="flex-1 flex flex-col lg:flex-row gap-10 px-10 pb-10 h-0">
 		<div class="gap-15 flex flex-col lg:w-1/4 flex-none w-full h-full">
-			<div class="border-4 border-white min-w-fit w-full flex flex-col h-full rounded-3xl">
+			<div class="border-4 border-white w-full flex flex-col h-full rounded-3xl flex-none">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
-					<!-- TODO: padronizar botões e estilo baseado na variável "showingMessages" -->
 					<button
 						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl {selected ==
 						'direct'
@@ -58,9 +51,9 @@
 					</button>
 					<button
 						class="border-2 border-white h-10 flex-1 items-center justify-center rounded-xl {selected ==
-							'group'
-								? 'text-green-500 '
-								: ''}"
+						'group'
+							? 'text-green-500 '
+							: ''}"
 						on:click={() => {
 							goto('/chat/group');
 						}}
@@ -72,11 +65,7 @@
 			</div>
 		</div>
 		<div class="flex-1 flex flex-col w-full h-full">
-			
-				<slot name="messages" />
-			{#if messages == null}
-				<slot name="create"/>
-			{/if}
+			<slot name="messages" />
 		</div>
 	</div>
 </div>

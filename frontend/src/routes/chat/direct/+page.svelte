@@ -16,6 +16,7 @@
 	import { getPrivateMessageHistory } from '$lib/api';
 	import { v4 as uuidV4 } from 'uuid';
 	import { parseISO } from 'date-fns';
+	import { socketEvent } from '$lib/api/services/SocketsEvents';
 
 	let messages: ComponentMessage[] | null = null;
 	let selectedHistory: PrivateMessageHistoryDto | null = null;
@@ -144,7 +145,6 @@
 			sync: false
 		};
 
-		// TODO: online vai se tornar todos os usuários
 		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
 			(playerStatus: PlayerStatusDto): boolean => {
 				return playerStatus.nickname === $selectedDirect!.nickname;
@@ -220,7 +220,7 @@
 		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 
-	$socket.on('receivePrivateMessage', onPrivateMessage);
+	$socket.on(socketEvent.RECEIVE_PRIVATE_MESSAGE, onPrivateMessage);
 
 	function getHistoryFromStatus(
 		history: PrivateMessageHistoryDto[],

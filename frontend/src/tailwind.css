@@ -28,7 +28,7 @@
 		@apply w-full;
 		@apply text-2xl uppercase;
 		@apply py-2 px-4;
-		@apply disabled:bg-slate-400 disabled:cursor-wait;
+		@apply disabled:bg-slate-400;
 		@apply transition-all;
 	}
 
@@ -69,6 +69,7 @@
 		@apply w-full;
 		@apply text-2xl;
 		@apply py-2 px-4;
+		@apply disabled:text-gray-500 disabled:bg-gray-800;
 	}
 
 	.upload-image {
@@ -126,5 +127,18 @@
 	}
 	.icon-link{
 		@apply text-white;
+	}
+
+	::-webkit-scrollbar {
+		@apply w-3;
+	  }
+	
+	::-webkit-scrollbar-track {
+		@apply rounded-l-full;
+		
+	  }
+	
+	::-webkit-scrollbar-thumb {
+		@apply bg-[#ffffff] hover:bg-[#c52127] rounded-l-full;
 	}
 }
