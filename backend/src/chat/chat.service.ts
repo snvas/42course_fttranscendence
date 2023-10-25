@@ -319,40 +319,32 @@ export class ChatService {
 
     this.logger.verbose(`### Getting group chats for user: [${userId}]`);
 
-    const groupMemberships: GroupMemberEntity[] =
-      await this.groupMemberRepository.find({
-        relations: {
-          groupChat: {
-            owner: true,
-            members: {
-              profile: true,
-            },
-            messages: {
-              sender: true,
-            },
-          },
+    const groupChats: GroupChatEntity[] = await this.groupChatRepository.find({
+      relations: {
+        members: {
+          profile: true,
         },
-        where: {
+        owner: true,
+        messages: true,
+        bannedMembers: {
+          profile: true,
+        },
+      },
+      where: {
+        members: {
           profile: {
             id: profile.id,
           },
         },
-      });
-
-    const groupChats: GroupChatEntity[] = groupMemberships.map(
-      (membership: GroupMemberEntity): GroupChatEntity => {
-        return {
-          ...membership.groupChat,
-        };
       },
-    );
+    });
 
     return groupChats.map((groupChat: GroupChatEntity): GroupChatHistoryDto => {
       return {
         id: groupChat.id,
         name: groupChat.name,
         visibility: groupChat.visibility,
-        owner: groupChat.owner.nickname,
+        owner: 'groupChat.owner.nickname',
         createdAt: groupChat.createdAt,
         members: groupChat.members.map(
           (member: GroupMemberEntity): GroupProfileDto => {
@@ -579,29 +571,28 @@ export class ChatService {
       await this.profileService.findByProfileId(newMemberProfileId);
 
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
-      groupChat,
       profile: newMemberProfile,
       role: chatRole.role,
     });
-    groupMember.groupChat = groupChat;
-    groupMember.profile = newMemberProfile;
 
     this.logger.debug(
       `### Adding profile: [${newMemberProfile.nickname}] with role: [${groupMember.role}] to group chat: [${groupChat.name}]`,
     );
     try {
-      const memberEntity: GroupMemberEntity =
-        await this.groupMemberRepository.save(groupMember);
+      groupMember.profile = newMemberProfile;
+      groupChat.members.push(groupMember);
+      await this.groupChatRepository.save(groupChat);
 
       this.addPlayerRoom(newMemberProfile.id, `${chatId}`);
 
       return this.createGroupMemberDto(
-        memberEntity,
+        groupMember,
         groupChat,
         newMemberProfile,
       );
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
+        this.logger.error(Exception);
         throw new NotAcceptableException(
           `Profile [${newMemberProfile.nickname}] is already a member of group chat [${groupChat.name}]`,
         );

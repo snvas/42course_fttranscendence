@@ -2,7 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -11,7 +11,7 @@ import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
 @Entity({ name: 'group_members' })
-@Index(['profile', 'groupChat'], { unique: true })
+// @Index(['profile', 'groupChat'], { unique: true })
 export class GroupMemberEntity implements GroupMember {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,12 +22,14 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: false })
   isMuted: boolean;
 
-  @ManyToOne(() => GroupChatEntity, (chat) => chat.members, {
+  @ManyToMany(() => GroupChatEntity, (chat) => chat.members, {
     onDelete: 'CASCADE',
   })
   groupChat: GroupChatEntity;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships, {
+    onDelete: 'CASCADE',
+  })
   profile: ProfileEntity;
 
   @CreateDateColumn()

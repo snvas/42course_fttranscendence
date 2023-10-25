@@ -3,6 +3,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -25,8 +27,16 @@ export class GroupChatEntity implements GroupChat {
   @Column({ default: 'public' })
   visibility: string;
 
-  @OneToMany(() => GroupMemberEntity, (member) => member.groupChat)
+  @ManyToMany(() => GroupMemberEntity, (member) => member.groupChat, {
+    eager: true,
+    cascade: true,
+  })
+  @JoinTable({ name: 'group_chat_members' })
   members: GroupMemberEntity[];
+
+  @ManyToMany(() => GroupMemberEntity, (member) => member.groupChat)
+  @JoinTable({ name: 'group_chat_banned_members' })
+  bannedMembers: GroupMemberEntity[];
 
   @OneToMany(() => GroupMessageEntity, (message) => message.groupChat)
   messages: GroupMessageEntity[];
