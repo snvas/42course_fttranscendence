@@ -28,13 +28,14 @@ export class GroupChatEntity implements GroupChat {
   visibility: string;
 
   @ManyToMany(() => GroupMemberEntity, (member) => member.groupChat, {
-    eager: true,
     cascade: true,
   })
   @JoinTable({ name: 'group_chat_members' })
   members: GroupMemberEntity[];
 
-  @ManyToMany(() => GroupMemberEntity, (member) => member.groupChat)
+  @ManyToMany(() => GroupMemberEntity, (member) => member.groupChat, {
+    cascade: true,
+  })
   @JoinTable({ name: 'group_chat_banned_members' })
   bannedMembers: GroupMemberEntity[];
 

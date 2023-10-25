@@ -34,5 +34,9 @@ export class GroupChatHistoryDto implements GroupChatHistory {
   @IsNotEmptyObject()
   @ValidateNested()
   @IsArray()
+  bannedMembers: GroupProfileDto[];
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @IsArray()
   messages: ConversationDto[];
 }

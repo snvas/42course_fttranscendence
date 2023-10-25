@@ -321,14 +321,14 @@ export class ChatService {
 
     const groupChats: GroupChatEntity[] = await this.groupChatRepository.find({
       relations: {
+        owner: true,
         members: {
           profile: true,
         },
-        owner: true,
-        messages: true,
         bannedMembers: {
           profile: true,
         },
+        messages: true,
       },
       where: {
         members: {
@@ -344,22 +344,10 @@ export class ChatService {
         id: groupChat.id,
         name: groupChat.name,
         visibility: groupChat.visibility,
-        owner: 'groupChat.owner.nickname',
+        owner: groupChat.owner.nickname,
         createdAt: groupChat.createdAt,
-        members: groupChat.members.map(
-          (member: GroupMemberEntity): GroupProfileDto => {
-            return {
-              id: member.id,
-              profile: {
-                id: member.profile.id,
-                nickname: member.profile.nickname,
-                avatarId: member.profile.avatarId,
-              },
-              role: member.role,
-              isMuted: member.isMuted,
-            } as GroupProfileDto;
-          },
-        ),
+        members: this.createGroupProfileDto(groupChat.members),
+        bannedMembers: this.createGroupProfileDto(groupChat.bannedMembers),
         messages: groupChat.messages
           .map((message: GroupMessageEntity): ConversationDto => {
             return {
@@ -505,6 +493,20 @@ export class ChatService {
     profileId: number,
   ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
     return await this.handleMute(profileId, chatId, false);
+  }
+
+  public async banGroupChatMember(
+    chatId: number,
+    profileId: number,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    return await this.handleBan(profileId, chatId, true);
+  }
+
+  public async unbanGroupChatMember(
+    chatId: number,
+    profileId: number,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    return await this.handleBan(profileId, chatId, false);
   }
 
   public async changeGroupChatPassword(
@@ -832,6 +834,48 @@ export class ChatService {
     };
   }
 
+  private async handleBan(
+    profileId: number,
+    chatId: number,
+    ban: boolean,
+  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
+
+    const updatedMemberResult: UpdateResult =
+      await this.groupChatRepository.update(
+        {
+          id: chatId,
+        },
+        {
+          bannedMembers: ban
+            ? [...groupMember.groupChat.bannedMembers, groupMember]
+            : groupMember.groupChat.bannedMembers.filter(
+                (m: GroupMemberEntity) => m.id !== groupMember.id,
+              ),
+        },
+      );
+
+    if (!updatedMemberResult.affected) {
+      this.logger.error(
+        `### Member [${profileId}] not ban status not update to [${ban}]`,
+      );
+      throw new InternalServerErrorException('Member not banned');
+    }
+
+    return {
+      updated: updatedMemberResult.affected > 0,
+      affected: updatedMemberResult.affected,
+      ...this.createGroupMemberDto(
+        groupMember,
+        groupMember.groupChat,
+        groupMember.profile,
+      ),
+    };
+  }
+
   private async getGroupChatMember(
     profileId: number,
     chatId: number,
@@ -1057,5 +1101,22 @@ export class ChatService {
         avatarId: profile.avatarId,
       } as MessageProfile,
     } as GroupChatDto;
+  }
+
+  private createGroupProfileDto(
+    memberEntity: GroupMemberEntity[],
+  ): GroupProfileDto[] {
+    return memberEntity.map((member: GroupMemberEntity): GroupProfileDto => {
+      return {
+        id: member.id,
+        profile: {
+          id: member.profile.id,
+          nickname: member.profile.nickname,
+          avatarId: member.profile.avatarId,
+        },
+        role: member.role,
+        isMuted: member.isMuted,
+      } as GroupProfileDto;
+    });
   }
 }

@@ -8,5 +8,6 @@ export interface GroupChatHistory {
   visibility: string;
   createdAt: Date;
   members: GroupProfileDto[];
+  bannedMembers: GroupProfileDto[];
   messages: Conversation[];
 }

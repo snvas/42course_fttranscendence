@@ -11,6 +11,7 @@ export interface GroupChat {
   password?: string | null;
   owner: ProfileEntity;
   members: GroupMemberEntity[];
+  bannedMembers: GroupMemberEntity[];
   messages: GroupMessageEntity[];
   createdAt: Date;
 }

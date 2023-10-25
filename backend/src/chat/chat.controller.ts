@@ -325,18 +325,58 @@ export class ChatController {
     } as MemberUpdatedResponseDto;
   }
 
-  // @UseGuards(ChatManagementGuard)
-  // @Post('group/:chatId/unban/:profileId')
-  // async unbanGroupChatMember(
-  //     @Param('chatId', ParseIntPipe) chatId: number,
-  //     @Param('profileId', ParseIntPipe) profileId: number,
-  // ): Promise<GroupMemberDto> {
-  //   return await this.chatService.unbanGroupChatMember(chatId, profileId);
-  // }
+  @UseGuards(ChatManagementGuard)
+  @Post('group/:chatId/ban/:profileId')
+  async banGroupChatMember(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MemberUpdatedResponseDto> {
+    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+      await this.chatService.banGroupChatMember(chatId, profileId);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, {
+        id: updatedResponseMember.id,
+        role: updatedResponseMember.role,
+        isMuted: updatedResponseMember.isMuted,
+        groupChat: updatedResponseMember.groupChat,
+        profile: updatedResponseMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      updated: updatedResponseMember.updated,
+      affected: updatedResponseMember.affected,
+    };
+  }
+
+  @UseGuards(ChatManagementGuard)
+  @Post('group/:chatId/unban/:profileId')
+  async unbanGroupChatMember(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MemberUpdatedResponseDto> {
+    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+      await this.chatService.unbanGroupChatMember(chatId, profileId);
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, {
+        id: updatedResponseMember.id,
+        role: updatedResponseMember.role,
+        isMuted: updatedResponseMember.isMuted,
+        groupChat: updatedResponseMember.groupChat,
+        profile: updatedResponseMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      updated: updatedResponseMember.updated,
+      affected: updatedResponseMember.affected,
+    };
+  }
 
   //Debug routes
 
-  //TODO: add server.to(chatId).emit() to send message to all group members for test
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(

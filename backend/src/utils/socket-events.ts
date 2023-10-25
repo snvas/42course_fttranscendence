@@ -15,4 +15,6 @@ export const socketEvent = {
   GROUP_CHAT_MEMBER_ROLE_UPDATED: 'groupChatMemberRoleUpdated',
   GROUP_CHAT_MEMBER_MUTED: 'groupChatMemberMuted',
   GROUP_CHAT_MEMBER_UNMUTED: 'groupChatMemberUnmuted',
+  GROUP_CHAT_MEMBER_BANNED: 'groupChatMemberBanned',
+  GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned',
 };
