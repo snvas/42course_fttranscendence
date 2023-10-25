@@ -14,11 +14,13 @@
 		MessageProfileDto,
 		ConversationDto
 	} from '$lib/dtos';
-	import { getProfile, readAllGroupChats, readChatHistory } from '$lib/api';
+	import { readAllGroupChats, readChatHistory, joinGroupChat } from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
 	import { parseISO } from 'date-fns';
-	import chatService from '$lib/api/services/ChatService';
+	import { chatService } from '$lib/api/services';
+	import ConfirmJoinGroup from '$lib/components/chat/ConfirmJoinGroup.svelte';
+	import type { AxiosResponse } from 'axios';
 
 	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
@@ -30,21 +32,28 @@
 
 	let groupsList: Promise<GroupChatDto[]>;
 	let groupChatHistory: Promise<GroupChatHistoryDto[]>;
+	let confirmJoin: GroupChatDto | null = null;
 
-	async function loadAllGroups(): Promise<GroupChatDto[]> {
-		return readAllGroupChats();
-	}
-
-	async function loadHistory(): Promise<GroupChatHistoryDto[]> {
-		return readChatHistory();
+	function loadAllGroups() {
+		groupsList = readAllGroupChats();
+		groupChatHistory = readChatHistory();
 	}
 
 	async function setSelectedMessagesMembers() {
-		await groupsList;
+		confirmJoin = null;
 
-		let selectedHistory = (await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
+		await groupsList;
+		let selectedHistory =
+			(await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
+		if (!selectedHistory) {
+			loadAllGroups();
+			await groupsList;
+			selectedHistory =
+				(await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
+		}
 		console.log('selected', selectedHistory);
-		messages =
+
+		let newMessages =
 			selectedHistory?.messages.map((message) => {
 				return {
 					message: message.message,
@@ -53,6 +62,8 @@
 					sync: true
 				};
 			}) ?? null;
+
+		messages = newMessages;
 		members = selectedHistory?.members ?? [];
 	}
 
@@ -107,7 +118,7 @@
 
 		groupChatHistory = Promise.resolve(newHistory);
 		console.log(`Group message sent: ${JSON.stringify(backendMessage)}`);
-		setSelectedMessagesMembers()
+		setSelectedMessagesMembers();
 	}
 
 	async function onCreateGroup() {
@@ -179,11 +190,11 @@
 		$socket.off('groupChatMemberRoleUpdated');
 	});
 
-	groupsList = loadAllGroups();
-	groupChatHistory = loadHistory();
+	loadAllGroups();
 	setSelectedMessagesMembers();
 
 	$: $selectedGroup, setSelectedMessagesMembers();
+
 	$: console.log('groupChatHistory', groupChatHistory);
 	// $: console.log('selectedGroup', $selectedGroup);
 	$: console.log('messages', messages);
@@ -200,6 +211,7 @@
 						on:select={(e) => {
 							$selectedGroup = e.detail;
 						}}
+						on:join={(e) => (confirmJoin = e.detail)}
 					/>
 				{/await}
 			{/await}
@@ -215,6 +227,10 @@
 	</div>
 
 	<div class="contents" slot="messages">
-		<GroupMessages bind:messages {members} {sendMessage} />
+		{#if confirmJoin}
+			<ConfirmJoinGroup bind:confirmJoin joinGroup={joinGroupChat} />
+		{:else}
+			<GroupMessages bind:messages {members} {sendMessage} />
+		{/if}
 	</div>
 </ChatLayout>

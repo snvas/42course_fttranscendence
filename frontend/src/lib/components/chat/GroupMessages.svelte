@@ -1,6 +1,5 @@
 <script lang="ts">
-	import chatService from '$lib/api/services/ChatService';
-	import type { GroupProfileDto, ComponentMessage, MessageProfileDto } from '$lib/dtos';
+	import type { GroupProfileDto, ComponentMessage } from '$lib/dtos';
 	import { goto } from '$app/navigation';
 	import { selectedGroup } from '$lib/stores';
 	import { formatDistanceToNow, parseISO } from 'date-fns';
@@ -16,7 +15,6 @@
 	};
 
 	let message: string = '';
-
 </script>
 
 <div class="w-full h-full flex flex-row gap-10">
@@ -28,56 +26,57 @@
 		</div>
 	{:else}
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
+			{$selectedGroup.name}
 			<div
-			class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
-		>
-			{#each messages as conversation}
-				<div class="w-full flex flex-row justify-between">
-					<div>
-						<p class="text-xs text-gray-400">{conversation.nickname}</p>
-						<p class="text-lg">
-							{conversation.message}
+				class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
+			>
+				{#each messages as conversation}
+					<div class="w-full flex flex-row justify-between">
+						<div>
+							<p class="text-xs text-gray-400">{conversation.nickname}</p>
+							<p class="text-lg">
+								{conversation.message}
+							</p>
+						</div>
+						<p>
+							{#if !conversation.sync}
+								Loading
+							{:else}
+								<div class="flex flex-row items-center gap-3 text-xs text-gray-400">
+									{formatDistanceToNow(
+										new Date(
+											parseISO(conversation.createdAt).getTime() -
+												parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
+										)
+									)}
+									ago
+									<img src="/mensagem-recebida.png" class="w-10" alt="mensagem recebida" />
+								</div>
+							{/if}
 						</p>
 					</div>
-					<p>
-						{#if !conversation.sync}
-							Loading
-						{:else}
-							<div class="flex flex-row items-center gap-3 text-xs text-gray-400">
-								{formatDistanceToNow(
-									new Date(
-										parseISO(conversation.createdAt).getTime() -
-											parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
-									)
-								)}
-								ago
-								<img src="/mensagem-recebida.png" class="w-10" alt="mensagem recebida" />
-							</div>
-						{/if}
-					</p>
-				</div>
-			{/each}
-		</div>
-		<form
-			class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
-		>
-			<input
-				bind:value={message}
-				placeholder="Enter the Message"
-				class="text-center w-full h-full text-black text-xl"
-			/>
-			<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
-				SEND
-			</button>
-		</form>
+				{/each}
+			</div>
+			<form
+				class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
+			>
+				<input
+					bind:value={message}
+					placeholder="Enter the Message"
+					class="text-center w-full h-full text-black text-xl"
+				/>
+				<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
+					SEND
+				</button>
+			</form>
 		</div>
 		<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
 			MEMBERS
-				{#each members as member}
-					<div>
-						{member.profile.nickname}
-					</div>
-				{/each}
+			{#each members as member}
+				<div>
+					{member.profile.nickname}
+				</div>
+			{/each}
 		</div>
 	{/if}
 </div>

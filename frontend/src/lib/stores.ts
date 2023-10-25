@@ -8,7 +8,7 @@ import type {
 } from './dtos';
 import { authService } from './api';
 import type { Socket } from 'socket.io-client';
-import chatService from './api/services/ChatService';
+import { chatService } from '$lib/api/services';
 
 type AuthState = {
 	loading: boolean;

@@ -5,7 +5,7 @@
 	import { onDestroy } from 'svelte';
 	import type { GroupChatDto } from '$lib/dtos';
 	import { isAxiosError, type AxiosResponse } from 'axios';
-	import chatService from '$lib/api/services/ChatService';
+	import { chatService } from '$lib/api';
 
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');

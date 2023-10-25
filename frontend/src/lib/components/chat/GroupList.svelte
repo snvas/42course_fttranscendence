@@ -42,7 +42,7 @@
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
 				<!-- TODO: decidir os botões e as condições para tal-->
 				{#if !group.belong}
-					<ListButton on:click={() => dispatch('join', group.id)} type="join" />
+					<ListButton on:click={() => dispatch('join', group)} type="join" />
 				{:else}
 					<ListButton on:click={() => dispatch('leave', group.id)} type="leave" />
 				{/if}

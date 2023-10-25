@@ -4,7 +4,7 @@
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
-	import chatService from '$lib/api/services/ChatService';
+	import { chatService } from '$lib/api/services/ChatService';
 	import type {
 		PrivateMessageDto,
 		ConversationDto,

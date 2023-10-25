@@ -89,10 +89,9 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}`);
 	}
 
-	// TODO:
 	public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
 		if (password) {
-			return this.axiosInstance.post(`/group/${chatId}/join`, { password });
+			return this.axiosInstance.post(`/group/${chatId}/join`, password);
 		}
 		return this.axiosInstance.post(`/group/${chatId}/join`);
 	}
@@ -151,6 +150,4 @@ class ChatService {
 	}
 }
 
-const chatService: ChatService = new ChatService('http://localhost:3000');
-
-export default chatService;
+export const chatService: ChatService = new ChatService('http://localhost:3000');
