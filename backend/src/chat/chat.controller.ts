@@ -330,24 +330,15 @@ export class ChatController {
   async banGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<MemberUpdatedResponseDto> {
-    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+  ): Promise<GroupMemberDto> {
+    const groupMemberDto: GroupMemberDto =
       await this.chatService.banGroupChatMember(chatId, profileId);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, {
-        id: updatedResponseMember.id,
-        role: updatedResponseMember.role,
-        isMuted: updatedResponseMember.isMuted,
-        groupChat: updatedResponseMember.groupChat,
-        profile: updatedResponseMember.profile,
-      } as GroupMemberDto);
+      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
-    return {
-      updated: updatedResponseMember.updated,
-      affected: updatedResponseMember.affected,
-    };
+    return groupMemberDto;
   }
 
   @UseGuards(ChatManagementGuard)
@@ -355,24 +346,15 @@ export class ChatController {
   async unbanGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<MemberUpdatedResponseDto> {
-    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
+  ): Promise<GroupMemberDto> {
+    const groupMemberDto: GroupMemberDto =
       await this.chatService.unbanGroupChatMember(chatId, profileId);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, {
-        id: updatedResponseMember.id,
-        role: updatedResponseMember.role,
-        isMuted: updatedResponseMember.isMuted,
-        groupChat: updatedResponseMember.groupChat,
-        profile: updatedResponseMember.profile,
-      } as GroupMemberDto);
+      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
-    return {
-      updated: updatedResponseMember.updated,
-      affected: updatedResponseMember.affected,
-    };
+    return groupMemberDto;
   }
 
   //Debug routes
