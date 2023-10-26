@@ -21,6 +21,7 @@
 	import ConfirmJoinGroup from '$lib/components/chat/ConfirmJoinGroup.svelte';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmLeaveGroup from '$lib/components/chat/ConfirmLeaveGroup.svelte';
+	import GroupMembers from '$lib/components/chat/GroupMembers.svelte';
 
 	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
@@ -33,6 +34,7 @@
 	let groupChatHistory: GroupChatHistoryDto[];
 	let confirmJoin: GroupChatDto | null = null;
 	let confirmLeave: GroupChatDto | null = null;
+	let addMember: GroupChatDto | null;
 
 	async function loadAllGroups() {
 		groupsList = await readAllGroupChats();
@@ -315,8 +317,22 @@
 			<ConfirmJoinGroup bind:confirmJoin joinGroup={onJoinGroup} />
 		{:else if confirmLeave}
 			<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
+		{:else if $selectedGroup}
+			<div class="w-full h-full flex flex-row gap-10">
+				{#if addMember}
+				<!-- TODO -->
+					<!-- <AddMembersList></AddMembersList> -->
+				{:else}
+					<GroupMessages bind:messages {sendMessage} />
+				{/if}
+				<GroupMembers {members} />
+			</div>
 		{:else}
-			<GroupMessages bind:messages {members} {sendMessage} />
+			<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
+				<div class="flex flex-col w-full items-center gap-3 p-20">
+					<p class="text-lg text-gray-400 flex">any group selected</p>
+				</div>
+			</div>
 		{/if}
 	</div>
 </ChatLayout>
