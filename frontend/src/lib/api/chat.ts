@@ -2,7 +2,7 @@ import { isAxiosError, type AxiosResponse } from 'axios';
 import type {
 	GroupChatDto,
 	GroupChatHistoryDto,
-	GroupMessageDto,
+	GroupMemberDto,
 	PrivateMessageHistoryDto
 } from '$lib/dtos';
 import { chatService } from './services/ChatService';
@@ -56,6 +56,21 @@ export async function joinGroupChat(groupId: number, password?: string): Promise
 export async function leaveGroupChat(groupId: number): Promise<void | number> {
 	try {
 		let response = await chatService.leaveGroupChat(groupId);
+		return response.data;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}
+
+export async function addGroupChatUser(
+	groupId: number,
+	profileId: number
+): Promise<GroupMemberDto | number> {
+	try {
+		let response = await chatService.addGroupChatUser(groupId, profileId);
 		return response.data;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
