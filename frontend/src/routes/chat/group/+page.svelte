@@ -2,7 +2,7 @@
 	import GroupMessages from '$lib/components/chat/GroupMessages.svelte';
 	import { socket, profile, selectedGroup } from '$lib/stores';
 	import { goto } from '$app/navigation';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import type {
 		ComponentMessage,
 		GroupMessageDto,
@@ -11,7 +11,6 @@
 		GroupChatEventDto,
 		GroupMemberDto,
 		GroupProfileDto,
-		MessageProfileDto,
 		ConversationDto
 	} from '$lib/dtos';
 	import { readAllGroupChats, readChatHistory, joinGroupChat, leaveGroupChat } from '$lib/api';
@@ -20,7 +19,6 @@
 	import { parseISO } from 'date-fns';
 	import { chatService } from '$lib/api/services';
 	import ConfirmJoinGroup from '$lib/components/chat/ConfirmJoinGroup.svelte';
-	import type { AxiosResponse } from 'axios';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmLeaveGroup from '$lib/components/chat/ConfirmLeaveGroup.svelte';
 
@@ -28,7 +26,6 @@
 	$socket.connect();
 
 	let messages: ComponentMessage[] | null = null;
-	// TODO: vai mudar o tipo para exibir o role
 	let members: GroupProfileDto[] = [];
 
 	let loadingGroups: Promise<any>;
@@ -44,6 +41,7 @@
 	}
 
 	async function setSelectedMessagesMembers() {
+		console.log('HERE set');
 		if (!$selectedGroup) return;
 		confirmJoin = null;
 		confirmLeave = null;
@@ -146,14 +144,24 @@
 		groupChatHistory = newGroupChatHistory;
 	}
 
-	const onGroupMessage = (groupMessage: GroupMessageDto): void => {
-		console.log(`### received group message ${JSON.stringify(groupMessage.message)}`);
+	const onGroupMessage = (recievedMessage: GroupMessageDto): void => {
+		console.log(`### received group message ${JSON.stringify(recievedMessage.message)}`);
+
+		let index = groupChatHistory.findIndex((h) => h.id === recievedMessage.groupChat.id);
+		let newMessages = groupChatHistory[index].messages;
+
+		if (!newMessages.find((m) => m.id === recievedMessage.id)) {
+			newMessages.push(recievedMessage);
+			groupChatHistory[index].messages = newMessages;
+
+			if ($selectedGroup?.id == groupChatHistory[index].id) {
+				setSelectedMessagesMembers();
+			}
+		}
 	};
 
 	const onGroupChatCreated = (created: GroupChatDto): void => {
 		console.log(`### received group chat created ${JSON.stringify(created)}`);
-		// ???: deveria colocar manualmente no grupo e não fazer uma nova requisição?
-		loadAllGroups();
 		if (!groupsList.find((g) => g.id === created.id)) {
 			groupsList = [...groupsList, created];
 		}
@@ -271,8 +279,12 @@
 					allGroups={groupsList}
 					myHistory={groupChatHistory}
 					on:select={(e) => ($selectedGroup = e.detail)}
-					on:join={(e) => ((confirmLeave = null), (confirmJoin = e.detail))}
-					on:leave={(e) => ((confirmJoin = null), (confirmLeave = e.detail))}
+					on:join={(e) => (
+						(confirmLeave = null), ($selectedGroup = null), (confirmJoin = e.detail)
+					)}
+					on:leave={(e) => (
+						(confirmJoin = null), ($selectedGroup = null), (confirmLeave = e.detail)
+					)}
 				/>
 			{/await}
 		</div>
