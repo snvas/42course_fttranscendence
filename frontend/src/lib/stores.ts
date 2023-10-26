@@ -1,8 +1,14 @@
 import { type Readable, readable, writable } from 'svelte/store';
-import type { PlayerStatusDto, FortyTwoUserDto, MessageProfileDto, ProfileDTO } from './dtos';
+import type {
+	PlayerStatusDto,
+	FortyTwoUserDto,
+	MessageProfileDto,
+	ProfileDTO,
+	GroupChatDto
+} from './dtos';
 import { authService } from './api';
 import type { Socket } from 'socket.io-client';
-import chatService from './api/services/ChatService';
+import { chatService } from '$lib/api/services';
 
 type AuthState = {
 	loading: boolean;
@@ -52,3 +58,5 @@ export let onlineUsers = writable<PlayerStatusDto[]>([]);
 export let allUsers = writable<ProfileDTO[]>([]);
 
 export let playersStatus = writable<PlayerStatusDto[]>([]);
+
+export let selectedGroup = writable<GroupChatDto | null>();

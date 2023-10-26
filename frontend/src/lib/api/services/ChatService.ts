@@ -9,9 +9,10 @@ import type {
 	ChatPasswordDto,
 	PasswordUpdateResponseDto,
 	GroupMemberDto,
-	MemberRoleUpdatedResponseDto,
 	GroupMemberDeletedResponse,
-	GroupCreationDto
+	GroupCreationDto,
+	GroupChatHistoryDto,
+	UpdateMemberRoleDto
 } from '$lib/dtos';
 import { socketEvent } from './SocketsEvents';
 
@@ -39,6 +40,10 @@ class ChatService {
 		return this.socket;
 	}
 
+	public disconnect(): void {
+		this.socket?.disconnect();
+	}
+
 	public emitMessage(message: string): void {
 		this.socket?.emit('message', message);
 	}
@@ -57,31 +62,24 @@ class ChatService {
 
 	public emitGroupMessage(message: GroupMessageDto): Promise<GroupMessageDto> {
 		return new Promise<GroupMessageDto>((resolve): void => {
-			this.socket?.emit('sendGroupMessage', message, (ack: GroupMessageDto): void => {
+			this.socket?.emit(socketEvent.SEND_GROUP_MESSAGE, message, (ack: GroupMessageDto): void => {
 				resolve(ack);
 			});
 		});
-	}
-
-	public disconnect(): void {
-		this.socket?.disconnect();
 	}
 
 	public getPrivateMessageHistory(): Promise<AxiosResponse<PrivateMessageHistoryDto[]>> {
 		return this.axiosInstance.get('/private/messages/history');
 	}
 
-	// TODO:
-	public getGroupMessageHistory(): Promise<AxiosResponse<GroupMessageDto[]>> {
+	public getGroupMessageHistory(): Promise<AxiosResponse<GroupChatHistoryDto[]>> {
 		return this.axiosInstance.get('/group/messages/history');
 	}
 
-	// TODO:
 	public getAllGroupChats(): Promise<AxiosResponse<GroupChatDto[]>> {
 		return this.axiosInstance.get('/group/chats');
 	}
 
-	// TODO:
 	public createGroupChat(group: GroupCreationDto): Promise<AxiosResponse<GroupChatDto>> {
 		return this.axiosInstance.post('/group/create', group);
 	}
@@ -91,15 +89,13 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}`);
 	}
 
-	// TODO:
 	public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
 		if (password) {
-			return this.axiosInstance.post(`/group/${chatId}/join`, { password });
+			return this.axiosInstance.post(`/group/${chatId}/join`, password);
 		}
 		return this.axiosInstance.post(`/group/${chatId}/join`);
 	}
 
-	// TODO:
 	public leaveGroupChat(chatId: number): Promise<AxiosResponse<void>> {
 		return this.axiosInstance.delete(`/group/${chatId}/leave`);
 	}
@@ -140,7 +136,7 @@ class ChatService {
 		chatId: number,
 		profileId: number,
 		role: string
-	): Promise<AxiosResponse<MemberRoleUpdatedResponseDto>> {
+	): Promise<AxiosResponse<UpdateMemberRoleDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, { role });
 	}
 
@@ -153,6 +149,4 @@ class ChatService {
 	}
 }
 
-const chatService: ChatService = new ChatService('http://localhost:3000');
-
-export default chatService;
+export const chatService: ChatService = new ChatService('http://localhost:3000');
