@@ -200,7 +200,9 @@
 			};
 		});
 		groupChatHistory = newHistory;
-		setSelectedMessagesMembers();
+		if ($selectedGroup?.id == memberJoined.groupChat.id) {
+			setSelectedMessagesMembers();
+		}
 	};
 
 	const onLeaveGroupChatMember = (memberLeaved: GroupMemberDto): void => {
@@ -218,7 +220,9 @@
 			};
 		});
 		groupChatHistory = newHistory;
-		setSelectedMessagesMembers();
+		if ($selectedGroup?.id == memberLeaved.groupChat.id) {
+			setSelectedMessagesMembers();
+		}
 	};
 
 	// TODO
@@ -278,13 +282,21 @@
 				<GroupList
 					allGroups={groupsList}
 					myHistory={groupChatHistory}
-					on:select={(e) => ($selectedGroup = e.detail)}
-					on:join={(e) => (
-						(confirmLeave = null), ($selectedGroup = null), (confirmJoin = e.detail)
-					)}
-					on:leave={(e) => (
-						(confirmJoin = null), ($selectedGroup = null), (confirmLeave = e.detail)
-					)}
+					on:select={(e) => {
+						if ($selectedGroup?.id != e.detail.id) {
+							$selectedGroup = e.detail;
+						}
+					}}
+					on:join={(e) => {
+						confirmLeave = null;
+						$selectedGroup = null;
+						confirmJoin = e.detail;
+					}}
+					on:leave={(e) => {
+						confirmJoin = null;
+						$selectedGroup = null;
+						confirmLeave = e.detail;
+					}}
 				/>
 			{/await}
 		</div>
