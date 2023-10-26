@@ -15,7 +15,10 @@
 	let alertPass = alerts['none'];
 
 	async function onJoinGroup() {
+		if (confirmJoin == null) return;
+
 		alertPass = alerts['none'];
+
 		if (confirmJoin!.visibility == 'private' && password == '') {
 			alertPass = alerts['empty'];
 			return;
@@ -39,6 +42,8 @@
 			confirmJoin = null;
 		}
 	}
+
+	$: confirmJoin, (alertPass = alerts['none']);
 </script>
 
 <form class="h-full w-full">

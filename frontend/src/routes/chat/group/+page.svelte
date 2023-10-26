@@ -1,8 +1,8 @@
 <script lang="ts">
 	import GroupMessages from '$lib/components/chat/GroupMessages.svelte';
-	import { socket, profile, onlineUsers, selectedGroup } from '$lib/stores';
+	import { socket, profile, selectedGroup } from '$lib/stores';
 	import { goto } from '$app/navigation';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type {
 		ComponentMessage,
 		GroupMessageDto,
@@ -14,44 +14,46 @@
 		MessageProfileDto,
 		ConversationDto
 	} from '$lib/dtos';
-	import { readAllGroupChats, readChatHistory, joinGroupChat } from '$lib/api';
+	import { readAllGroupChats, readChatHistory, joinGroupChat, leaveGroupChat } from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
 	import { parseISO } from 'date-fns';
 	import { chatService } from '$lib/api/services';
 	import ConfirmJoinGroup from '$lib/components/chat/ConfirmJoinGroup.svelte';
 	import type { AxiosResponse } from 'axios';
+	import { socketEvent } from '$lib/api/services/SocketsEvents';
+	import ConfirmLeaveGroup from '$lib/components/chat/ConfirmLeaveGroup.svelte';
 
 	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
-	$: console.log($socket.id);
 
 	let messages: ComponentMessage[] | null = null;
 	// TODO: vai mudar o tipo para exibir o role
 	let members: GroupProfileDto[] = [];
 
-	let groupsList: Promise<GroupChatDto[]>;
-	let groupChatHistory: Promise<GroupChatHistoryDto[]>;
+	let loadingGroups: Promise<any>;
+	let groupsList: GroupChatDto[];
+	let groupChatHistory: GroupChatHistoryDto[];
 	let confirmJoin: GroupChatDto | null = null;
+	let confirmLeave: GroupChatDto | null = null;
 
-	function loadAllGroups() {
-		groupsList = readAllGroupChats();
-		groupChatHistory = readChatHistory();
+	async function loadAllGroups() {
+		groupsList = await readAllGroupChats();
+		groupChatHistory = await readChatHistory();
+		return;
 	}
 
 	async function setSelectedMessagesMembers() {
+		if (!$selectedGroup) return;
 		confirmJoin = null;
+		confirmLeave = null;
+		await loadingGroups;
 
-		await groupsList;
-		let selectedHistory =
-			(await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
+		let selectedHistory = groupChatHistory.find((h) => h.id == $selectedGroup?.id) ?? null;
 		if (!selectedHistory) {
-			loadAllGroups();
-			await groupsList;
-			selectedHistory =
-				(await groupChatHistory).find((history) => history.id == $selectedGroup?.id) ?? null;
+			// ???: quando o usuário entra em um grupo, vai setar o $selectedGroup, mas o grupo ainda não vai existir no groupChatHistory
+			console.log('HERE');
 		}
-		console.log('selected', selectedHistory);
 
 		let newMessages =
 			selectedHistory?.messages.map((message) => {
@@ -102,7 +104,7 @@
 			return;
 		}
 
-		const newHistory: GroupChatHistoryDto[] = (await groupChatHistory).map(
+		const newHistory: GroupChatHistoryDto[] = groupChatHistory.map(
 			(history: GroupChatHistoryDto): GroupChatHistoryDto => {
 				if (history.id != backendMessage.groupChat.id) {
 					return history;
@@ -116,7 +118,7 @@
 			}
 		);
 
-		groupChatHistory = Promise.resolve(newHistory);
+		groupChatHistory = newHistory;
 		console.log(`Group message sent: ${JSON.stringify(backendMessage)}`);
 		setSelectedMessagesMembers();
 	}
@@ -125,95 +127,153 @@
 		goto('/chat/group/create');
 	}
 
+	async function onJoinGroup(groupId: number, password?: string) {
+		let res = await joinGroupChat(groupId, password);
+		if (typeof res === 'number') {
+			return res;
+		}
+		loadingGroups = readChatHistory();
+		groupChatHistory = await loadingGroups;
+	}
+
+	async function onLeaveGroup(groupId: number): Promise<number | void> {
+		let res = await leaveGroupChat(groupId);
+
+		if (typeof res === 'number') {
+			return res;
+		}
+		let newGroupChatHistory = groupChatHistory.filter((group) => group.id != groupId);
+		groupChatHistory = newGroupChatHistory;
+	}
+
 	const onGroupMessage = (groupMessage: GroupMessageDto): void => {
 		console.log(`### received group message ${JSON.stringify(groupMessage.message)}`);
 	};
 
-	const onGroupChatCreated = (groupChatDto: GroupChatDto): void => {
-		console.log(`### received group chat created ${JSON.stringify(groupChatDto)}`);
+	const onGroupChatCreated = (created: GroupChatDto): void => {
+		console.log(`### received group chat created ${JSON.stringify(created)}`);
+		// ???: deveria colocar manualmente no grupo e não fazer uma nova requisição?
+		loadAllGroups();
+		if (!groupsList.find((g) => g.id === created.id)) {
+			groupsList = [...groupsList, created];
+		}
 	};
 
+	// TODO
 	//When the group chat password is deleted, the group chat visibility is set to public
 	const onGroupChatPasswordDeleted = (groupChatDto: GroupChatDto): void => {
 		console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
 	};
 
+	// TODO
 	const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
 	};
 
+	// TODO
 	const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
 	};
 
-	const onJoinedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
-		console.log(`### received joined group chat member ${JSON.stringify(groupMemberDto)}`);
+	const onJoinedGroupChatMember = (memberJoined: GroupMemberDto): void => {
+		console.log(`### received joined group chat member ${JSON.stringify(memberJoined)}`);
+		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
+			if (history.id != memberJoined.groupChat.id) {
+				return history;
+			}
+
+			if (history.members.find((v) => v.id === memberJoined.id)) {
+				return history;
+			}
+
+			return {
+				...history,
+				members: [...history.members, memberJoined]
+			};
+		});
+		groupChatHistory = newHistory;
+		setSelectedMessagesMembers();
 	};
 
-	const onLeaveGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
-		console.log(`### received leave group chat member ${JSON.stringify(groupMemberDto)}`);
+	const onLeaveGroupChatMember = (memberLeaved: GroupMemberDto): void => {
+		console.log(`### received leave group chat member ${JSON.stringify(memberLeaved)}`);
+		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
+			if (history.id != memberLeaved.groupChat.id) {
+				return history;
+			}
+
+			let newMembers = history.members.filter((v) => v.id != memberLeaved.id);
+
+			return {
+				...history,
+				members: newMembers
+			};
+		});
+		groupChatHistory = newHistory;
+		setSelectedMessagesMembers();
 	};
 
+	// TODO
 	const onAddedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
 		console.log(`### received added group chat member ${JSON.stringify(groupMemberDto)}`);
 	};
 
+	// TODO
 	const onKickedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
 		console.log(`### received kicked group chat member ${JSON.stringify(groupMemberDto)}`);
 	};
 
+	// TODO
 	const onUpdatedGroupChatMemberRole = (groupMemberDto: GroupMemberDto): void => {
 		console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
 	};
 
-	$socket.on('receiveGroupMessage', onGroupMessage);
-	$socket.on('groupChatCreated', onGroupChatCreated);
-	$socket.on('groupChatDeleted', onGroupChatDeleted);
-	$socket.on('groupChatPasswordUpdated', onGroupChatPasswordUpdated);
-	$socket.on('groupChatPasswordDeleted', onGroupChatPasswordDeleted);
-	$socket.on('joinedGroupChatMember', onJoinedGroupChatMember);
-	$socket.on('leaveGroupChatMember', onLeaveGroupChatMember);
-	$socket.on('addedGroupChatMember', onAddedGroupChatMember);
-	$socket.on('kickedGroupChatMember', onKickedGroupChatMember);
-	$socket.on('groupChatMemberRoleUpdated', onUpdatedGroupChatMemberRole);
+	$socket.on(socketEvent.RECEIVE_GROUP_MESSAGE, onGroupMessage);
+	$socket.on(socketEvent.GROUP_CHAT_CREATED, onGroupChatCreated);
+	$socket.on(socketEvent.GROUP_CHAT_DELETED, onGroupChatDeleted);
+	$socket.on(socketEvent.GROUP_CHAT_PASSWORD_UPDATED, onGroupChatPasswordUpdated);
+	$socket.on(socketEvent.GROUP_CHAT_PASSWORD_DELETED, onGroupChatPasswordDeleted);
+	$socket.on(socketEvent.JOINED_GROUP_CHAT_MEMBER, onJoinedGroupChatMember);
+	$socket.on(socketEvent.LEAVE_GROUP_CHAT_MEMBER, onLeaveGroupChatMember);
+	$socket.on(socketEvent.ADDED_GROUP_CHAT_MEMBER, onAddedGroupChatMember);
+	$socket.on(socketEvent.KICKED_GROUP_CHAT_MEMBER, onKickedGroupChatMember);
+	$socket.on(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, onUpdatedGroupChatMemberRole);
 
 	onDestroy(() => {
-		$socket.off('receiveGroupMessage');
-		$socket.off('groupChatCreated');
-		$socket.off('groupChatDeleted');
-		$socket.off('groupChatPasswordUpdated');
-		$socket.off('groupChatPasswordDeleted');
-		$socket.off('joinedGroupChatMember');
-		$socket.off('leaveGroupChatMember');
-		$socket.off('addedGroupChatMember');
-		$socket.off('kickedGroupChatMember');
-		$socket.off('groupChatMemberRoleUpdated');
+		$socket.off(socketEvent.RECEIVE_GROUP_MESSAGE);
+		$socket.off(socketEvent.GROUP_CHAT_CREATED);
+		$socket.off(socketEvent.GROUP_CHAT_DELETED);
+		$socket.off(socketEvent.GROUP_CHAT_PASSWORD_UPDATED);
+		$socket.off(socketEvent.GROUP_CHAT_PASSWORD_DELETED);
+		$socket.off(socketEvent.JOINED_GROUP_CHAT_MEMBER);
+		$socket.off(socketEvent.LEAVE_GROUP_CHAT_MEMBER);
+		$socket.off(socketEvent.ADDED_GROUP_CHAT_MEMBER);
+		$socket.off(socketEvent.KICKED_GROUP_CHAT_MEMBER);
+		$socket.off(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED);
 	});
 
-	loadAllGroups();
+	loadingGroups = loadAllGroups();
 	setSelectedMessagesMembers();
 
 	$: $selectedGroup, setSelectedMessagesMembers();
 
-	$: console.log('groupChatHistory', groupChatHistory);
+	// $: console.log('groupChatHistory', groupChatHistory);
 	// $: console.log('selectedGroup', $selectedGroup);
-	$: console.log('messages', messages);
+	// $: console.log('messages', messages);
+	// $: console.log(confirmJoin)
 </script>
 
 <ChatLayout selected="group">
 	<div class="contents" slot="list">
 		<div class="w-full flex flex-col grow overflow-x-auto">
-			{#await groupChatHistory then groupChatHistory}
-				{#await groupsList then groupsList}
-					<GroupList
-						allGroups={groupsList}
-						myHistory={groupChatHistory}
-						on:select={(e) => {
-							$selectedGroup = e.detail;
-						}}
-						on:join={(e) => (confirmJoin = e.detail)}
-					/>
-				{/await}
+			{#await loadingGroups then}
+				<GroupList
+					allGroups={groupsList}
+					myHistory={groupChatHistory}
+					on:select={(e) => ($selectedGroup = e.detail)}
+					on:join={(e) => ((confirmLeave = null), (confirmJoin = e.detail))}
+					on:leave={(e) => ((confirmJoin = null), (confirmLeave = e.detail))}
+				/>
 			{/await}
 		</div>
 		<div class="p-3">
@@ -228,7 +288,9 @@
 
 	<div class="contents" slot="messages">
 		{#if confirmJoin}
-			<ConfirmJoinGroup bind:confirmJoin joinGroup={joinGroupChat} />
+			<ConfirmJoinGroup bind:confirmJoin joinGroup={onJoinGroup} />
+		{:else if confirmLeave}
+			<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
 		{:else}
 			<GroupMessages bind:messages {members} {sendMessage} />
 		{/if}

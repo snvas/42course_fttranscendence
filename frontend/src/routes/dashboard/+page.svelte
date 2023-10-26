@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { selectedDirect, socket, useAuth, profile, playersStatus, allUsers } from '$lib/stores';
+	import { selectedDirect, socket, useAuth, profile, playersStatus, allUsers, selectedGroup } from '$lib/stores';
 	import { authService, getProfile, getUserAvatar, getAvatarFromId, readAllUsers } from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -107,6 +107,7 @@
 
 	async function onChat(user: PlayerStatusDto | null) {
 		$selectedDirect = user;
+		$selectedGroup = null;
 		goto('/chat/direct');
 	}
 

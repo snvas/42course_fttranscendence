@@ -52,3 +52,15 @@ export async function joinGroupChat(groupId: number, password?: string): Promise
 		throw error;
 	}
 }
+
+export async function leaveGroupChat(groupId: number): Promise<void | number> {
+	try {
+		let response = await chatService.leaveGroupChat(groupId);
+		return response.data;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}

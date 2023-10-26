@@ -96,7 +96,6 @@ class ChatService {
 		return this.axiosInstance.post(`/group/${chatId}/join`);
 	}
 
-	// TODO:
 	public leaveGroupChat(chatId: number): Promise<AxiosResponse<void>> {
 		return this.axiosInstance.delete(`/group/${chatId}/leave`);
 	}

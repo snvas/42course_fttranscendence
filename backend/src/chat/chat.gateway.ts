@@ -113,9 +113,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const groupMessage: GroupMessageDto =
         await this.chatService.handleGroupMessage(socket, message);
 
-      if (groupMessage.groupChat.name) {
+      if (groupMessage.groupChat.id) {
         socket
-          .to(groupMessage.groupChat.name)
+          .to(`${groupMessage.groupChat.id}`)
           .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
       }
 

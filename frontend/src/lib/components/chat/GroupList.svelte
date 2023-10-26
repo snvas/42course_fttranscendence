@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { GroupChatDto, GroupChatHistoryDto, PlayerStatusDto } from '$lib/dtos';
+	import type { GroupChatDto, GroupChatHistoryDto } from '$lib/dtos';
 	import ListButton from '../lists/ListButton.svelte';
 
 	const dispatch = createEventDispatcher();
@@ -23,7 +23,6 @@
 	}
 
 	$: groups = getGroupList(allGroups, myHistory);
-	$: console.log('groups', groups);
 </script>
 
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
@@ -40,11 +39,10 @@
 				<p class="text-gray-500 text-xs">{group.visibility}</p>
 			</button>
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
-				<!-- TODO: decidir os botões e as condições para tal-->
 				{#if !group.belong}
 					<ListButton on:click={() => dispatch('join', group)} type="join" />
 				{:else}
-					<ListButton on:click={() => dispatch('leave', group.id)} type="leave" />
+					<ListButton on:click={() => dispatch('leave', group)} type="leave" />
 				{/if}
 			</div>
 		</div>

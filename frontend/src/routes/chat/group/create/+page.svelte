@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import { socket } from '$lib/stores';
+	import { selectedGroup, socket } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import type { GroupChatDto } from '$lib/dtos';
@@ -31,8 +31,8 @@
 
 	async function onCreateGroup() {
 		if (created) {
+			$selectedGroup = createdGroup.data
 			goto('/chat/group');
-			// TODO: store para guardar e mandar para o grupo correto
 			return;
 		}
 		isLoading = true;
