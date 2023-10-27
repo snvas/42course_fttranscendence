@@ -18,7 +18,9 @@
 		readChatHistory,
 		joinGroupChat,
 		leaveGroupChat,
-		addGroupChatUser
+		addGroupChatUser,
+		kickGroupChatUser,
+		getAvatarFromId
 	} from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
@@ -56,7 +58,6 @@
 
 		let selectedHistory = groupChatHistory.find((h) => h.id == $selectedGroup?.id) ?? null;
 		if (!selectedHistory) {
-			// ???: quando o usuário entra em um grupo, vai setar o $selectedGroup, mas o grupo ainda não vai existir no groupChatHistory
 			console.log('HERE');
 		}
 
@@ -160,7 +161,40 @@
 		addMemberToGroup(res);
 	}
 
-	function addMemberToGroup(memberJoined: GroupMemberDto) {
+	async function onKickGroupChatUser(selected: GroupChatDto | null, profileId: number) {
+		let res = await kickGroupChatUser(selected!.id, profileId);
+
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
+	function removeMemberFromGroup(member: GroupMemberDto) {
+		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
+			if (history.id != member.groupChat.id) {
+				return history;
+			}
+
+			let newMembers = history.members.filter((v) => v.id != member.id);
+
+			return {
+				...history,
+				members: newMembers
+			};
+		});
+		if (JSON.stringify(groupChatHistory) != JSON.stringify(newHistory)) {
+			groupChatHistory = newHistory;
+			if ($selectedGroup?.id == member.groupChat.id) {
+				setSelectedMessagesMembers();
+			}
+		}
+	}
+
+	async function addMemberToGroup(memberJoined: GroupMemberDto) {
+		if (memberJoined.profile.id == $profile.id) {
+			loadingGroups = readChatHistory();
+			groupChatHistory = await loadingGroups;
+		}
 		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
 			if (history.id != memberJoined.groupChat.id) {
 				return history;
@@ -231,31 +265,26 @@
 
 	const onLeaveGroupChatMember = (memberLeaved: GroupMemberDto): void => {
 		console.log(`### received leave group chat member ${JSON.stringify(memberLeaved)}`);
-		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
-			if (history.id != memberLeaved.groupChat.id) {
-				return history;
-			}
-
-			let newMembers = history.members.filter((v) => v.id != memberLeaved.id);
-
-			return {
-				...history,
-				members: newMembers
-			};
-		});
-		groupChatHistory = newHistory;
-		if ($selectedGroup?.id == memberLeaved.groupChat.id) {
-			setSelectedMessagesMembers();
-		}
+		removeMemberFromGroup(memberLeaved);
 	};
 
 	const onAddedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
 		console.log(`### received added group chat member ${JSON.stringify(groupMemberDto)}`);
 		addMemberToGroup(groupMemberDto);
 	};
-	// TODO
-	const onKickedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
-		console.log(`### received kicked group chat member ${JSON.stringify(groupMemberDto)}`);
+
+	const onKickedGroupChatMember = (memberKicked: GroupMemberDto): void => {
+		console.log(`### received kicked group chat member ${JSON.stringify(memberKicked)}`);
+		if (memberKicked.profile.id == $profile.id) {
+			let newGroupChatHistory = groupChatHistory.filter(
+				(group) => group.id != memberKicked.groupChat.id
+			);
+			groupChatHistory = newGroupChatHistory;
+			if ($selectedGroup!.id == memberKicked.groupChat.id) {
+				$selectedGroup = null;
+			}
+		}
+		removeMemberFromGroup(memberKicked);
 	};
 
 	// TODO
@@ -356,7 +385,12 @@
 				{:else}
 					<GroupMessages bind:messages {sendMessage} />
 				{/if}
-				<GroupMembers {members} bind:addMember />
+				<GroupMembers
+					{members}
+					{getAvatarFromId}
+					bind:addMember
+					on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
+				/>
 			</div>
 		{:else}
 			<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">

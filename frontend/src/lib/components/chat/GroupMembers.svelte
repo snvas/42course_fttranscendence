@@ -1,17 +1,16 @@
 <script lang="ts">
-	import { getAvatarFromId } from '$lib/api';
 	import type { GroupChatDto, GroupProfileDto, PlayerStatusDto } from '$lib/dtos';
 	import { onlineUsers, profile, selectedGroup } from '$lib/stores';
+	import type { AxiosResponse } from 'axios';
 	import AvatarImage from '../AvatarImage.svelte';
-	import UserAvatarStatus from '../UserAvatarStatus.svelte';
 	import ListButton from '../lists/ListButton.svelte';
-	import UsersList from '../lists/UsersList.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let members: GroupProfileDto[];
 	export let addMember: GroupChatDto | null;
+	export let getAvatarFromId: (avatarId: number | null) => Promise<AxiosResponse<Blob, any> | null>;
 
 	type GroupProfileStatus = GroupProfileDto & {
 		status: string;
@@ -49,6 +48,13 @@
 		}
 		return false;
 		// TODO: implementar verificação de admin
+	}
+
+	function itIsMyProfile(member: GroupProfileDto) {
+		if ($profile.id == member.profile.id) {
+			return true;
+		}
+		return false;
 	}
 
 	$: memberStatus = joinMemberStatus($onlineUsers, members);
@@ -90,12 +96,12 @@
 					<div
 						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 					>
-						<ListButton on:click={() => dispatch('block', member.profile.id)} type="block" />
-
-						<!-- <ListButton on:click={() => dispatch('chat', member.profile.id)} type="chat" />
-					<ListButton on:click={() => dispatch('block', member.profile.id)} type="block" />
-					<ListButton on:click={() => dispatch('play', member.profile.id)} type="play" />
-					<ListButton on:click={() => dispatch('friend', member.profile.id)} type="friend" /> -->
+						{#if !itIsMyProfile(member)}
+							<!-- TODO: turn admin, mute, kick, ban -->
+							{#if iAmAdminOrOwner($selectedGroup)}
+								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
+							{/if}
+						{/if}
 					</div>
 				</div>
 			</div>

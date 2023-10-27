@@ -79,3 +79,18 @@ export async function addGroupChatUser(
 		throw error;
 	}
 }
+
+export async function kickGroupChatUser(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
+	try {
+		let response = await chatService.kickGroupChatMember(groupId, profileId);
+		return response.data.affected;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}

@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import type { GroupChatDto, GroupChatHistoryDto } from '$lib/dtos';
 	import ListButton from '../lists/ListButton.svelte';
+	import { profile } from '$lib/stores';
 
 	const dispatch = createEventDispatcher();
 
@@ -41,7 +42,7 @@
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
 				{#if !group.belong}
 					<ListButton on:click={() => dispatch('join', group)} type="join" />
-				{:else}
+				{:else if group.owner.id != $profile.id}
 					<ListButton on:click={() => dispatch('leave', group)} type="leave" />
 				{/if}
 			</div>
