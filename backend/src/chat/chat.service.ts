@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { GroupMessageDto } from './models/group-message.dto';
+import { GroupMessageDto } from './models/group/group-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
@@ -26,29 +26,29 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { ProfileService } from '../profile/profile.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileDTO } from '../profile/models/profile.dto';
-import { ChatMessageDto } from './models/chat-message.dto';
-import { Conversation } from './interfaces/private-conversation.interface';
-import { GroupCreationDto } from './models/group-creation.dto';
+import { ChatMessageDto } from './models/tmp/chat-message.dto';
+import { MessageConversation } from './interfaces/message/message-conversation.interface';
+import { GroupCreationDto } from './models/group/group-creation.dto';
 import { comparePassword, hashPassword } from '../utils/bcrypt';
-import { PrivateMessageDto } from './models/private-message.dto';
-import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
-import { ConversationDto } from './models/conversation.dto';
-import { PlayerStatusDto } from './models/player-status.dto';
+import { PrivateMessageDto } from './models/private/private-message.dto';
+import { PrivateMessageHistoryDto } from './models/private/private-message-history.dto';
+import { MessageConversationDto } from './models/message/message-conversation.dto';
+import { PlayerStatusDto } from './models/player/player-status.dto';
 import { PlayerStatusSocket } from './types/player-status.socket';
-import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
-import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
+import { GroupChatDeletedResponseDto } from './models/group/group-chat-deleted-response.dto';
+import { GroupMemberDeletedResponse } from './interfaces/group/group-member-deleted-response.interface';
 import { ChatRole } from './types/chat-role.type';
-import { ChatPasswordDto } from './models/chat-password.dto';
-import { MessageProfile } from './interfaces/message-profile.interface';
-import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
-import { MessageProfileDto } from './models/message-profile.dto';
-import { GroupChatHistoryDto } from './models/group-chat-history.dto';
-import { GroupChatDto } from './models/group-chat.dto';
-import { GroupMemberDto } from './models/group-member.dto';
-import { UpdateMemberRoleDto } from './models/update-member-role.dto';
-import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
-import { GroupProfileDto } from './models/group-profile.dto';
-import { MessageGroupChatDto } from './models/message-group-chat.dto';
+import { GroupChatPasswordDto } from './models/group/group-chat-password.dto';
+import { MessageProfile } from './interfaces/message/message-profile.interface';
+import { GroupChatUpdatedResponseDto } from './models/group/group-chat-updated-response.dto';
+import { MessageProfileDto } from './models/message/message-profile.dto';
+import { GroupChatHistoryDto } from './models/group/group-chat-history.dto';
+import { GroupChatDto } from './models/group/group-chat.dto';
+import { GroupMemberDto } from './models/group/group-member.dto';
+import { GroupMemberRoleUpdateDto } from './models/group/group-member-role-update.dto';
+import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updated-response.dto';
+import { GroupProfileDto } from './models/group/group-profile.dto';
+import { MessageGroupChatDto } from './models/message/message-group-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -334,10 +334,8 @@ export class ChatService {
     const privateMessagesPromises: Promise<PrivateMessageHistoryDto>[] =
       profiles.map(
         async (profile: ProfileDTO): Promise<PrivateMessageHistoryDto> => {
-          const messages: ConversationDto[] = await this.getUserPrivateMessages(
-            userId,
-            profile.id,
-          );
+          const messages: MessageConversationDto[] =
+            await this.getUserPrivateMessages(userId, profile.id);
           return {
             id: profile.id,
             nickname: profile.nickname,
@@ -402,7 +400,7 @@ export class ChatService {
           ),
         ),
         messages: groupChat.messages
-          .map((message: GroupMessageEntity): ConversationDto => {
+          .map((message: GroupMessageEntity): MessageConversationDto => {
             return {
               id: message.id,
               message: message.message,
@@ -414,7 +412,7 @@ export class ChatService {
               } as MessageProfile,
             };
           })
-          .sort((a: ConversationDto, b: ConversationDto) => {
+          .sort((a: MessageConversationDto, b: MessageConversationDto) => {
             return a.createdAt.getTime() - b.createdAt.getTime();
           }),
       } as GroupChatHistoryDto;
@@ -471,7 +469,7 @@ export class ChatService {
   public async joinGroupChat(
     chatId: number,
     userId: number,
-    requestPassword: Partial<ChatPasswordDto>,
+    requestPassword: Partial<GroupChatPasswordDto>,
   ): Promise<GroupMemberDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
@@ -537,14 +535,14 @@ export class ChatService {
   public async muteGroupChatMember(
     chatId: number,
     profileId: number,
-  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+  ): Promise<GroupMemberUpdatedResponseDto & GroupMemberDto> {
     return await this.handleMute(profileId, chatId, true);
   }
 
   public async unmuteGroupChatMember(
     chatId: number,
     profileId: number,
-  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+  ): Promise<GroupMemberUpdatedResponseDto & GroupMemberDto> {
     return await this.handleMute(profileId, chatId, false);
   }
 
@@ -564,8 +562,8 @@ export class ChatService {
 
   public async changeGroupChatPassword(
     chatId: number,
-    password: ChatPasswordDto,
-  ): Promise<PasswordUpdateResponseDto> {
+    password: GroupChatPasswordDto,
+  ): Promise<GroupChatUpdatedResponseDto> {
     this.logger.verbose(`### Updating group chat [${chatId}] password`);
 
     const updateResult: UpdateResult = await this.groupChatRepository.update(
@@ -591,7 +589,7 @@ export class ChatService {
 
   public async deleteGroupChatPassword(
     chatId: number,
-  ): Promise<PasswordUpdateResponseDto> {
+  ): Promise<GroupChatUpdatedResponseDto> {
     this.logger.verbose(`### Removing group chat [${chatId}] password`);
 
     const updateResult: UpdateResult = await this.groupChatRepository.update(
@@ -793,8 +791,8 @@ export class ChatService {
   public async updateGroupChatMemberRole(
     chatId: number,
     profileId: number,
-    chatRole: UpdateMemberRoleDto,
-  ): Promise<GroupMemberDto & MemberUpdatedResponseDto> {
+    chatRole: GroupMemberRoleUpdateDto,
+  ): Promise<GroupMemberDto & GroupMemberUpdatedResponseDto> {
     this.logger.verbose(`### Updating group chat [${chatId}] member role`);
 
     const groupMember: GroupMemberEntity = await this.getGroupChatMember(
@@ -855,7 +853,7 @@ export class ChatService {
     profileId: number,
     chatId: number,
     mute: boolean,
-  ): Promise<MemberUpdatedResponseDto & GroupMemberDto> {
+  ): Promise<GroupMemberUpdatedResponseDto & GroupMemberDto> {
     const groupMember: GroupMemberEntity = await this.getGroupChatMember(
       profileId,
       chatId,
@@ -970,7 +968,7 @@ export class ChatService {
   private async getUserPrivateMessages(
     userId: number,
     withProfileId: number,
-  ): Promise<ConversationDto[]> {
+  ): Promise<MessageConversationDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
     this.logger.verbose(`### Getting private messages for user: [${userId}]`);
@@ -1001,18 +999,20 @@ export class ChatService {
         },
       });
 
-    return messages.map((message: PrivateMessageEntity): Conversation => {
-      return {
-        id: message.id,
-        message: message.message,
-        createdAt: message.createdAt,
-        sender: {
-          id: message.sender.id,
-          nickname: message.sender.nickname,
-          avatarId: message.sender.avatarId,
-        } as MessageProfile,
-      };
-    });
+    return messages.map(
+      (message: PrivateMessageEntity): MessageConversation => {
+        return {
+          id: message.id,
+          message: message.message,
+          createdAt: message.createdAt,
+          sender: {
+            id: message.sender.id,
+            nickname: message.sender.nickname,
+            avatarId: message.sender.avatarId,
+          } as MessageProfile,
+        };
+      },
+    );
   }
 
   private async getUserPrivateMessagesProfiles(

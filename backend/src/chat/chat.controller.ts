@@ -14,28 +14,29 @@ import {
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
-import { GroupCreationDto } from './models/group-creation.dto';
-import { ChatMessageDto } from './models/chat-message.dto';
-import { PrivateMessageDto } from './models/private-message.dto';
-import { PrivateMessageHistoryDto } from './models/private-message-history.dto';
-import { GroupMessageDto } from './models/group-message.dto';
-import { GroupChatDeletedResponseDto } from './models/group-chat-deleted-response.dto';
-import { GroupMemberDeletedResponse } from './interfaces/group-member-deleted-response.interface';
+import { GroupCreationDto } from './models/group/group-creation.dto';
+import { ChatMessageDto } from './models/tmp/chat-message.dto';
+import { PrivateMessageDto } from './models/private/private-message.dto';
+import { PrivateMessageHistoryDto } from './models/private/private-message-history.dto';
+import { GroupMessageDto } from './models/group/group-message.dto';
+import { GroupChatDeletedResponseDto } from './models/group/group-chat-deleted-response.dto';
+import { GroupMemberDeletedResponse } from './interfaces/group/group-member-deleted-response.interface';
 import { ChatOwnerGuard } from './guards/chat-owner-guard';
 import { ChatRole } from './types/chat-role.type';
 import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { ChatManagementGuard } from './guards/chat-management.guard';
-import { PasswordUpdateResponseDto } from './models/password-update-response.dto';
-import { ChatPasswordDto } from './models/chat-password.dto';
+import { GroupChatUpdatedResponseDto } from './models/group/group-chat-updated-response.dto';
+import { GroupChatPasswordDto } from './models/group/group-chat-password.dto';
 import { ChatGateway } from './chat.gateway';
-import { GroupChatHistoryDto } from './models/group-chat-history.dto';
-import { GroupChatDto } from './models/group-chat.dto';
-import { GroupMemberDto } from './models/group-member.dto';
+import { GroupChatHistoryDto } from './models/group/group-chat-history.dto';
+import { GroupChatDto } from './models/group/group-chat.dto';
+import { GroupMemberDto } from './models/group/group-member.dto';
 import { socketEvent } from '../utils/socket-events';
-import { UpdateMemberRoleDto } from './models/update-member-role.dto';
-import { MemberUpdatedResponseDto } from './models/member-updated-response.dto';
+import { GroupMemberRoleUpdateDto } from './models/group/group-member-role-update.dto';
+import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updated-response.dto';
 import { Server } from 'socket.io';
-import { GroupChatEventDto } from './models/group-chat-event.dto';
+import { GroupChatEventDto } from './models/group/group-chat-event.dto';
+import { GroupMemberDeletedResponseDto } from './models/group/group-member-deleted-response.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -110,7 +111,7 @@ export class ChatController {
   async joinGroupChat(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Body() password: Partial<ChatPasswordDto>,
+    @Body() password: Partial<GroupChatPasswordDto>,
   ): Promise<GroupMemberDto> {
     const groupMember: GroupMemberDto = await this.chatService.joinGroupChat(
       chatId,
@@ -151,9 +152,9 @@ export class ChatController {
   @Put('group/:chatId/password')
   async updateGroupChatPassword(
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Body() password: ChatPasswordDto,
-  ): Promise<PasswordUpdateResponseDto> {
-    const passwordUpdate: PasswordUpdateResponseDto =
+    @Body() password: GroupChatPasswordDto,
+  ): Promise<GroupChatUpdatedResponseDto> {
+    const passwordUpdate: GroupChatUpdatedResponseDto =
       await this.chatService.changeGroupChatPassword(chatId, password);
 
     (await this.messageGateway.getServer())
@@ -169,8 +170,8 @@ export class ChatController {
   @Delete('group/:chatId/password')
   async deleteGroupChatPassword(
     @Param('chatId', ParseIntPipe) chatId: number,
-  ): Promise<Partial<PasswordUpdateResponseDto>> {
-    const passwordUpdate: Partial<PasswordUpdateResponseDto> =
+  ): Promise<Partial<GroupChatUpdatedResponseDto>> {
+    const passwordUpdate: Partial<GroupChatUpdatedResponseDto> =
       await this.chatService.deleteGroupChatPassword(chatId);
 
     const groupChat: GroupChatDto = await this.chatService.getGroupChatDtoById(
@@ -189,9 +190,9 @@ export class ChatController {
   async updateGroupChatMemberRole(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-    @Body() role: UpdateMemberRoleDto,
-  ): Promise<MemberUpdatedResponseDto> {
-    const groupMember: GroupMemberDto & MemberUpdatedResponseDto =
+    @Body() role: GroupMemberRoleUpdateDto,
+  ): Promise<GroupMemberUpdatedResponseDto> {
+    const groupMember: GroupMemberDto & GroupMemberUpdatedResponseDto =
       await this.chatService.updateGroupChatMemberRole(chatId, profileId, role);
 
     (await this.messageGateway.getServer())
@@ -208,7 +209,7 @@ export class ChatController {
     return {
       updated: groupMember.updated,
       affected: groupMember.affected,
-    } as MemberUpdatedResponseDto;
+    } as GroupMemberUpdatedResponseDto;
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -255,8 +256,8 @@ export class ChatController {
   async kickGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<GroupMemberDeletedResponse> {
-    const deletedResponseAndMember: GroupMemberDeletedResponse &
+  ): Promise<GroupMemberDeletedResponseDto> {
+    const deletedResponseAndMember: GroupMemberDeletedResponseDto &
       GroupMemberDto = await this.chatService.removeMemberFromGroupChat(
       chatId,
       profileId,
@@ -284,9 +285,12 @@ export class ChatController {
   async muteGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<MemberUpdatedResponseDto> {
-    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
-      await this.chatService.muteGroupChatMember(chatId, profileId);
+  ): Promise<GroupMemberUpdatedResponseDto> {
+    const updatedResponseMember: GroupMemberUpdatedResponseDto &
+      GroupMemberDto = await this.chatService.muteGroupChatMember(
+      chatId,
+      profileId,
+    );
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -302,7 +306,7 @@ export class ChatController {
     return {
       updated: updatedResponseMember.updated,
       affected: updatedResponseMember.affected,
-    } as MemberUpdatedResponseDto;
+    } as GroupMemberUpdatedResponseDto;
   }
 
   @UseGuards(ChatManagementGuard)
@@ -310,9 +314,12 @@ export class ChatController {
   async unmuteGroupChatMember(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<MemberUpdatedResponseDto> {
-    const updatedResponseMember: MemberUpdatedResponseDto & GroupMemberDto =
-      await this.chatService.unmuteGroupChatMember(chatId, profileId);
+  ): Promise<GroupMemberUpdatedResponseDto> {
+    const updatedResponseMember: GroupMemberUpdatedResponseDto &
+      GroupMemberDto = await this.chatService.unmuteGroupChatMember(
+      chatId,
+      profileId,
+    );
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -328,7 +335,7 @@ export class ChatController {
     return {
       updated: updatedResponseMember.updated,
       affected: updatedResponseMember.affected,
-    } as MemberUpdatedResponseDto;
+    } as GroupMemberUpdatedResponseDto;
   }
 
   @UseGuards(ChatManagementGuard)

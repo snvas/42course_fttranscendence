@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ProfileEntity } from './profile.entity';
-import { PrivateMessage } from '../../chat/interfaces/private-message.interface';
+import { PrivateMessage } from '../../chat/interfaces/private/private-message.interface';
 
 @Entity({ name: 'private_messages' })
 export class PrivateMessageEntity implements PrivateMessage {

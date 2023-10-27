@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { GroupMessage } from '../../chat/interfaces/group-message.interface';
+import { GroupMessage } from '../../chat/interfaces/group/group-message.interface';
 import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 

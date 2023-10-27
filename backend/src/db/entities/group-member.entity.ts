@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { GroupMember } from '../../chat/interfaces/group-member.interface';
+import { GroupMember } from '../../chat/interfaces/group/group-member.interface';
 import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
