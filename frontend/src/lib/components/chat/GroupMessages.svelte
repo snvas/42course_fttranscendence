@@ -1,11 +1,9 @@
 <script lang="ts">
-	import type { GroupProfileDto, ComponentMessage } from '$lib/dtos';
-	import { goto } from '$app/navigation';
+	import type { ComponentMessage } from '$lib/dtos';
 	import { selectedGroup } from '$lib/stores';
 	import { formatDistanceToNow, parseISO } from 'date-fns';
 
 	export let messages: ComponentMessage[] | null;
-	export let members: GroupProfileDto[];
 
 	export let sendMessage: (message: string) => void;
 
@@ -69,14 +67,6 @@
 					SEND
 				</button>
 			</form>
-		</div>
-		<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
-			MEMBERS
-			{#each members as member}
-				<div>
-					{member.profile.nickname}
-				</div>
-			{/each}
 		</div>
 	{/if}
 </div>

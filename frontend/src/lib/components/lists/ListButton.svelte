@@ -1,5 +1,14 @@
 <script lang="ts">
-	export let type: 'chat' | 'play' | 'block' | 'friend' | 'unblock' | 'join' | 'leave';
+	export let type:
+		| 'chat'
+		| 'play'
+		| 'block'
+		| 'friend'
+		| 'unblock'
+		| 'join'
+		| 'leave'
+		| 'addMember'
+		| 'kick';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
 		chat: {
@@ -39,6 +48,17 @@
 			img: '/bloqueado.png',
 			alt: 'leave this group',
 			text: 'LEAVE'
+		},
+		addMember: {
+			img: '/adicionar-usuario.png',
+			alt: 'add member',
+			text: 'ADD'
+		},
+		kick: {
+			// TODO: corrigir corrigir icon
+			img: '/botao-excluir.png',
+			alt: 'kick this member',
+			text: 'KICK'
 		}
 	};
 </script>
