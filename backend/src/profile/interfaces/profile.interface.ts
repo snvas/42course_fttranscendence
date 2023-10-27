@@ -19,4 +19,6 @@ export interface Profile {
   ownedGroupChats: GroupChatEntity[];
   sentPrivateMessages: PrivateMessageEntity[];
   receivedPrivateMessages: PrivateMessageEntity[];
+  createdAt: Date;
+  updatedAt: Date;
 }

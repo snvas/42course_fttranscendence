@@ -3,16 +3,16 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { GroupMember } from '../../chat/interfaces/group-member.interface';
 import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
 @Entity({ name: 'group_members' })
-@Index(['profile'], { unique: true })
+@Index(['profile', 'groupChat'], { unique: true })
 export class GroupMemberEntity implements GroupMember {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,16 +23,20 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: false })
   isMuted: boolean;
 
-  @ManyToMany(() => GroupChatEntity, (chat) => chat.members, {
+  @Column({ default: false })
+  isBanned: boolean;
+
+  @ManyToOne(() => GroupChatEntity, (chat) => chat.members, {
     onDelete: 'CASCADE',
   })
   groupChat: GroupChatEntity;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships)
   profile: ProfileEntity;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

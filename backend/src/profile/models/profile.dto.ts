@@ -1,4 +1,5 @@
 import {
+  IsDate,
   IsNotEmpty,
   IsNotEmptyObject,
   IsNumber,
@@ -47,6 +48,12 @@ export class ProfileDTO implements Profile {
   sentPrivateMessages: PrivateMessageEntity[];
   @ValidateNested()
   groupMessages: GroupMessageEntity[];
+  @IsNotEmpty()
+  @IsDate()
+  createdAt: Date;
+  @IsNotEmpty()
+  @IsDate()
+  updatedAt: Date;
 
   constructor(partial: Partial<ProfileDTO>) {
     Object.assign(this, partial);

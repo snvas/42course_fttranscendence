@@ -23,4 +23,7 @@ export class GroupProfileDto implements GroupProfile {
   @IsNotEmpty()
   @IsBoolean()
   isMuted: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  isBanned: boolean;
 }

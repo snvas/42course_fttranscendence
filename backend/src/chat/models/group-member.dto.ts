@@ -9,8 +9,8 @@ import { MessageProfileDto } from './message-profile.dto';
 import { GroupChatDto } from './group-chat.dto';
 
 export class GroupMemberDto {
-  @IsNotEmpty()
   @IsNumber()
+  @IsNotEmpty()
   id: number;
   @IsString()
   @IsNotEmpty()
@@ -18,6 +18,9 @@ export class GroupMemberDto {
   @IsBoolean()
   @IsNotEmpty()
   isMuted: boolean;
+  @IsBoolean()
+  @IsNotEmpty()
+  isBanned: boolean;
   @IsBoolean()
   @ValidateNested()
   groupChat: GroupChatDto;

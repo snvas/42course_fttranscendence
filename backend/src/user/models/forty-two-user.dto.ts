@@ -1,6 +1,7 @@
 import { FortyTwoUser } from '../interfaces/fortytwo-user.interface';
 import {
   IsBoolean,
+  IsDate,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -33,6 +34,12 @@ export class FortyTwoUserDto implements FortyTwoUser {
   @IsOptional()
   @Exclude()
   otpSecret?: string;
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
 
   constructor(partial: Partial<FortyTwoUserDto>) {
     Object.assign(this, partial);

@@ -140,6 +140,7 @@ export class ChatController {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
         isMuted: deletedResponseAndMember.isMuted,
+        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
         profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
@@ -199,6 +200,8 @@ export class ChatController {
         id: groupMember.id,
         role: groupMember.role,
         isMuted: groupMember.isMuted,
+        isBanned: groupMember.isBanned,
+        groupChat: groupMember.groupChat,
         profile: groupMember.profile,
       } as GroupMemberDto);
 
@@ -265,6 +268,7 @@ export class ChatController {
         id: deletedResponseAndMember.id,
         role: deletedResponseAndMember.role,
         isMuted: deletedResponseAndMember.isMuted,
+        isBanned: deletedResponseAndMember.isBanned,
         groupChat: deletedResponseAndMember.groupChat,
         profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
@@ -290,6 +294,7 @@ export class ChatController {
         id: updatedResponseMember.id,
         role: updatedResponseMember.role,
         isMuted: updatedResponseMember.isMuted,
+        isBanned: updatedResponseMember.isBanned,
         groupChat: updatedResponseMember.groupChat,
         profile: updatedResponseMember.profile,
       } as GroupMemberDto);
@@ -315,6 +320,7 @@ export class ChatController {
         id: updatedResponseMember.id,
         role: updatedResponseMember.role,
         isMuted: updatedResponseMember.isMuted,
+        isBanned: updatedResponseMember.isBanned,
         groupChat: updatedResponseMember.groupChat,
         profile: updatedResponseMember.profile,
       } as GroupMemberDto);

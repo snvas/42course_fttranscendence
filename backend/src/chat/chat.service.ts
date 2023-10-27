@@ -285,9 +285,9 @@ export class ChatService {
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
     if (
-      groupChat.members.filter(
+      !groupChat.members.find(
         (m: GroupMemberEntity): boolean => m.profile.id === profile.id,
-      ).length === 0
+      )
     ) {
       throw new UnauthorizedException(
         `Only members of group chat can send messages`,
@@ -305,10 +305,23 @@ export class ChatService {
       `### Saving group message by: [${profile.nickname}] to group [${groupChat.name}]`,
     );
 
-    return plainToClass(
-      GroupMessageDto,
-      await this.groupMessageRepository.save(groupMessageEntity),
-    );
+    const groupMessageEntityDb: GroupMessageEntity =
+      await this.groupMessageRepository.save(groupMessageEntity);
+
+    return {
+      id: groupMessageEntityDb.id,
+      message: groupMessageEntityDb.message,
+      createdAt: groupMessageEntityDb.createdAt,
+      sender: {
+        id: groupMessageEntityDb.sender.id,
+        nickname: groupMessageEntityDb.sender.nickname,
+        avatarId: groupMessageEntityDb.sender.avatarId,
+      },
+      groupChat: {
+        id: groupMessageEntityDb.groupChat.id,
+        name: groupMessageEntityDb.groupChat.name,
+      },
+    } as GroupMessageDto;
   }
 
   public async getUserPrivateMessagesHistory(
@@ -347,61 +360,65 @@ export class ChatService {
 
     this.logger.verbose(`### Getting group chats for user: [${userId}]`);
 
-    const groupChats: GroupChatEntity[] = await this.groupChatRepository.find({
-      relations: {
-        owner: true,
-        members: {
-          profile: true,
+    const groupMemberships: GroupMemberEntity[] =
+      await this.groupMemberRepository.find({
+        relations: {
+          groupChat: {
+            owner: true,
+            members: {
+              profile: true,
+            },
+            messages: {
+              sender: true,
+            },
+          },
         },
-        bannedMembers: {
-          profile: true,
+        where: {
+          profile: {
+            id: profile.id,
+          },
         },
-        messages: {
-          sender: true,
-        },
-      },
-    });
+      });
 
-    const filteredGroupChats: GroupChatEntity[] = groupChats.filter(
-      (groupChat: GroupChatEntity): boolean => {
-        return (
-          groupChat.members.find(
-            (member: GroupMemberEntity): boolean =>
-              member.profile.id === profile.id,
-          ) !== undefined
-        );
-      },
-    );
-
-    return filteredGroupChats.map(
-      (groupChat: GroupChatEntity): GroupChatHistoryDto => {
+    const groupChats: GroupChatEntity[] = groupMemberships.map(
+      (membership: GroupMemberEntity): GroupChatEntity => {
         return {
-          id: groupChat.id,
-          name: groupChat.name,
-          visibility: groupChat.visibility,
-          owner: groupChat.owner.nickname,
-          createdAt: groupChat.createdAt,
-          members: this.createGroupProfileDto(groupChat.members),
-          bannedMembers: this.createGroupProfileDto(groupChat.bannedMembers),
-          messages: groupChat.messages
-            .map((message: GroupMessageEntity): ConversationDto => {
-              return {
-                id: message.id,
-                message: message.message,
-                createdAt: message.createdAt,
-                sender: {
-                  id: message.sender.id,
-                  nickname: message.sender.nickname,
-                  avatarId: message.sender.avatarId,
-                } as MessageProfile,
-              };
-            })
-            .sort((a: ConversationDto, b: ConversationDto) => {
-              return a.createdAt.getTime() - b.createdAt.getTime();
-            }),
-        } as GroupChatHistoryDto;
+          ...membership.groupChat,
+        };
       },
     );
+
+    return groupChats.map((groupChat: GroupChatEntity): GroupChatHistoryDto => {
+      return {
+        id: groupChat.id,
+        name: groupChat.name,
+        visibility: groupChat.visibility,
+        owner: groupChat.owner.nickname,
+        createdAt: groupChat.createdAt,
+        members: this.createGroupProfileDto(groupChat.members),
+        bannedMembers: this.createGroupProfileDto(
+          groupChat.members.filter(
+            (member: GroupMemberEntity): boolean => member.isBanned,
+          ),
+        ),
+        messages: groupChat.messages
+          .map((message: GroupMessageEntity): ConversationDto => {
+            return {
+              id: message.id,
+              message: message.message,
+              createdAt: message.createdAt,
+              sender: {
+                id: message.sender.id,
+                nickname: message.sender.nickname,
+                avatarId: message.sender.avatarId,
+              } as MessageProfile,
+            };
+          })
+          .sort((a: ConversationDto, b: ConversationDto) => {
+            return a.createdAt.getTime() - b.createdAt.getTime();
+          }),
+      } as GroupChatHistoryDto;
+    });
   }
 
   public async createGroupChat(
@@ -609,6 +626,7 @@ export class ChatService {
       await this.profileService.findByProfileId(newMemberProfileId);
 
     const groupMember: GroupMemberEntity = this.groupMemberRepository.create({
+      groupChat,
       profile: newMemberProfile,
       role: chatRole.role,
     });
@@ -617,20 +635,18 @@ export class ChatService {
       `### Adding profile: [${newMemberProfile.nickname}] with role: [${groupMember.role}] to group chat: [${groupChat.name}]`,
     );
     try {
-      groupMember.profile = newMemberProfile;
-      groupChat.members.push(groupMember);
-      await this.groupChatRepository.save(groupChat);
+      const memberEntity: GroupMemberEntity =
+        await this.groupMemberRepository.save(groupMember);
 
       this.addPlayerRoom(newMemberProfile.id, `${chatId}`);
 
       return this.createGroupMemberDto(
-        groupMember,
+        memberEntity,
         groupChat,
         newMemberProfile,
       );
     } catch (Exception) {
       if (Exception instanceof QueryFailedError) {
-        this.logger.error(Exception);
         throw new NotAcceptableException(
           `Profile [${newMemberProfile.nickname}] is already a member of group chat [${groupChat.name}]`,
         );
@@ -647,13 +663,20 @@ export class ChatService {
       await this.getGroupChatMember(profileId, chatId);
 
     const memberDeleteResult: DeleteResult =
-      await this.groupMemberRepository.delete(memberToRemove.id);
+      await this.groupMemberRepository.delete({
+        profile: {
+          id: profileId,
+        },
+        groupChat: {
+          id: chatId,
+        },
+      });
 
     if (!memberDeleteResult.affected) {
       throw new InternalServerErrorException('Member not deleted');
     }
     this.logger.log(
-      `### Kicked member [${profileId}] from Group chat [${chatId}]`,
+      `### Removing member [${profileId}] from Group chat [${chatId}]`,
     );
 
     this.removePlayerRoom(profileId, `${chatId}`);
@@ -680,9 +703,6 @@ export class ChatService {
         relations: {
           owner: true,
           members: {
-            profile: true,
-          },
-          bannedMembers: {
             profile: true,
           },
         },
@@ -878,20 +898,31 @@ export class ChatService {
     chatId: number,
     ban: boolean,
   ): Promise<GroupMemberDto> {
-    let groupMember: GroupMemberEntity;
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
+    const groupMember: GroupMemberEntity = await this.getGroupChatMember(
+      profileId,
+      chatId,
+    );
 
-    if (ban) {
-      groupMember = await this.getGroupChatMember(profileId, chatId);
-      groupChat.bannedMembers = [...groupChat.bannedMembers, groupMember];
-    } else {
-      groupMember = await this.getBannedGroupChatMember(profileId, chatId);
-      groupChat.bannedMembers = groupChat.bannedMembers.filter(
-        (member: GroupMemberEntity): boolean => member.profile.id !== profileId,
+    const updatedMemberResult: UpdateResult =
+      await this.groupMemberRepository.update(
+        {
+          id: groupMember.id,
+        },
+        {
+          isBanned: ban,
+        },
       );
+
+    if (!updatedMemberResult.affected) {
+      this.logger.error(
+        `### Member [${profileId}] not ban status not update to [${ban}]`,
+      );
+      throw new InternalServerErrorException('Member not banned');
     }
 
-    await this.groupChatRepository.save(groupChat);
+    this.logger.verbose(
+      `### Member [${profileId}] ban status changed to [${ban}]`,
+    );
 
     return {
       ...this.createGroupMemberDto(
@@ -906,35 +937,23 @@ export class ChatService {
     profileId: number,
     chatId: number,
   ): Promise<GroupMemberEntity> {
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
-
-    const groupMember: GroupMemberEntity | undefined = groupChat.members.find(
-      (member: GroupMemberEntity): boolean => member.profile.id === profileId,
-    );
-
-    if (!groupMember) {
-      this.logger.log(
-        `### Member [${profileId}] for chat with id [${chatId}] not found`,
-      );
-      throw new NotFoundException(
-        `Member [${profileId}] for group chat with id [${chatId}] not found`,
-      );
-    }
-
-    groupMember.groupChat = groupChat;
-    return groupMember;
-  }
-
-  private async getBannedGroupChatMember(
-    profileId: number,
-    chatId: number,
-  ): Promise<GroupMemberEntity> {
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
-
-    const groupMember: GroupMemberEntity | undefined =
-      groupChat.bannedMembers.find(
-        (member: GroupMemberEntity): boolean => member.profile.id === profileId,
-      );
+    const groupMember: GroupMemberEntity | null =
+      await this.groupMemberRepository.findOne({
+        where: {
+          profile: {
+            id: profileId,
+          },
+          groupChat: {
+            id: chatId,
+          },
+        },
+        relations: {
+          groupChat: {
+            owner: true,
+          },
+          profile: true,
+        },
+      });
 
     if (!groupMember) {
       this.logger.log(
@@ -945,7 +964,6 @@ export class ChatService {
       );
     }
 
-    groupMember.groupChat = groupChat;
     return groupMember;
   }
 
@@ -1108,6 +1126,7 @@ export class ChatService {
       id: memberEntity.id,
       role: memberEntity.role,
       isMuted: memberEntity.isMuted,
+      isBanned: memberEntity.isBanned,
       groupChat: {
         id: groupChat.id,
         name: groupChat.name,
@@ -1147,7 +1166,6 @@ export class ChatService {
   ): GroupProfileDto[] {
     return memberEntity.map((member: GroupMemberEntity): GroupProfileDto => {
       return {
-        id: member.id,
         profile: {
           id: member.profile.id,
           nickname: member.profile.nickname,
@@ -1155,6 +1173,7 @@ export class ChatService {
         },
         role: member.role,
         isMuted: member.isMuted,
+        isBanned: member.isBanned,
       } as GroupProfileDto;
     });
   }

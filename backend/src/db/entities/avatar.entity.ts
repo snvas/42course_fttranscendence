@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import Avatar from '../../avatar/interfaces/avatar.interface';
 
 @Entity({ name: 'avatars' })
@@ -13,10 +19,10 @@ export class AvatarEntity implements Avatar {
     type: 'bytea',
   })
   data: Uint8Array;
-  // @CreateDateColumn()
-  // createdAt: Date;
-  // @UpdateDateColumn()
-  // updatedAt: Date;
-  // @DeleteDateColumn()
-  // deletedAt?: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
