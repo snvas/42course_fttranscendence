@@ -244,7 +244,6 @@
 		}
 	};
 
-	// TODO
 	//When the group chat password is deleted, the group chat visibility is set to public
 	const onGroupChatPasswordDeleted = (groupChatDto: GroupChatDto): void => {
 		console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
@@ -265,7 +264,6 @@
 		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
 	};
 
-	// TODO
 	const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
 
