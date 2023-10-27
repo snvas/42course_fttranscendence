@@ -12,15 +12,19 @@
 
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
 	{#each historyList as history}
-		<button
-			on:click={() => dispatch('select', history.id)}
-			class="border-b-2 border-x-white h-12 pr-2 flex flex-row gap-4 items-center justify-between"
+		<div
+			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between"
 		>
-			<UserAvatarStatus user={history} getAvatar={getAvatarFromId} />
-			<div class="flex flex-row items-center gap-4 text-center text-xs justify-end flex-wrap">
+			<button
+				class="items-start grow hover:bg-white hover:bg-opacity-20 rounded-md h-full"
+				on:click={() => dispatch('select', history.id)}
+			>
+				<UserAvatarStatus user={history} getAvatar={getAvatarFromId} />
+			</button>
+			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
 				<ListButton on:click={() => dispatch('block', history.id)} type="block" />
 				<ListButton on:click={() => dispatch('play', history.id)} type="play" />
 			</div>
-		</button>
+		</div>
 	{/each}
 </div>
