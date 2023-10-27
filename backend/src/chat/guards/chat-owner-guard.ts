@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { ProfileService } from '../../profile/profile.service';
-import { ChatService } from '../chat.service';
 import { GroupChatEntity, ProfileEntity } from '../../db/entities';
 import { ProfileDTO } from '../../profile/models/profile.dto';
+import { GroupChatService } from '../services/group-chat.service';
 
 // This guard is used to authorize chat group settings only from owner member
 
@@ -18,7 +18,7 @@ export class ChatOwnerGuard implements CanActivate {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly chatService: ChatService,
+    private readonly groupChatService: GroupChatService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -26,9 +26,8 @@ export class ChatOwnerGuard implements CanActivate {
     const user: FortyTwoUserDto = request.user as FortyTwoUserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
     const { chatId } = request.params;
-    const groupChat: GroupChatEntity = await this.chatService.getGroupChatById(
-      chatId,
-    );
+    const groupChat: GroupChatEntity =
+      await this.groupChatService.getGroupChatById(chatId);
     const owner: ProfileEntity = groupChat.owner;
 
     if (!chatId) {

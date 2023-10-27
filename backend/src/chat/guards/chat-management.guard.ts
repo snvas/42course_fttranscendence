@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { ProfileService } from '../../profile/profile.service';
-import { ChatService } from '../chat.service';
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import { ChatRole } from '../types/chat-role.type';
+import { GroupChatService } from '../services/group-chat.service';
 
 //This guard is used to authorize group **chat members** actions: Owner >> Admin >> User
 
@@ -18,7 +18,7 @@ export class ChatManagementGuard implements CanActivate {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly chatService: ChatService,
+    private readonly groupChatService: GroupChatService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,8 +38,8 @@ export class ChatManagementGuard implements CanActivate {
     }
 
     const [askerRole, receiverRole]: [ChatRole, ChatRole] = await Promise.all([
-      this.chatService.getGroupMemberRole(chatId, askerId),
-      this.chatService.getGroupMemberRole(chatId, receiverId),
+      this.groupChatService.getGroupMemberRole(chatId, askerId),
+      this.groupChatService.getGroupMemberRole(chatId, receiverId),
     ]);
 
     if (

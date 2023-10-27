@@ -12,7 +12,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './models/group/group-creation.dto';
 import { ChatMessageDto } from './models/tmp/chat-message.dto';
@@ -37,11 +36,16 @@ import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updat
 import { Server } from 'socket.io';
 import { GroupChatEventDto } from './models/group/group-chat-event.dto';
 import { GroupMemberDeletedResponseDto } from './models/group/group-member-deleted-response.dto';
+import { GroupChatService } from './services/group-chat.service';
+import { GroupMemberService } from './services/group-member.service';
+import { PrivateChatService } from './services/private-chat.service';
 
 @Controller('chat')
 export class ChatController {
   constructor(
-    private readonly chatService: ChatService,
+    private readonly privateChatService: PrivateChatService,
+    private readonly groupChatService: GroupChatService,
+    public readonly groupMemberService: GroupMemberService,
     private readonly messageGateway: ChatGateway,
   ) {}
 
@@ -50,7 +54,7 @@ export class ChatController {
   async getUserPrivateMessagesHistory(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<PrivateMessageHistoryDto[]> {
-    return await this.chatService.getUserPrivateMessagesHistory(user.id);
+    return await this.privateChatService.getUserPrivateMessagesHistory(user.id);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -58,13 +62,13 @@ export class ChatController {
   async getUserGroupChatsHistory(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<GroupChatHistoryDto[]> {
-    return await this.chatService.getUserGroupChatsHistory(user.id);
+    return await this.groupChatService.getUserGroupChatsHistory(user.id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('group/chats')
   async getAllGroupChats(): Promise<GroupChatDto[]> {
-    return await this.chatService.getAllGroupChats();
+    return await this.groupChatService.getAllGroupChats();
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -73,7 +77,7 @@ export class ChatController {
     @Req() { user }: { user: FortyTwoUserDto },
     @Body() groupCreationDto: GroupCreationDto,
   ): Promise<GroupChatDto> {
-    const groupChat: GroupChatDto = await this.chatService.createGroupChat(
+    const groupChat: GroupChatDto = await this.groupChatService.createGroupChat(
       groupCreationDto,
       user.id,
     );
@@ -93,7 +97,7 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<GroupChatDeletedResponseDto> {
     const deletedResponse: GroupChatDeletedResponseDto =
-      await this.chatService.deleteGroupChatById(chatId);
+      await this.groupChatService.deleteGroupChatById(chatId);
 
     const server: Server = await this.messageGateway.getServer();
 
@@ -113,11 +117,8 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() password: Partial<GroupChatPasswordDto>,
   ): Promise<GroupMemberDto> {
-    const groupMember: GroupMemberDto = await this.chatService.joinGroupChat(
-      chatId,
-      user.id,
-      password,
-    );
+    const groupMember: GroupMemberDto =
+      await this.groupChatService.joinGroupChat(chatId, user.id, password);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -133,7 +134,10 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<void> {
     const deletedResponseAndMember: GroupMemberDeletedResponse &
-      GroupMemberDto = await this.chatService.leaveGroupChat(chatId, user.id);
+      GroupMemberDto = await this.groupChatService.leaveGroupChat(
+      chatId,
+      user.id,
+    );
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -155,7 +159,7 @@ export class ChatController {
     @Body() password: GroupChatPasswordDto,
   ): Promise<GroupChatUpdatedResponseDto> {
     const passwordUpdate: GroupChatUpdatedResponseDto =
-      await this.chatService.changeGroupChatPassword(chatId, password);
+      await this.groupChatService.changeGroupChatPassword(chatId, password);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -172,11 +176,10 @@ export class ChatController {
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<Partial<GroupChatUpdatedResponseDto>> {
     const passwordUpdate: Partial<GroupChatUpdatedResponseDto> =
-      await this.chatService.deleteGroupChatPassword(chatId);
+      await this.groupChatService.deleteGroupChatPassword(chatId);
 
-    const groupChat: GroupChatDto = await this.chatService.getGroupChatDtoById(
-      chatId,
-    );
+    const groupChat: GroupChatDto =
+      await this.groupChatService.getGroupChatDtoById(chatId);
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_PASSWORD_DELETED, groupChat);
@@ -193,7 +196,11 @@ export class ChatController {
     @Body() role: GroupMemberRoleUpdateDto,
   ): Promise<GroupMemberUpdatedResponseDto> {
     const groupMember: GroupMemberDto & GroupMemberUpdatedResponseDto =
-      await this.chatService.updateGroupChatMemberRole(chatId, profileId, role);
+      await this.groupMemberService.updateGroupChatMemberRole(
+        chatId,
+        profileId,
+        role,
+      );
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -220,7 +227,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
     const groupMember: GroupMemberDto =
-      await this.chatService.addGroupChatMember(chatId, profileId, {
+      await this.groupChatService.addMemberToGroupChat(chatId, profileId, {
         role: 'admin',
       } as ChatRole);
 
@@ -239,7 +246,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
     const groupMember: GroupMemberDto =
-      await this.chatService.addGroupChatMember(chatId, profileId, {
+      await this.groupChatService.addMemberToGroupChat(chatId, profileId, {
         role: 'user',
       } as ChatRole);
 
@@ -258,7 +265,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDeletedResponseDto> {
     const deletedResponseAndMember: GroupMemberDeletedResponseDto &
-      GroupMemberDto = await this.chatService.removeMemberFromGroupChat(
+      GroupMemberDto = await this.groupChatService.removeMemberFromGroupChat(
       chatId,
       profileId,
     );
@@ -287,7 +294,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberUpdatedResponseDto> {
     const updatedResponseMember: GroupMemberUpdatedResponseDto &
-      GroupMemberDto = await this.chatService.muteGroupChatMember(
+      GroupMemberDto = await this.groupMemberService.muteGroupChatMember(
       chatId,
       profileId,
     );
@@ -316,7 +323,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberUpdatedResponseDto> {
     const updatedResponseMember: GroupMemberUpdatedResponseDto &
-      GroupMemberDto = await this.chatService.unmuteGroupChatMember(
+      GroupMemberDto = await this.groupMemberService.unmuteGroupChatMember(
       chatId,
       profileId,
     );
@@ -345,7 +352,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
     const groupMemberDto: GroupMemberDto =
-      await this.chatService.banGroupChatMember(chatId, profileId);
+      await this.groupMemberService.banGroupChatMember(chatId, profileId);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -361,7 +368,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
   ): Promise<GroupMemberDto> {
     const groupMemberDto: GroupMemberDto =
-      await this.chatService.unbanGroupChatMember(chatId, profileId);
+      await this.groupMemberService.unbanGroupChatMember(chatId, profileId);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -380,7 +387,7 @@ export class ChatController {
     @Body() messageDto: ChatMessageDto,
   ): Promise<GroupMessageDto> {
     const groupMessage: GroupMessageDto =
-      await this.chatService.saveGroupMessage(chatId, user.id, messageDto);
+      await this.groupChatService.saveGroupMessage(chatId, user.id, messageDto);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -396,7 +403,7 @@ export class ChatController {
     @Param('profileId', ParseIntPipe) profileId: number,
     @Body() messageDto: ChatMessageDto,
   ): Promise<PrivateMessageDto> {
-    return await this.chatService.savePrivateMessage(
+    return await this.privateChatService.savePrivateMessage(
       user.id,
       profileId,
       messageDto,
