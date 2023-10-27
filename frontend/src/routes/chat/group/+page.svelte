@@ -31,6 +31,7 @@
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmLeaveGroup from '$lib/components/chat/ConfirmLeaveGroup.svelte';
 	import GroupMembers from '$lib/components/chat/GroupMembers.svelte';
+	import GroupConfig from '$lib/components/chat/GroupConfig.svelte';
 
 	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
@@ -43,7 +44,8 @@
 	let groupChatHistory: GroupChatHistoryDto[];
 	let confirmJoin: GroupChatDto | null = null;
 	let confirmLeave: GroupChatDto | null = null;
-	let addMember: GroupChatDto | null;
+	let addMember: GroupChatDto | null = null;
+	let configGroup: GroupChatDto | null = null;
 
 	async function loadAllGroups() {
 		groupsList = await readAllGroupChats();
@@ -246,6 +248,16 @@
 	//When the group chat password is deleted, the group chat visibility is set to public
 	const onGroupChatPasswordDeleted = (groupChatDto: GroupChatDto): void => {
 		console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
+
+		let newList = groupsList.map((group: GroupChatDto) => {
+			if (group.id != groupChatDto.id) return group;
+
+			return { ...group, visibility: 'public' };
+		});
+		groupsList = newList;
+		if ($selectedGroup?.id == groupChatDto.id) {
+			$selectedGroup = groupsList.find((g) => g.id == $selectedGroup?.id) ?? null;
+		}
 	};
 
 	// TODO
@@ -256,6 +268,16 @@
 	// TODO
 	const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
+
+		let newList = groupsList.map((group: GroupChatDto) => {
+			if (group.id != groupChatEvent.chatId) return group;
+
+			return { ...group, visibility: 'private' };
+		});
+		groupsList = newList;
+		if ($selectedGroup?.id == groupChatEvent.chatId) {
+			$selectedGroup = groupsList.find((g) => g.id == $selectedGroup?.id) ?? null;
+		}
 	};
 
 	const onJoinedGroupChatMember = (memberJoined: GroupMemberDto): void => {
@@ -329,6 +351,7 @@
 		addMember = null;
 		confirmJoin = null;
 		confirmLeave = null;
+		configGroup = null;
 		if (!keepSelected) {
 			$selectedGroup = null;
 		}
@@ -382,8 +405,10 @@
 						{members}
 						on:add={(e) => onAddGroupChatUser($selectedGroup, e.detail)}
 					/>
+				{:else if configGroup}
+					<GroupConfig bind:configGroup />
 				{:else}
-					<GroupMessages bind:messages {sendMessage} />
+					<GroupMessages bind:messages {sendMessage} bind:configGroup />
 				{/if}
 				<GroupMembers
 					{members}
@@ -395,7 +420,7 @@
 		{:else}
 			<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 				<div class="flex flex-col w-full items-center gap-3 p-20">
-					<p class="text-lg text-gray-400 flex">any group selected</p>
+					<p class="text-lg text-gray-400 flex">no group selected</p>
 				</div>
 			</div>
 		{/if}

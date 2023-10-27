@@ -11,7 +11,7 @@
 		$socket.off('receivePrivateMessage');
 	});
 
-	let options = ['public', 'private'];
+	const options = ['public', 'private'];
 
 	let name = '';
 	let visibility = 'public';

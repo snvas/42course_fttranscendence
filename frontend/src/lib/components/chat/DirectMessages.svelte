@@ -18,7 +18,7 @@
 <div class="border-4 border-white w-full h-full flex flex-col rounded-3xl">
 	{#if messages == null}
 		<div class="flex flex-col w-full items-center gap-3 p-20">
-			<p class="text-lg text-gray-400 flex">any conversation selected</p>
+			<p class="text-lg text-gray-400 flex">no conversation selected</p>
 		</div>
 	{:else}
 		<div class="border-2 border-white h-10 m-2 flex items-center justify-center rounded-md">
