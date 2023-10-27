@@ -1,9 +1,11 @@
 <script lang="ts">
-	import type { ComponentMessage } from '$lib/dtos';
-	import { selectedGroup } from '$lib/stores';
+	import type { ComponentMessage, GroupChatDto } from '$lib/dtos';
+	import { selectedGroup, profile } from '$lib/stores';
 	import { formatDistanceToNow, parseISO } from 'date-fns';
 
 	export let messages: ComponentMessage[] | null;
+
+	export let configGroup: GroupChatDto | null;
 
 	export let sendMessage: (message: string) => void;
 
@@ -24,7 +26,16 @@
 		</div>
 	{:else}
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
-			{$selectedGroup.name}
+			<div>
+				{$selectedGroup.name}
+				{#if $profile.id == $selectedGroup.owner.id}
+				<button class="text-green-200" on:click={() => (configGroup = $selectedGroup)}>
+					<!-- TODO : adicionar botão e formatar -->
+					<!-- <div class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /> -->
+					Config
+				</button>
+				{/if}
+			</div>
 			<div
 				class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
 			>

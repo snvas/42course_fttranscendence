@@ -84,12 +84,37 @@ export async function kickGroupChatUser(
 	groupId: number,
 	profileId: number
 ): Promise<boolean | number> {
+	// [ ] conferir retorno na rota chat/group
 	try {
 		let response = await chatService.kickGroupChatMember(groupId, profileId);
 		return response.data.affected;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
 			return error.response.status;
+		}
+		throw error;
+	}
+}
+
+export async function updateGroupChatPassword(chatId: number, password: string): Promise<boolean> {
+	try {
+		await chatService.updateGroupChatPassword(chatId, password);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return false;
+		}
+		throw error;
+	}
+}
+
+export async function deleteGroupChatPassword(chatId: number): Promise<boolean> {
+	try {
+		await chatService.deleteGroupChatPassword(chatId);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return false;
 		}
 		throw error;
 	}

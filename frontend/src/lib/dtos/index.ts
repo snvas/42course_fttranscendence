@@ -20,6 +20,7 @@ export * from '../../../../backend/src/chat/models/group-chat-history.dto';
 export * from '../../../../backend/src/chat/models/group-chat-event.dto';
 export * from '../../../../backend/src/chat/models/group-profile.dto';
 export * from '../../../../backend/src/chat/models/update-member-role.dto';
+export * from '../../../../backend/src/chat/models/member-updated-response.dto'
 
 export type ComponentMessage = {
 	message: string;
