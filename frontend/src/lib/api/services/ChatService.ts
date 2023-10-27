@@ -1,18 +1,17 @@
 import { io, Socket } from 'socket.io-client';
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type {
-	PrivateMessageHistoryDto,
-	PrivateMessageDto,
-	GroupMessageDto,
-	GroupChatDto,
 	GroupChatDeletedResponseDto,
-	ChatPasswordDto,
-	PasswordUpdateResponseDto,
-	GroupMemberDto,
-	GroupMemberDeletedResponse,
-	GroupCreationDto,
+	GroupChatDto,
 	GroupChatHistoryDto,
-	UpdateMemberRoleDto
+	GroupChatPasswordDto,
+	GroupChatUpdatedResponseDto,
+	GroupCreationDto,
+	GroupMemberDeletedResponseDto,
+	GroupMemberDto,
+	GroupMessageDto,
+	PrivateMessageDto,
+	PrivateMessageHistoryDto
 } from '$lib/dtos';
 import { socketEvent } from './SocketsEvents';
 
@@ -89,7 +88,10 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}`);
 	}
 
-	public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
+	public joinGroupChat(
+		chatId: number,
+		password?: GroupChatPasswordDto
+	): Promise<AxiosResponse<void>> {
 		if (password) {
 			return this.axiosInstance.post(`/group/${chatId}/join`, password);
 		}
@@ -104,14 +106,14 @@ class ChatService {
 	public updateGroupChatPassword(
 		chatId: number,
 		password: string
-	): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
+	): Promise<AxiosResponse<GroupChatUpdatedResponseDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/password`, { password });
 	}
 
 	// TODO:
 	public deleteGroupChatPassword(
 		chatId: number
-	): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
+	): Promise<AxiosResponse<GroupChatUpdatedResponseDto>> {
 		return this.axiosInstance.delete(`/group/${chatId}/password`);
 	}
 
@@ -136,7 +138,7 @@ class ChatService {
 		chatId: number,
 		profileId: number,
 		role: string
-	): Promise<AxiosResponse<UpdateMemberRoleDto>> {
+	): Promise<AxiosResponse<GroupChatUpdatedResponseDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, { role });
 	}
 
@@ -144,7 +146,7 @@ class ChatService {
 	public kickGroupChatMember(
 		chatId: number,
 		profileId: number
-	): Promise<AxiosResponse<GroupMemberDeletedResponse>> {
+	): Promise<AxiosResponse<GroupMemberDeletedResponseDto>> {
 		return this.axiosInstance.delete(`/group/${chatId}/member/${profileId}`);
 	}
 }

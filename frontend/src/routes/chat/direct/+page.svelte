@@ -1,17 +1,17 @@
 <script lang="ts">
 	import DirectMessages from '$lib/components/chat/DirectMessages.svelte';
-	import { socket, selectedDirect, profile, onlineUsers, playersStatus } from '$lib/stores';
+	import { onlineUsers, playersStatus, profile, selectedDirect, socket } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import { chatService } from '$lib/api/services/ChatService';
 	import type {
-		PrivateMessageDto,
-		ConversationDto,
+		ComponentMessage,
+		MessageConversationDto,
 		MessageProfileDto,
 		PlayerStatusDto,
-		PrivateMessageHistoryDto,
-		ComponentMessage
+		PrivateMessageDto,
+		PrivateMessageHistoryDto
 	} from '$lib/dtos';
 	import { getPrivateMessageHistory } from '$lib/api';
 	import { parseISO } from 'date-fns';
@@ -64,7 +64,7 @@
 
 	function setMessagesFromHistory(history: PrivateMessageHistoryDto | null) {
 		messages =
-			history?.messages.map((message: ConversationDto): ComponentMessage => {
+			history?.messages.map((message: MessageConversationDto): ComponentMessage => {
 				return {
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
@@ -108,7 +108,9 @@
 			privateMessageHistory = privateMessageHistory.map(
 				(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
 					if (history.id === message.sender.id) {
-						if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
+						if (
+							history.messages.find((m: MessageConversationDto): boolean => m.id === message.id)
+						) {
 							return history;
 						}
 
@@ -196,7 +198,9 @@
 					return history;
 				}
 
-				if (history.messages.find((m: ConversationDto): boolean => m.id === backendMessage!.id)) {
+				if (
+					history.messages.find((m: MessageConversationDto): boolean => m.id === backendMessage!.id)
+				) {
 					return history;
 				}
 
