@@ -92,26 +92,24 @@ export class GroupMemberService {
   }
 
   async getGroupMemberships(profile: ProfileDTO): Promise<GroupMemberEntity[]> {
-    const groupMemberships: GroupMemberEntity[] =
-      await this.groupMemberRepository.find({
-        relations: {
-          groupChat: {
-            owner: true,
-            members: {
-              profile: true,
-            },
-            messages: {
-              sender: true,
-            },
+    return await this.groupMemberRepository.find({
+      relations: {
+        groupChat: {
+          owner: true,
+          members: {
+            profile: true,
+          },
+          messages: {
+            sender: true,
           },
         },
-        where: {
-          profile: {
-            id: profile.id,
-          },
+      },
+      where: {
+        profile: {
+          id: profile.id,
         },
-      });
-    return groupMemberships;
+      },
+    });
   }
 
   public async isGroupMember(chatId: number, userId: number): Promise<boolean> {
@@ -194,6 +192,8 @@ export class GroupMemberService {
       this.logger.error(`### Role of member [${profileId}] not updated`);
       throw new InternalServerErrorException('Member not updated');
     }
+
+    groupMember.role = chatRole.role;
 
     return {
       updated: updatedMember.affected > 0,

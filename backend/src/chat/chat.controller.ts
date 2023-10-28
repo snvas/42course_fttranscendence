@@ -187,38 +187,6 @@ export class ChatController {
     return passwordUpdate;
   }
 
-  @UseGuards(ChatOwnerGuard)
-  @HttpCode(HttpStatus.OK)
-  @Put('group/:chatId/member/:profileId/role')
-  async updateGroupChatMemberRole(
-    @Param('chatId', ParseIntPipe) chatId: number,
-    @Param('profileId', ParseIntPipe) profileId: number,
-    @Body() role: GroupMemberRoleUpdateDto,
-  ): Promise<GroupMemberUpdatedResponseDto> {
-    const groupMember: GroupMemberDto & GroupMemberUpdatedResponseDto =
-      await this.groupMemberService.updateGroupChatMemberRole(
-        chatId,
-        profileId,
-        role,
-      );
-
-    (await this.messageGateway.getServer())
-      .to(`${chatId}`)
-      .emit(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, {
-        id: groupMember.id,
-        role: groupMember.role,
-        isMuted: groupMember.isMuted,
-        isBanned: groupMember.isBanned,
-        groupChat: groupMember.groupChat,
-        profile: groupMember.profile,
-      } as GroupMemberDto);
-
-    return {
-      updated: groupMember.updated,
-      affected: groupMember.affected,
-    } as GroupMemberUpdatedResponseDto;
-  }
-
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(ChatOwnerGuard)
   @Post('group/:chatId/admin/:profileId')
@@ -255,6 +223,38 @@ export class ChatController {
       .emit(socketEvent.ADDED_GROUP_CHAT_MEMBER, groupMember);
 
     return groupMember;
+  }
+
+  @UseGuards(ChatOwnerGuard)
+  @HttpCode(HttpStatus.OK)
+  @Put('group/:chatId/member/:profileId/role')
+  async updateGroupChatMemberRole(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+    @Body() role: GroupMemberRoleUpdateDto,
+  ): Promise<GroupMemberUpdatedResponseDto> {
+    const groupMember: GroupMemberDto & GroupMemberUpdatedResponseDto =
+      await this.groupMemberService.updateGroupChatMemberRole(
+        chatId,
+        profileId,
+        role,
+      );
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, {
+        id: groupMember.id,
+        role: groupMember.role,
+        isMuted: groupMember.isMuted,
+        isBanned: groupMember.isBanned,
+        groupChat: groupMember.groupChat,
+        profile: groupMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      updated: groupMember.updated,
+      affected: groupMember.affected,
+    } as GroupMemberUpdatedResponseDto;
   }
 
   @HttpCode(HttpStatus.OK)

@@ -53,47 +53,6 @@ export class GroupChatService {
     private readonly groupChatRepository: Repository<GroupChatEntity>,
   ) {}
 
-  public async getPlayerGroupChatNames(
-    socket: AuthenticatedSocket,
-  ): Promise<string[]> {
-    const rooms: string[] = await this.getUserGroupChatsHistory(
-      socket.request.user.id,
-    ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
-      groupChatHistory.map(
-        (groupChat: GroupChatHistoryDto): string => `${groupChat.id}`,
-      ),
-    );
-
-    this.logger.debug(
-      `### User [${socket.request.user.id}] group chat rooms: [${rooms}]`,
-    );
-
-    return rooms;
-  }
-
-  public async getAllGroupChats(): Promise<GroupChatDto[]> {
-    this.logger.verbose(`### Getting group all chats`);
-
-    const groupChats: GroupChatEntity[] | null =
-      await this.groupChatRepository.find({
-        relations: {
-          owner: true,
-          members: {
-            profile: true,
-          },
-        },
-      });
-
-    if (!groupChats) {
-      throw new NotFoundException(`Group chats not found`);
-    }
-
-    return groupChats.map(
-      (groupChat: GroupChatEntity): GroupChatDto =>
-        this.createGroupChatDto(groupChat, groupChat.owner),
-    );
-  }
-
   public async handleGroupMessage(
     socket: AuthenticatedSocket,
     groupMessageDto: GroupMessageDto,
@@ -187,6 +146,103 @@ export class GroupChatService {
     });
   }
 
+  public async getAllGroupChats(): Promise<GroupChatDto[]> {
+    this.logger.verbose(`### Getting group all chats`);
+
+    const groupChats: GroupChatEntity[] | null =
+      await this.groupChatRepository.find({
+        relations: {
+          owner: true,
+          members: {
+            profile: true,
+          },
+        },
+      });
+
+    if (!groupChats) {
+      throw new NotFoundException(`Group chats not found`);
+    }
+
+    return groupChats.map(
+      (groupChat: GroupChatEntity): GroupChatDto =>
+        this.createGroupChatDto(groupChat, groupChat.owner),
+    );
+  }
+
+  public async createGroupChat(
+    groupCreationDto: GroupCreationDto,
+    userId: number,
+  ): Promise<GroupChatDto> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    const password: string | undefined = groupCreationDto.password
+      ? hashPassword(groupCreationDto.password)
+      : undefined;
+
+    const groupChat: GroupChatEntity = this.groupChatRepository.create({
+      name: groupCreationDto.name,
+      owner: profile,
+      visibility: password ? 'private' : 'public',
+      password: password,
+    });
+
+    try {
+      const groupChatEntity: GroupChatEntity =
+        await this.groupChatRepository.save(groupChat);
+
+      const chatRole: ChatRole = {
+        role: 'admin',
+      };
+
+      await this.groupMemberService.addGroupChatMember(
+        groupChatEntity,
+        profile,
+        chatRole,
+      );
+
+      this.logger.debug(
+        `### Group chat created with name: [${groupChatEntity.name}], visibility: [${groupChatEntity.visibility}] - by [${profile.nickname}]`,
+      );
+
+      return this.createGroupChatDto(groupChatEntity, profile);
+    } catch (exception) {
+      if (
+        exception instanceof QueryFailedError &&
+        (await this.isGroupNameExist(groupCreationDto.name))
+      ) {
+        throw new NotAcceptableException(
+          `Group chat with name [${groupCreationDto.name}] already exists`,
+        );
+      }
+
+      this.logger.error(exception);
+      throw exception;
+    }
+  }
+
+  public async deleteGroupChatById(
+    id: number,
+  ): Promise<GroupChatDeletedResponseDto> {
+    this.logger.verbose(`### Deleting group chat by id: [${id}]`);
+
+    const groupChatDeleteResult: DeleteResult =
+      await this.groupChatRepository.delete({
+        id,
+      });
+
+    if (!groupChatDeleteResult.affected) {
+      this.logger.log(`### Group chat with id [${id}] not found`);
+      throw new NotFoundException(`Group chat with id ${id} not found`);
+    }
+
+    this.logger.log(`### Group chat [${id}] deleted`);
+
+    return {
+      deleted: groupChatDeleteResult.affected > 0,
+      affected: groupChatDeleteResult.affected,
+    };
+  }
+
   public async joinGroupChat(
     chatId: number,
     userId: number,
@@ -268,10 +324,12 @@ export class GroupChatService {
 
   public async addMemberToGroupChat(
     chatId: number,
-    userId: number,
+    profileId: number,
     chatRole: ChatRole,
   ): Promise<GroupMemberDto> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const profile: ProfileDTO = await this.profileService.findByProfileId(
+      profileId,
+    );
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
@@ -320,29 +378,6 @@ export class GroupChatService {
     return {
       updated: updateResult.affected > 0,
       affected: updateResult.affected,
-    };
-  }
-
-  public async deleteGroupChatById(
-    id: number,
-  ): Promise<GroupChatDeletedResponseDto> {
-    this.logger.verbose(`### Deleting group chat by id: [${id}]`);
-
-    const groupChatDeleteResult: DeleteResult =
-      await this.groupChatRepository.delete({
-        id,
-      });
-
-    if (!groupChatDeleteResult.affected) {
-      this.logger.log(`### Group chat with id [${id}] not found`);
-      throw new NotFoundException(`Group chat with id ${id} not found`);
-    }
-
-    this.logger.log(`### Group chat [${id}] deleted`);
-
-    return {
-      deleted: groupChatDeleteResult.affected > 0,
-      affected: groupChatDeleteResult.affected,
     };
   }
 
@@ -395,16 +430,22 @@ export class GroupChatService {
     return groupChat;
   }
 
-  public async getGroupMemberRole(
-    chatId: number,
-    profileId: number,
-  ): Promise<ChatRole> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(
-      profileId,
+  public async getPlayerGroupChatNames(
+    socket: AuthenticatedSocket,
+  ): Promise<string[]> {
+    const rooms: string[] = await this.getUserGroupChatsHistory(
+      socket.request.user.id,
+    ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
+      groupChatHistory.map(
+        (groupChat: GroupChatHistoryDto): string => `${groupChat.id}`,
+      ),
     );
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
-    return await this.groupMemberService.getGroupMemberRole(groupChat, profile);
+    this.logger.debug(
+      `### User [${socket.request.user.id}] group chat rooms: [${rooms}]`,
+    );
+
+    return rooms;
   }
 
   //TODO:: Temporário
@@ -449,57 +490,6 @@ export class GroupChatService {
         name: groupMessageEntityDb.groupChat.name,
       },
     } as GroupMessageDto;
-  }
-
-  public async createGroupChat(
-    groupCreationDto: GroupCreationDto,
-    userId: number,
-  ): Promise<GroupChatDto> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    const password: string | undefined = groupCreationDto.password
-      ? hashPassword(groupCreationDto.password)
-      : undefined;
-
-    const groupChat: GroupChatEntity = this.groupChatRepository.create({
-      name: groupCreationDto.name,
-      owner: profile,
-      visibility: password ? 'private' : 'public',
-      password: password,
-    });
-
-    try {
-      const groupChatEntity: GroupChatEntity =
-        await this.groupChatRepository.save(groupChat);
-
-      const chatRole: ChatRole = {
-        role: 'admin',
-      };
-
-      await this.groupMemberService.addGroupChatMember(
-        groupChatEntity,
-        profile,
-        chatRole,
-      );
-
-      this.logger.debug(
-        `### Group chat created with name: [${groupChatEntity.name}], visibility: [${groupChatEntity.visibility}] - by [${profile.nickname}]`,
-      );
-
-      return this.createGroupChatDto(groupChatEntity, profile);
-    } catch (exception) {
-      if (
-        exception instanceof QueryFailedError &&
-        (await this.isGroupNameExist(groupCreationDto.name))
-      ) {
-        throw new NotAcceptableException(
-          `Group chat with name [${groupCreationDto.name}] already exists`,
-        );
-      }
-
-      this.logger.error(exception);
-      throw exception;
-    }
   }
 
   private async isGroupNameExist(name: string): Promise<boolean> {
