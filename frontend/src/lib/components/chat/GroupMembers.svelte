@@ -57,7 +57,7 @@
 
 <div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-2 rounded-3xl">
 	<p class="text-center pb-3">MEMBERS</p>
-	<hr/>
+	<hr />
 	<div class="overflow-y-auto w-full max-w-full">
 		{#each memberStatus as member}
 			<div>
@@ -73,7 +73,9 @@
 								<!-- {#if member.blocked}
 								<div class="text-red-800 text-xs">Blocked</div>
 								{:else} -->
-								<p class="text-xs text-yellow-500">{member.role} </p>
+								<p class="text-xs text-yellow-500">
+									{$selectedGroup?.owner.id == member.profile.id ? 'owner' : member.role}
+								</p>
 								<p class="{statusColor[member.status]} text-xs">{member.status}</p>
 
 								<!-- {#if user.friend} -->
