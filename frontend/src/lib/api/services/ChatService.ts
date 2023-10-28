@@ -131,7 +131,6 @@ class ChatService {
 		return this.axiosInstance.post(`/group/${chatId}/user/${profileId}`);
 	}
 
-	// TODO:
 	public updateGroupChatMemberRole(
 		chatId: number,
 		profileId: number,

@@ -43,7 +43,7 @@
 					</div>
 					<div>
 						{#if member.role == null}
-							<ListButton on:click={() => dispatch('add', member.id)} type="addMember" />
+							<ListButton on:click={() => dispatch('add', member.id)} type="add-member" />
 						{:else}
 							Member
 						{/if}

@@ -11,6 +11,7 @@
 	export let members: GroupProfileDto[];
 	export let addMember: GroupChatDto | null;
 	export let getAvatarFromId: (avatarId: number | null) => Promise<AxiosResponse<Blob, any> | null>;
+	export let iAmAdminOrOwner: boolean;
 
 	type GroupProfileStatus = GroupProfileDto & {
 		status: string;
@@ -40,14 +41,6 @@
 				};
 			}
 		});
-	}
-
-	function iAmAdminOrOwner(selected: GroupChatDto | null): boolean {
-		if ($profile.id == selected?.owner.id) {
-			return true;
-		}
-		return false;
-		// TODO: implementar verificação de admin
 	}
 
 	function itIsMyProfile(member: GroupProfileDto) {
@@ -94,9 +87,22 @@
 					<div
 						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 					>
-						{#if !itIsMyProfile(member)}
+						{#if !itIsMyProfile(member) && !($selectedGroup?.owner.id == member.profile.id)}
 							<!-- TODO: turn admin, mute, kick, ban -->
-							{#if iAmAdminOrOwner($selectedGroup)}
+							{#if iAmAdminOrOwner}
+								{#if $selectedGroup?.owner.id == $profile.id}
+									{#if member.role == 'admin'}
+										<ListButton
+											on:click={() => dispatch('remove-admin', member.profile.id)}
+											type="remove-admin"
+										/>
+									{:else}
+										<ListButton
+											on:click={() => dispatch('turn-admin', member.profile.id)}
+											type="turn-admin"
+										/>
+									{/if}
+								{/if}
 								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
 								{#if member.isMuted}
 									<ListButton
@@ -113,7 +119,7 @@
 			</div>
 		{/each}
 	</div>
-	{#if iAmAdminOrOwner($selectedGroup)}
+	{#if iAmAdminOrOwner}
 		<div>
 			<button
 				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"

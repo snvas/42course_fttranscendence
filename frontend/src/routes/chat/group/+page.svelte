@@ -22,7 +22,8 @@
 		kickGroupChatUser,
 		muteGroupChatMember,
 		unmuteGroupChatMember,
-		getAvatarFromId
+		getAvatarFromId,
+		updateGroupChatMemberRole
 	} from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
@@ -183,6 +184,17 @@
 
 	async function onUnmuteGroupChatMember(group: GroupChatDto | null, profileId: number) {
 		let res = await unmuteGroupChatMember(group!.id, profileId);
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
+	async function onUpdateMemberRole(
+		selected: GroupChatDto | null,
+		profileId: number,
+		role: string
+	) {
+		let res = await updateGroupChatMemberRole(selected!.id, profileId, role);
 
 		if (typeof res === 'number') {
 			return res;
@@ -357,9 +369,25 @@
 		}
 	};
 
-	// TODO
-	const onUpdatedGroupChatMemberRole = (groupMemberDto: GroupMemberDto): void => {
-		console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
+	const onUpdatedGroupChatMemberRole = (groupMember: GroupMemberDto): void => {
+		console.log(`### received updated group chat member role ${JSON.stringify(groupMember)}`);
+
+		let newHistory = groupChatHistory.map((history) => {
+			if (history.id == groupMember.groupChat.id) {
+				let newMembers = history.members.map((member) => {
+					if (member.id == groupMember.id) {
+						return { ...member, role: groupMember.role };
+					}
+					return member;
+				});
+				return { ...history, members: newMembers };
+			}
+			return history;
+		});
+		groupChatHistory = newHistory;
+		if ($selectedGroup?.id == groupMember.groupChat.id) {
+			setSelectedMessagesMembers();
+		}
 	};
 
 	$socket.on(socketEvent.RECEIVE_GROUP_MESSAGE, onGroupMessage);
@@ -389,6 +417,17 @@
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_MUTED);
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_UNMUTED);
 	});
+
+	function iAmAdminOrOwner(selected: GroupChatDto | null, members: GroupProfileDto[]): boolean {
+		if ($profile.id == selected?.owner.id) {
+			return true;
+		}
+		if (members.find((m) => m.profile.id == $profile.id)?.role == 'admin') {
+			return true;
+		}
+		return false;
+		// TODO: implementar verificação de admin
+	}
 
 	loadingGroups = loadAllGroups();
 	setSelectedMessagesMembers();
@@ -467,10 +506,13 @@
 				<GroupMembers
 					{members}
 					{getAvatarFromId}
+					iAmAdminOrOwner={iAmAdminOrOwner($selectedGroup, members)}
 					bind:addMember
 					on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
 					on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
 					on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
+					on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
+					on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
 				/>
 			</div>
 		{:else}

@@ -137,6 +137,22 @@ export async function updateGroupChatPassword(chatId: number, password: string):
 	}
 }
 
+export async function updateGroupChatMemberRole(
+	chatId: number,
+	profileId: number,
+	role: string
+): Promise<boolean | number> {
+	try {
+		let res = await chatService.updateGroupChatMemberRole(chatId, profileId, role);
+		return res.data.updated;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return false;
+		}
+		throw error;
+	}
+}
+
 export async function deleteGroupChatPassword(chatId: number): Promise<boolean> {
 	try {
 		await chatService.deleteGroupChatPassword(chatId);
