@@ -82,14 +82,13 @@ export async function addGroupChatUser(
 export async function kickGroupChatUser(
 	groupId: number,
 	profileId: number
-): Promise<boolean | number> {
-	// [ ] conferir retorno na rota chat/group
+): Promise<boolean> {
 	try {
-		const response = await chatService.kickGroupChatMember(groupId, profileId);
-		return response.data.affected;
+		await chatService.kickGroupChatMember(groupId, profileId);
+		return true;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			return error.response.status;
+			return false;
 		}
 		throw error;
 	}

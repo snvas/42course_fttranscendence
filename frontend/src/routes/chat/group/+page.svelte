@@ -169,7 +169,8 @@
 	async function onKickGroupChatUser(selected: GroupChatDto | null, profileId: number) {
 		let res = await kickGroupChatUser(selected!.id, profileId);
 
-		if (typeof res === 'number') {
+		// succesful kick is recieved by socket
+		if (res) {
 			return res;
 		}
 	}
@@ -426,7 +427,6 @@
 			return true;
 		}
 		return false;
-		// TODO: implementar verificação de admin
 	}
 
 	function iAmMuted(members: GroupProfileDto[]): boolean {

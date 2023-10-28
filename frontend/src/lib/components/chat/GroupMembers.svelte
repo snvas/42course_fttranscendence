@@ -96,7 +96,6 @@
 						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 					>
 						{#if !itIsMyProfile(member) && !($selectedGroup?.owner.id == member.profile.id)}
-							<!-- TODO: turn admin, mute, kick, ban -->
 							{#if iAmAdminOrOwner}
 								{#if $selectedGroup?.owner.id == $profile.id}
 									{#if member.role == 'admin'}
