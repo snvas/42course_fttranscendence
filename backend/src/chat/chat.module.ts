@@ -11,12 +11,22 @@ import { ChatManagementGuard } from './guards/chat-management.guard';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { ChatOwnerGuard } from './guards/chat-owner-guard';
 import { ChatAdminGuard } from './guards/chat-admin-guard';
+import { GroupChatService } from './services/group-chat.service';
+import { PrivateChatService } from './services/private-chat.service';
+import { GroupMemberService } from './services/group-member.service';
+import { PlayerStatusService } from './services/player-status.service';
+import { GroupMessageService } from './services/group-message.service';
 
 @Module({
   controllers: [ChatController],
   providers: [
     ChatGateway,
     ChatService,
+    PlayerStatusService,
+    PrivateChatService,
+    GroupChatService,
+    GroupMessageService,
+    GroupMemberService,
     WsAuthenticatedGuard,
     ChatManagementGuard,
     ChatOwnerGuard,

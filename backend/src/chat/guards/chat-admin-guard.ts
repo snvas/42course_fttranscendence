@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { ProfileService } from '../../profile/profile.service';
-import { ChatService } from '../chat.service';
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import { ChatRole } from '../types/chat-role.type';
+import { GroupMemberService } from '../services/group-member.service';
+import { GroupChatEntity } from '../../db/entities';
+import { GroupChatService } from '../services/group-chat.service';
 
 // This guard is used to authorize actions from group chat admin/owner members to non-members
 
@@ -18,7 +20,8 @@ export class ChatAdminGuard implements CanActivate {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly chatService: ChatService,
+    private readonly groupChatService: GroupChatService,
+    private readonly groupMemberService: GroupMemberService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,9 +35,12 @@ export class ChatAdminGuard implements CanActivate {
       return false;
     }
 
-    const chatRole: ChatRole = await this.chatService.getGroupMemberRole(
-      chatId,
-      profile.id,
+    const groupChat: GroupChatEntity =
+      await this.groupChatService.getGroupChatById(chatId);
+
+    const chatRole: ChatRole = await this.groupMemberService.getGroupMemberRole(
+      groupChat,
+      profile,
     );
 
     if (chatRole.role !== 'admin' && chatRole.role !== 'owner') {

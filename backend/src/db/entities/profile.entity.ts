@@ -1,10 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { Profile } from '../../profile/interfaces/profile.interface';
@@ -65,12 +67,9 @@ export class ProfileEntity implements Profile {
   @OneToMany(() => PrivateMessageEntity, (message) => message.receiver)
   receivedPrivateMessages: PrivateMessageEntity[];
 
-  // @CreateDateColumn()
-  // createdAt: Date;
-  //
-  // @UpdateDateColumn()
-  // updatedAt: Date;
-  //
-  // @DeleteDateColumn()
-  // deletedAt?: Date;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

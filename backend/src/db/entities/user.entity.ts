@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { FortyTwoUser } from '../../auth';
 
 @Entity({ name: 'users' })
@@ -27,12 +33,9 @@ export class UserEntity implements FortyTwoUser {
   @Column({ nullable: true })
   otpSecret?: string;
 
-  // @CreateDateColumn()
-  // createdAt: Date;
-  //
-  // @UpdateDateColumn()
-  // updatedAt: Date;
-  //
-  // @DeleteDateColumn()
-  // deletedAt?: Date;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

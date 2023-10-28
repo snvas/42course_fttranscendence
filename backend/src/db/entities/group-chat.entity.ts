@@ -1,4 +1,4 @@
-import { GroupChat } from '../../chat/interfaces/group-chat.interface';
+import { GroupChat } from '../../chat/interfaces/group/group-chat.interface';
 import {
   Column,
   CreateDateColumn,
@@ -36,4 +36,7 @@ export class GroupChatEntity implements GroupChat {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  updatedAt: Date;
 }

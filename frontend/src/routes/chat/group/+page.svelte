@@ -11,7 +11,7 @@
 		GroupChatEventDto,
 		GroupMemberDto,
 		GroupProfileDto,
-		ConversationDto
+		MessageConversationDto
 	} from '$lib/dtos';
 	import {
 		readAllGroupChats,
@@ -119,7 +119,7 @@
 				if (history.id != backendMessage.groupChat.id) {
 					return history;
 				}
-				if (history.messages.find((m: ConversationDto) => m.id === backendMessage.id)) {
+				if (history.messages.find((m: MessageConversationDto) => m.id === backendMessage.id)) {
 					return history;
 				}
 				history.messages.push(backendMessage);

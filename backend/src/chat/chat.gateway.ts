@@ -7,14 +7,16 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { ChatService } from './chat.service';
 import { Server } from 'socket.io';
 import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
-import { PrivateMessageDto } from './models/private-message.dto';
-import { GroupMessageDto } from './models/group-message.dto';
+import { PrivateMessageDto } from './models/private/private-message.dto';
+import { GroupMessageDto } from './models/group/group-message.dto';
 import { socketEvent } from '../utils/socket-events';
+import { PlayerStatusService } from './services/player-status.service';
+import { PrivateChatService } from './services/private-chat.service';
+import { GroupChatService } from './services/group-chat.service';
 
 @WebSocketGateway({
   cors: {
@@ -29,7 +31,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly playerService: PlayerStatusService,
+    private readonly privateChatService: PrivateChatService,
+    private readonly groupChatService: GroupChatService,
+  ) {}
 
   async getServer(): Promise<Server> {
     return this.server;
@@ -40,7 +46,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     this.logger.log(`### Client connected: ${socket.id}`);
 
-    if (!this.chatService.isConnectionAuthenticated(socket)) {
+    if (!this.playerService.isPlayerAuthenticated(socket)) {
       return;
     }
 
@@ -48,15 +54,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Authenticated user: ${JSON.stringify(socket.request.user)}`,
     );
 
-    await this.chatService.setPlayerStatus(socket, 'online');
+    await this.playerService.setPlayerStatus(socket, 'online');
 
-    const rooms: string[] = await this.chatService.getPlayerChatRooms(socket);
+    const rooms: string[] = await this.groupChatService.getPlayerGroupChatNames(
+      socket,
+    );
 
     socket.join(rooms);
 
     this.server.emit(
       socketEvent.PLAYERS_STATUS,
-      await this.chatService.getPlayersStatus(),
+      await this.playerService.getPlayersStatus(),
     );
   }
 
@@ -65,15 +73,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     this.logger.log(`Client disconnected: ${socket.id}`);
 
-    if (!this.chatService.isConnectionAuthenticated(socket)) {
+    if (!this.playerService.isPlayerAuthenticated(socket)) {
       return;
     }
 
-    await this.chatService.removePlayerStatus(socket);
+    await this.playerService.removePlayerStatus(socket);
 
     socket.broadcast.emit(
       socketEvent.PLAYERS_STATUS,
-      await this.chatService.getPlayersStatus(),
+      await this.playerService.getPlayersStatus(),
     );
   }
 
@@ -85,10 +93,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<PrivateMessageDto | null> {
     try {
       const receiverSocket: AuthenticatedSocket | undefined =
-        await this.chatService.getPlayerSocket(message.receiver.id);
+        await this.playerService.getPlayerSocket(message.receiver.id);
 
       const privateMessage: PrivateMessageDto =
-        await this.chatService.handlePrivateMessage(message);
+        await this.privateChatService.handlePrivateMessage(message);
 
       if (receiverSocket) {
         socket
@@ -111,7 +119,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<GroupMessageDto | null> {
     try {
       const groupMessage: GroupMessageDto =
-        await this.chatService.handleGroupMessage(socket, message);
+        await this.groupChatService.handleGroupMessage(socket, message);
 
       if (groupMessage.groupChat.id) {
         socket

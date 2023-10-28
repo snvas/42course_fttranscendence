@@ -5,8 +5,9 @@ import {
   Index,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { GroupMember } from '../../chat/interfaces/group-member.interface';
+import { GroupMember } from '../../chat/interfaces/group/group-member.interface';
 import { GroupChatEntity } from './group-chat.entity';
 import { ProfileEntity } from './profile.entity';
 
@@ -22,6 +23,9 @@ export class GroupMemberEntity implements GroupMember {
   @Column({ default: false })
   isMuted: boolean;
 
+  @Column({ default: false })
+  isBanned: boolean;
+
   @ManyToOne(() => GroupChatEntity, (chat) => chat.members, {
     onDelete: 'CASCADE',
   })
@@ -32,4 +36,7 @@ export class GroupMemberEntity implements GroupMember {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
