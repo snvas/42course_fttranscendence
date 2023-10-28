@@ -24,6 +24,20 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  async authenticate(req: any, options: any) {
+    if (this.configService.get<boolean>('APP_MOCK_OAUTH2_LOGIN')) {
+      if (req.path.endsWith('login')) {
+        (this as any).redirect('/api/auth/42/redirect');
+        return;
+      }
+      (this as any).success(
+        await this.authService.loginUser(this.generateFakeUser()),
+      );
+      return;
+    }
+    super.authenticate(req, options);
+  }
+
   async validate(
     accessToken: string,
     refreshToken: string,

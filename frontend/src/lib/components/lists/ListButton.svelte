@@ -1,5 +1,16 @@
 <script lang="ts">
-	export let type: 'chat' | 'play' | 'block' | 'friend' | 'unblock' | 'join' | 'leave';
+	export let type:
+		| 'chat'
+		| 'play'
+		| 'block'
+		| 'friend'
+		| 'unblock'
+		| 'join'
+		| 'leave'
+		| 'addMember'
+		| 'mute'
+		| 'unmute'
+		| 'kick';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
 		chat: {
@@ -39,11 +50,34 @@
 			img: '/bloqueado.png',
 			alt: 'leave this group',
 			text: 'LEAVE'
+		},
+		addMember: {
+			img: '/adicionar-usuario.png',
+			alt: 'add member',
+			text: 'ADD'
+		},
+		kick: {
+			// TODO: corrigir corrigir icon
+			img: '/botao-excluir.png',
+			alt: 'kick this member',
+			text: 'KICK'
+		},
+		mute: {
+			// TODO: corrigir corrigir icon
+			img: '/audio-mudo.png',
+			alt: 'mute this member',
+			text: 'MUTE'
+		},
+		unmute: {
+			// TODO: corrigir corrigir icon
+			img: '/microfone.png',
+			alt: 'unmute this member',
+			text: 'UNMUTE'
 		}
 	};
 </script>
 
-<button class="w-8 xl:w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
-	<img src={typeObject[type].img} alt={typeObject[type].alt} />
-	<p class="text-center max-xl:text-xs">{typeObject[type].text}</p>
+<button class="w-10 xl:w-12 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
+	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-8 mx-auto" />
+	<p class="max-xl:text-xs lg:text-xs text-center">{typeObject[type].text}</p>
 </button>

@@ -8,6 +8,7 @@ import type {
 	GroupChatUpdatedResponseDto,
 	GroupCreationDto,
 	GroupMemberDeletedResponseDto,
+	GroupMemberUpdatedResponseDto,
 	GroupMemberDto,
 	GroupMessageDto,
 	PrivateMessageDto,
@@ -102,7 +103,6 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}/leave`);
 	}
 
-	// TODO:
 	public updateGroupChatPassword(
 		chatId: number,
 		password: string
@@ -110,7 +110,6 @@ class ChatService {
 		return this.axiosInstance.put(`/group/${chatId}/password`, { password });
 	}
 
-	// TODO:
 	public deleteGroupChatPassword(
 		chatId: number
 	): Promise<AxiosResponse<GroupChatUpdatedResponseDto>> {
@@ -125,7 +124,6 @@ class ChatService {
 		return this.axiosInstance.post(`/group/${chatId}/admin/${profileId}`);
 	}
 
-	// TODO:
 	public addGroupChatUser(
 		chatId: number,
 		profileId: number
@@ -142,12 +140,27 @@ class ChatService {
 		return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, { role });
 	}
 
-	// TODO:
 	public kickGroupChatMember(
 		chatId: number,
 		profileId: number
 	): Promise<AxiosResponse<GroupMemberDeletedResponseDto>> {
 		return this.axiosInstance.delete(`/group/${chatId}/member/${profileId}`);
+	}
+
+	// TODO
+	public muteGroupChatMember(
+		chatId: number,
+		profileId: number
+	): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
+		return this.axiosInstance.put(`/group/${chatId}/mute/${profileId}`);
+	}
+	
+	// TODO
+	public unmuteGroupChatMember(
+		chatId: number,
+		profileId: number
+	): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
+		return this.axiosInstance.put(`/group/${chatId}/unmute/${profileId}`);
 	}
 }
 

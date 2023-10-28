@@ -46,9 +46,13 @@
 	$: confirmJoin, (alertPass = alerts['none']);
 </script>
 
-<form class="h-full w-full">
+
+<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col">
+<form>
+	
 	{#if confirmJoin}
-		<h1>Confirm join group {confirmJoin.name}</h1>
+		<h1 class="pb-10 text-center">Confirm to Join Group <br/>
+			<span class="text-yellow-500 text-4xl"> {confirmJoin.name}</span></h1>
 		{#if confirmJoin.visibility == 'private'}
 			<p class="text-red-500 {alertPass != '' ? 'block' : 'invisible'}">{alertPass}</p>
 			<input
@@ -61,3 +65,4 @@
 		<button class="btn-primary" on:click={() => onJoinGroup()}>CONFIRM</button>
 	{/if}
 </form>
+</div>

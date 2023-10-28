@@ -263,6 +263,16 @@ export class ChatController {
         profile: deletedResponseAndMember.profile,
       } as GroupMemberDto);
 
+    (await this.messageGateway.getServer())
+      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
+        id: deletedResponseAndMember.id,
+        role: deletedResponseAndMember.role,
+        isMuted: deletedResponseAndMember.isMuted,
+        groupChat: deletedResponseAndMember.groupChat,
+        profile: deletedResponseAndMember.profile,
+      } as GroupMemberDto);
+
     return {
       deleted: deletedResponseAndMember.deleted,
       affected: deletedResponseAndMember.affected,
