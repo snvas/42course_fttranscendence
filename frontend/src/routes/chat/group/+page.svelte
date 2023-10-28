@@ -215,27 +215,19 @@
 			loadingGroups = readChatHistory();
 			groupChatHistory = await loadingGroups;
 		}
-		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
-			if (history.id != memberJoined.groupChat.id) {
-				return history;
+		let historyChanged = false;
+		for (let history of groupChatHistory) {
+			if (history.id === memberJoined.groupChat.id) {
+				const memberExists = history.members.some((member) => member.id === memberJoined.id);
+				if (!memberExists) {
+					history.members.push(memberJoined);
+					historyChanged = true;
+				}
+				break;
 			}
-
-			if (history.members.find((v) => v.id === memberJoined.id)) {
-				return history;
-			}
-
-			return {
-				...history,
-				members: [...history.members, memberJoined]
-			};
-		});
-
-		if (JSON.stringify(groupChatHistory) != JSON.stringify(newHistory)) {
-			groupChatHistory = newHistory;
-
-			if ($selectedGroup?.id == memberJoined.groupChat.id) {
-				setSelectedMessagesMembers();
-			}
+		}
+		if (historyChanged && $selectedGroup?.id === memberJoined.groupChat.id) {
+			setSelectedMessagesMembers();
 		}
 	}
 
@@ -333,21 +325,32 @@
 		updateMuteStatusForGroupChatMember(groupMemberDto, false);
 	};
 
-	const updateMuteStatusForGroupChatMember = (GroupMemberDto: GroupMemberDto, isMuted: boolean): void => {
-		console.log(`### received ${isMuted ? 'muted' : 'unmuted'} group chat member ${JSON.stringify(GroupMemberDto)}`);
+	const updateMuteStatusForGroupChatMember = (
+		GroupMemberDto: GroupMemberDto,
+		isMuted: boolean
+	): void => {
+		console.log(
+			`### received ${isMuted ? 'muted' : 'unmuted'} group chat member ${JSON.stringify(
+				GroupMemberDto
+			)}`
+		);
 
-		const groupIndex = groupChatHistory.findIndex(history => history.id === GroupMemberDto.groupChat.id);
+		const groupIndex = groupChatHistory.findIndex(
+			(history) => history.id === GroupMemberDto.groupChat.id
+		);
 
-		if (groupIndex !== -1){
+		if (groupIndex !== -1) {
 			const group = groupChatHistory[groupIndex];
 
-			const memmberIndex = group.members.findIndex(member => member.profile.id === GroupMemberDto.profile.id);
+			const memmberIndex = group.members.findIndex(
+				(member) => member.profile.id === GroupMemberDto.profile.id
+			);
 
-			if (memmberIndex !== -1 && group.members[memmberIndex].isMuted != isMuted){
+			if (memmberIndex !== -1 && group.members[memmberIndex].isMuted != isMuted) {
 				group.members[memmberIndex].isMuted = isMuted;
 
-				groupChatHistory[groupIndex] = {...group, members: [...group.members]};
-				if ($selectedGroup?.id === GroupMemberDto.groupChat.id){
+				groupChatHistory[groupIndex] = { ...group, members: [...group.members] };
+				if ($selectedGroup?.id === GroupMemberDto.groupChat.id) {
 					setSelectedMessagesMembers();
 				}
 			}
