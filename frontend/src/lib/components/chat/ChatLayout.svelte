@@ -34,7 +34,7 @@
 			</a>
 		</div>
 	</div>
-	<div class="flex-1 flex flex-col lg:flex-row gap-10 px-10 pb-10 h-0">
+	<div class="flex-1 flex flex-col lg:flex-row gap-5 px-10 pb-10 h-0">
 		<div class="gap-15 flex flex-col lg:w-1/4 flex-none w-full h-full">
 			<div class="border-4 border-white w-full flex flex-col h-full rounded-3xl flex-none">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">

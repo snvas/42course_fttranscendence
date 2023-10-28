@@ -20,6 +20,8 @@
 		leaveGroupChat,
 		addGroupChatUser,
 		kickGroupChatUser,
+		muteGroupChatMember,
+		unmuteGroupChatMember,
 		getAvatarFromId
 	} from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
@@ -171,6 +173,22 @@
 		}
 	}
 
+	async function onMuteGroupChatMember(group: GroupChatDto | null, profileId: number) {
+		let res = await muteGroupChatMember(group!.id, profileId);
+
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
+	async function onUnmuteGroupChatMember(group: GroupChatDto | null, profileId: number) {
+		let res = await unmuteGroupChatMember(group!.id, profileId);
+
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
 	function removeMemberFromGroup(member: GroupMemberDto) {
 		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
 			if (history.id != member.groupChat.id) {
@@ -197,27 +215,19 @@
 			loadingGroups = readChatHistory();
 			groupChatHistory = await loadingGroups;
 		}
-		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
-			if (history.id != memberJoined.groupChat.id) {
-				return history;
+		let historyChanged = false;
+		for (let history of groupChatHistory) {
+			if (history.id === memberJoined.groupChat.id) {
+				const memberExists = history.members.some((member) => member.id === memberJoined.id);
+				if (!memberExists) {
+					history.members.push(memberJoined);
+					historyChanged = true;
+				}
+				break;
 			}
-
-			if (history.members.find((v) => v.id === memberJoined.id)) {
-				return history;
-			}
-
-			return {
-				...history,
-				members: [...history.members, memberJoined]
-			};
-		});
-
-		if (JSON.stringify(groupChatHistory) != JSON.stringify(newHistory)) {
-			groupChatHistory = newHistory;
-
-			if ($selectedGroup?.id == memberJoined.groupChat.id) {
-				setSelectedMessagesMembers();
-			}
+		}
+		if (historyChanged && $selectedGroup?.id === memberJoined.groupChat.id) {
+			setSelectedMessagesMembers();
 		}
 	}
 
@@ -307,6 +317,46 @@
 		removeMemberFromGroup(memberKicked);
 	};
 
+	const onMutedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+		updateMuteStatusForGroupChatMember(groupMemberDto, true);
+	};
+
+	const onUnMutedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
+		updateMuteStatusForGroupChatMember(groupMemberDto, false);
+	};
+
+	const updateMuteStatusForGroupChatMember = (
+		GroupMemberDto: GroupMemberDto,
+		isMuted: boolean
+	): void => {
+		console.log(
+			`### received ${isMuted ? 'muted' : 'unmuted'} group chat member ${JSON.stringify(
+				GroupMemberDto
+			)}`
+		);
+
+		const groupIndex = groupChatHistory.findIndex(
+			(history) => history.id === GroupMemberDto.groupChat.id
+		);
+
+		if (groupIndex !== -1) {
+			const group = groupChatHistory[groupIndex];
+
+			const memmberIndex = group.members.findIndex(
+				(member) => member.profile.id === GroupMemberDto.profile.id
+			);
+
+			if (memmberIndex !== -1 && group.members[memmberIndex].isMuted != isMuted) {
+				group.members[memmberIndex].isMuted = isMuted;
+
+				groupChatHistory[groupIndex] = { ...group, members: [...group.members] };
+				if ($selectedGroup?.id === GroupMemberDto.groupChat.id) {
+					setSelectedMessagesMembers();
+				}
+			}
+		}
+	};
+
 	// TODO
 	const onUpdatedGroupChatMemberRole = (groupMemberDto: GroupMemberDto): void => {
 		console.log(`### received updated group chat member role ${JSON.stringify(groupMemberDto)}`);
@@ -322,6 +372,8 @@
 	$socket.on(socketEvent.ADDED_GROUP_CHAT_MEMBER, onAddedGroupChatMember);
 	$socket.on(socketEvent.KICKED_GROUP_CHAT_MEMBER, onKickedGroupChatMember);
 	$socket.on(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, onUpdatedGroupChatMemberRole);
+	$socket.on(socketEvent.GROUP_CHAT_MEMBER_MUTED, onMutedGroupChatMember);
+	$socket.on(socketEvent.GROUP_CHAT_MEMBER_UNMUTED, onUnMutedGroupChatMember);
 
 	onDestroy(() => {
 		$socket.off(socketEvent.RECEIVE_GROUP_MESSAGE);
@@ -334,12 +386,16 @@
 		$socket.off(socketEvent.ADDED_GROUP_CHAT_MEMBER);
 		$socket.off(socketEvent.KICKED_GROUP_CHAT_MEMBER);
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED);
+		$socket.off(socketEvent.GROUP_CHAT_MEMBER_MUTED);
+		$socket.off(socketEvent.GROUP_CHAT_MEMBER_UNMUTED);
 	});
 
 	loadingGroups = loadAllGroups();
 	setSelectedMessagesMembers();
 
 	$: $selectedGroup, setSelectedMessagesMembers();
+
+	//$: console.log('member.id', groupChatHistory);
 
 	// $: console.log('groupChatHistory', groupChatHistory);
 	// $: console.log('selectedGroup', $selectedGroup);
@@ -396,7 +452,7 @@
 		{:else if confirmLeave}
 			<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
 		{:else if $selectedGroup}
-			<div class="w-full h-full flex flex-row gap-10">
+			<div class="w-full h-full flex flex-row gap-5">
 				{#if addMember}
 					<AddGroupMember
 						bind:addMember
@@ -413,6 +469,8 @@
 					{getAvatarFromId}
 					bind:addMember
 					on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
+					on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
+					on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
 				/>
 			</div>
 		{:else}

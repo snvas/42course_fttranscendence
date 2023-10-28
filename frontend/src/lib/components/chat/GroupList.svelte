@@ -37,7 +37,7 @@
 				disabled={!group.belong}
 			>
 				<p class="text-start w-full truncate">{group.name}</p>
-				<p class="text-gray-500 text-xs">{group.visibility}</p>
+				<p class="text-slate-500 text-xs">{group.visibility}</p>
 			</button>
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
 				{#if !group.belong}

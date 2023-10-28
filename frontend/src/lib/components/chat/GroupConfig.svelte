@@ -47,19 +47,26 @@
 
 <div class="w-full h-full flex flex-row gap-10">
 	<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
-		<div class="flex flex-row justify-between">
-			{configGroup?.name}
+		<div class="flex flex-row justify-end">
 			<button on:click={() => (configGroup = null)}>
 				<div class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" />
 			</button>
 		</div>
-		<div class="w-full h-full flex flex-col rounded-3xl overflow-y-auto">
-			<h2 class="text-center">Set Group Visibility</h2>
+		<div class="flex flex-row justify-center p-5">
+			<h1 class="text-center text-yellow-500 text-3xl">{configGroup?.name}</h1>
+			<hr />
+		</div>
+
+		<div class="w-full h-full flex flex-col overflow-y-auto">
+			<h2 class="text-center text-2xl">Set Group Visibility</h2>
 			<div class="flex flex-col gap-5 p-10">
 				{#each options as value}
-					<label class="text-xl">
-						<input type="radio" {value} bind:group={visibility} disabled={updated} />
+					<label class="text-xl flex items-center cursor-pointer">
+						<input type="radio" class="sr-only" {value} bind:group={visibility} disabled={updated} />
+						<span class="w-6 h-6 border rounded-full mr-2 flex items-center justify-center">
+						<span class="w-3 h-3 rounded-full {value == visibility ? 'bg-green-500' : 'bg-slate-700 '}"></span></span>
 						{value}
+
 					</label>
 				{/each}
 				<div

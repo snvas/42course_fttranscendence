@@ -62,34 +62,32 @@
 	$: console.log(memberStatus);
 </script>
 
-<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-5 rounded-3xl">
-	MEMBERS
-	<div class="overflow-auto">
+<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-2 rounded-3xl">
+	<p class="text-center pb-3">MEMBERS</p>
+	<hr/>
+	<div class="overflow-y-auto w-full max-w-full">
 		{#each memberStatus as member}
 			<div>
 				<div class="flex flex-row w-full border-b py-2">
-					<div class="flex flex-row gap-1 xl:gap-4 items-center grow">
-						<div class="w-12 flex-none">
+					<div class="flex flex-row gap-1 xl:gap-2 items-center grow">
+						<div class="w-8 flex-none">
 							<AvatarImage avatar={getAvatarFromId(member.profile.avatarId ?? null)} />
 						</div>
 						<div class="flex-1 flex flex-col items-start w-0">
-							<p class=" text-start w-full truncate">{member.profile.nickname}</p>
+							<p class=" text-start text-sm w-full truncate">{member.profile.nickname}</p>
 
 							<div class="flex items-center gap-2">
 								<!-- {#if member.blocked}
 								<div class="text-red-800 text-xs">Blocked</div>
 								{:else} -->
+								<p class="text-xs text-yellow-500">{member.role} </p>
 								<p class="{statusColor[member.status]} text-xs">{member.status}</p>
-								{member.role}
 
 								<!-- {#if user.friend} -->
 								<!-- <div class="text-gray-600 text-xs">|</div>
 									<div class="text-gray-600 text-xs">Friend</div> -->
 								<!-- {/if} -->
 								<!--{/if} -->
-								{#if member.isMuted}
-									<p>Muted</p>
-								{/if}
 							</div>
 						</div>
 					</div>
@@ -100,6 +98,14 @@
 							<!-- TODO: turn admin, mute, kick, ban -->
 							{#if iAmAdminOrOwner($selectedGroup)}
 								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
+								{#if member.isMuted}
+									<ListButton
+										on:click={() => dispatch('unmute', member.profile.id)}
+										type="unmute"
+									/>
+								{:else}
+									<ListButton on:click={() => dispatch('mute', member.profile.id)} type="mute" />
+								{/if}
 							{/if}
 						{/if}
 					</div>
