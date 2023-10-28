@@ -11,7 +11,6 @@ export async function getPrivateMessageHistory(): Promise<PrivateMessageHistoryD
 	try {
 		const response: AxiosResponse<PrivateMessageHistoryDto[]> =
 			await chatService.getPrivateMessageHistory();
-
 		return response.data;
 	} catch (error) {
 		throw error;
@@ -94,6 +93,30 @@ export async function kickGroupChatUser(
 		}
 		throw error;
 	}
+}
+
+export async function muteGroupChatMember(groupId: number, profileId: number): Promise<boolean | number> {
+	try {
+		const response = await chatService.muteGroupChatMember(groupId, profileId);
+		return response.data.updated;
+	} catch (error){
+		if(isAxiosError(error) && error.response){
+			return error.response.status;
+		}
+		throw error;
+	}
+}
+
+export async function unmuteGroupChatMember(groupId: number, profileId: number): Promise<boolean | number> {
+try {
+	const response = await chatService.unmuteGroupChatMember(groupId, profileId);
+	return response.data.updated;
+} catch (error){
+	if(isAxiosError(error) && error.response){
+		return error.response.status;
+	}
+	throw error;
+}
 }
 
 export async function updateGroupChatPassword(chatId: number, password: string): Promise<boolean> {

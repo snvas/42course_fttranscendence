@@ -8,6 +8,8 @@
 		| 'join'
 		| 'leave'
 		| 'addMember'
+		| 'mute'
+		| 'unmute'
 		| 'kick';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
@@ -59,6 +61,18 @@
 			img: '/botao-excluir.png',
 			alt: 'kick this member',
 			text: 'KICK'
+		},
+		mute: {
+			// TODO: corrigir corrigir icon
+			img: '/audio-mudo.png',
+			alt: 'mute this member',
+			text: 'MUTE'
+		},
+		unmute: {
+			// TODO: corrigir corrigir icon
+			img: '/microfone.png',
+			alt: 'unmute this member',
+			text: 'UNMUTE'
 		}
 	};
 </script>

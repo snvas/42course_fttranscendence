@@ -87,9 +87,6 @@
 									<div class="text-gray-600 text-xs">Friend</div> -->
 								<!-- {/if} -->
 								<!--{/if} -->
-								{#if member.isMuted}
-									<p>Muted</p>
-								{/if}
 							</div>
 						</div>
 					</div>
@@ -100,6 +97,14 @@
 							<!-- TODO: turn admin, mute, kick, ban -->
 							{#if iAmAdminOrOwner($selectedGroup)}
 								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
+								{#if member.isMuted}
+									<ListButton
+										on:click={() => dispatch('unmute', member.profile.id)}
+										type="unmute"
+									/>
+								{:else}
+									<ListButton on:click={() => dispatch('mute', member.profile.id)} type="mute" />
+								{/if}
 							{/if}
 						{/if}
 					</div>
