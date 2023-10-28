@@ -57,7 +57,7 @@
 			<hr />
 		</div>
 
-		<div class="w-full h-full flex flex-col overflow-y-auto">
+		<div class="w-full h-full flex flex-col overflow-y-auto items-center">
 			<h2 class="text-center text-2xl">Set Group Visibility</h2>
 			<div class="flex flex-col gap-5 p-10">
 				{#each options as value}
@@ -105,6 +105,11 @@
 					</button>
 				</div>
 			</div>
+			<button class="btn-deleted w-1/2" on:click={() => {dispatch('delete')}}>
+				<div class="fa fa-trash text-3xl icon-link text-red-300" aria-hidden="true" /> <span class="text-red-300">DELETE GROUP</span>
+			</button>
 		</div>
+
+
 	</div>
 </div>
