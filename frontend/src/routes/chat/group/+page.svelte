@@ -333,7 +333,7 @@
 			}
 
 			let newMembers = history.members.map((member) => {
-				if (member.id === groupMemberDto.profile.id) {
+				if (member.profile.id === groupMemberDto.profile.id) {
 				return {
 					...member,
 					isMuted: true
@@ -359,7 +359,7 @@
 			}
 
 			let newMembers = history.members.map((member) => {
-				if (member.id === groupMemberDto.profile.id) {
+				if (member.profile.id === groupMemberDto.profile.id) {
 				return {
 					...member,
 					isMuted: false
@@ -468,7 +468,7 @@
 		{:else if confirmLeave}
 			<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
 		{:else if $selectedGroup}
-			<div class="w-full h-full flex flex-row gap-10">
+			<div class="w-full h-full flex flex-row gap-5">
 				{#if addMember}
 					<AddGroupMember
 						bind:addMember
