@@ -231,8 +231,8 @@
 		}
 	}
 
-	async function onDeletedGroupChat(groupChat: GroupChatDto){
-		let res = await deleteGroupChatById(groupChat.id);
+	async function onDeletedGroupChat(groupChat: GroupChatDto | null){
+		let res = await deleteGroupChatById(groupChat!.id);
 		if (typeof res === 'number'){
 			return res;
 		}
