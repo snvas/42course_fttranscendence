@@ -429,6 +429,10 @@
 		// TODO: implementar verificação de admin
 	}
 
+	function iAmMuted(members: GroupProfileDto[]): boolean {
+		return members.find((m) => m.profile.id == $profile.id)?.isMuted ?? false;
+	}
+
 	loadingGroups = loadAllGroups();
 	setSelectedMessagesMembers();
 
@@ -501,7 +505,7 @@
 				{:else if configGroup}
 					<GroupConfig bind:configGroup />
 				{:else}
-					<GroupMessages bind:messages {sendMessage} bind:configGroup />
+					<GroupMessages bind:messages {sendMessage} bind:configGroup muted={iAmMuted(members)} />
 				{/if}
 				<GroupMembers
 					{members}

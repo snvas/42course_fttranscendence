@@ -67,17 +67,23 @@
 							<AvatarImage avatar={getAvatarFromId(member.profile.avatarId ?? null)} />
 						</div>
 						<div class="flex-1 flex flex-col items-start w-0">
-							<p class=" text-start text-sm w-full truncate">{member.profile.nickname}</p>
+							<p
+								class=" text-start text-sm w-full truncate {member.isMuted ? 'text-gray-500' : ''} "
+							>
+								{member.profile.nickname}
+							</p>
 
-							<div class="flex items-center gap-2">
+							<div class="flex text-xs items-center gap-2">
 								<!-- {#if member.blocked}
 								<div class="text-red-800 text-xs">Blocked</div>
 								{:else} -->
-								<p class="text-xs text-yellow-500">
+								<p class="text-yellow-500">
 									{$selectedGroup?.owner.id == member.profile.id ? 'owner' : member.role}
 								</p>
-								<p class="{statusColor[member.status]} text-xs">{member.status}</p>
-
+								<p class={statusColor[member.status]}>{member.status}</p>
+								{#if member.isMuted}
+									<p>muted</p>
+								{/if}
 								<!-- {#if user.friend} -->
 								<!-- <div class="text-gray-600 text-xs">|</div>
 									<div class="text-gray-600 text-xs">Friend</div> -->
@@ -105,7 +111,6 @@
 										/>
 									{/if}
 								{/if}
-								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
 								{#if member.isMuted}
 									<ListButton
 										on:click={() => dispatch('unmute', member.profile.id)}
@@ -114,6 +119,7 @@
 								{:else}
 									<ListButton on:click={() => dispatch('mute', member.profile.id)} type="mute" />
 								{/if}
+								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
 							{/if}
 						{/if}
 					</div>
