@@ -372,22 +372,25 @@
 
 	const onUpdatedGroupChatMemberRole = (groupMember: GroupMemberDto): void => {
 		console.log(`### received updated group chat member role ${JSON.stringify(groupMember)}`);
+		let newGroupHistory = groupChatHistory;
 
-		let newHistory = groupChatHistory.map((history) => {
-			if (history.id == groupMember.groupChat.id) {
-				let newMembers = history.members.map((member) => {
-					if (member.id == groupMember.id) {
-						return { ...member, role: groupMember.role };
-					}
-					return member;
-				});
-				return { ...history, members: newMembers };
+		let historyIndex = newGroupHistory.findIndex(
+			(history) => history.id == groupMember.groupChat.id
+		);
+
+		if (historyIndex !== -1) {
+			let memberIndex = newGroupHistory[historyIndex].members.findIndex(
+				(member) => member.profile.id == groupMember.profile.id
+			);
+
+			if (memberIndex !== -1) {
+				newGroupHistory[historyIndex].members[memberIndex].role = groupMember.role;
+
+				groupChatHistory = newGroupHistory;
+				if ($selectedGroup?.id == groupMember.groupChat.id) {
+					setSelectedMessagesMembers();
+				}
 			}
-			return history;
-		});
-		groupChatHistory = newHistory;
-		if ($selectedGroup?.id == groupMember.groupChat.id) {
-			setSelectedMessagesMembers();
 		}
 	};
 

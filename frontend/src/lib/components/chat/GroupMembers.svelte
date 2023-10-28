@@ -52,7 +52,7 @@
 
 	$: memberStatus = joinMemberStatus($onlineUsers, members);
 
-	$: console.log(memberStatus);
+	// $: console.log(memberStatus);
 </script>
 
 <div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-2 rounded-3xl">
