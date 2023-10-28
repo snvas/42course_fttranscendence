@@ -39,10 +39,14 @@ import { GroupMemberDeletedResponseDto } from './models/group/group-member-delet
 import { GroupChatService } from './services/group-chat.service';
 import { GroupMemberService } from './services/group-member.service';
 import { PrivateChatService } from './services/private-chat.service';
+import { ProfileService } from '../profile/profile.service';
+import { PlayerStatusService } from './services/player-status.service';
 
 @Controller('chat')
 export class ChatController {
   constructor(
+    private readonly profileService: ProfileService,
+    private readonly playerStatusService: PlayerStatusService,
     private readonly privateChatService: PrivateChatService,
     private readonly groupChatService: GroupChatService,
     public readonly groupMemberService: GroupMemberService,
@@ -225,6 +229,46 @@ export class ChatController {
     return groupMember;
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(ChatManagementGuard)
+  @Delete('group/:chatId/member/:profileId')
+  async kickGroupChatMember(
+    @Param('chatId', ParseIntPipe) chatId: number,
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<GroupMemberDeletedResponseDto> {
+    const deletedResponseAndMember: GroupMemberDeletedResponseDto &
+      GroupMemberDto = await this.groupMemberService.removeMemberFromGroupChat(
+      await this.groupChatService.getGroupChatById(chatId),
+      await this.profileService.findByProfileId(profileId),
+    );
+
+    (await this.messageGateway.getServer())
+      .to(`${chatId}`)
+      .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
+        id: deletedResponseAndMember.id,
+        role: deletedResponseAndMember.role,
+        isMuted: deletedResponseAndMember.isMuted,
+        isBanned: deletedResponseAndMember.isBanned,
+        groupChat: deletedResponseAndMember.groupChat,
+        profile: deletedResponseAndMember.profile,
+      } as GroupMemberDto);
+
+    (await this.messageGateway.getServer())
+      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
+        id: deletedResponseAndMember.id,
+        role: deletedResponseAndMember.role,
+        isMuted: deletedResponseAndMember.isMuted,
+        groupChat: deletedResponseAndMember.groupChat,
+        profile: deletedResponseAndMember.profile,
+      } as GroupMemberDto);
+
+    return {
+      deleted: deletedResponseAndMember.deleted,
+      affected: deletedResponseAndMember.affected,
+    } as GroupMemberDeletedResponse;
+  }
+
   @UseGuards(ChatOwnerGuard)
   @HttpCode(HttpStatus.OK)
   @Put('group/:chatId/member/:profileId/role')
@@ -255,36 +299,6 @@ export class ChatController {
       updated: groupMember.updated,
       affected: groupMember.affected,
     } as GroupMemberUpdatedResponseDto;
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(ChatManagementGuard)
-  @Delete('group/:chatId/member/:profileId')
-  async kickGroupChatMember(
-    @Param('chatId', ParseIntPipe) chatId: number,
-    @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<GroupMemberDeletedResponseDto> {
-    const deletedResponseAndMember: GroupMemberDeletedResponseDto &
-      GroupMemberDto = await this.groupChatService.removeMemberFromGroupChat(
-      chatId,
-      profileId,
-    );
-
-    (await this.messageGateway.getServer())
-      .to(`${chatId}`)
-      .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, {
-        id: deletedResponseAndMember.id,
-        role: deletedResponseAndMember.role,
-        isMuted: deletedResponseAndMember.isMuted,
-        isBanned: deletedResponseAndMember.isBanned,
-        groupChat: deletedResponseAndMember.groupChat,
-        profile: deletedResponseAndMember.profile,
-      } as GroupMemberDto);
-
-    return {
-      deleted: deletedResponseAndMember.deleted,
-      affected: deletedResponseAndMember.affected,
-    } as GroupMemberDeletedResponse;
   }
 
   @UseGuards(ChatManagementGuard)
@@ -358,6 +372,10 @@ export class ChatController {
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
+    (await this.messageGateway.getServer())
+      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
+
     return groupMemberDto;
   }
 
@@ -372,7 +390,11 @@ export class ChatController {
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
-      .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
+      .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
+
+    (await this.messageGateway.getServer())
+      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
 
     return groupMemberDto;
   }
