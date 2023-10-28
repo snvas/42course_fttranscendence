@@ -1,1 +1,1 @@
-export * from "../../../../../backend/src/ws/socket-events"
+export * from "../../../../../backend/src/ws/ws-events"

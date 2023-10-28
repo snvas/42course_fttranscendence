@@ -30,7 +30,7 @@ import { ChatGateway } from './chat.gateway';
 import { GroupChatHistoryDto } from './models/group/group-chat-history.dto';
 import { GroupChatDto } from './models/group/group-chat.dto';
 import { GroupMemberDto } from './models/group/group-member.dto';
-import { socketEvent } from '../ws/socket-events';
+import { socketEvent } from '../ws/ws-events';
 import { GroupMemberRoleUpdateDto } from './models/group/group-member-role-update.dto';
 import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updated-response.dto';
 import { Server } from 'socket.io';

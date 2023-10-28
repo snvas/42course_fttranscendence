@@ -3,9 +3,8 @@ import { Server } from 'socket.io';
 import passport from 'passport';
 import express from 'express';
 import { INestApplication, Logger } from '@nestjs/common';
-import { isAuthenticatedSocket } from '../socket-utils';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { socketEvent } from '../socket-events';
+import { socketEvent } from '../ws-events';
 import { PlayerStatusService } from '../../chat/services/player-status.service';
 import { GroupChatService } from '../../chat/services/group-chat.service';
 import { PlayerStatusDto } from '../../chat/models/player/player-status.dto';
@@ -38,7 +37,7 @@ export class WsEventsAdapter extends IoAdapter {
       async (socket: AuthenticatedSocket): Promise<void> => {
         this.logger.log(`### Client connected: ${socket.id}`);
 
-        if (!isAuthenticatedSocket(socket)) {
+        if (!this.isAuthenticatedSocket(socket)) {
           return;
         }
 
@@ -72,7 +71,7 @@ export class WsEventsAdapter extends IoAdapter {
       async (socket: AuthenticatedSocket): Promise<void> => {
         this.logger.log(`Client socket disconnected: ${socket.id}`);
 
-        if (!isAuthenticatedSocket) {
+        if (!this.isAuthenticatedSocket) {
           return;
         }
 
@@ -94,5 +93,19 @@ export class WsEventsAdapter extends IoAdapter {
     );
 
     return server;
+  }
+
+  private isAuthenticatedSocket(socket: AuthenticatedSocket): boolean {
+    if (
+      socket.request.user === undefined ||
+      socket.request.user.id === undefined
+    ) {
+      this.logger.warn(`### User not authenticated: [${socket.id}]`);
+      socket.emit('unauthorized', 'User not authenticated');
+      socket.disconnect();
+      return false;
+    }
+
+    return true;
   }
 }

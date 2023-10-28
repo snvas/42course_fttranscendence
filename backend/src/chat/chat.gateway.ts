@@ -13,7 +13,7 @@ import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
-import { socketEvent } from '../ws/socket-events';
+import { socketEvent } from '../ws/ws-events';
 import { PlayerStatusService } from './services/player-status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
@@ -44,13 +44,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    this.logger.log(`### Client connected to chat socket: ${socket.id}`);
+    this.logger.verbose(`### Client connected to chat socket: ${socket.id}`);
   }
 
   async handleDisconnect(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    this.logger.log(`Client disconnected from chat socket: ${socket.id}`);
+    this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
   }
 
   @UseGuards(WsAuthenticatedGuard)
