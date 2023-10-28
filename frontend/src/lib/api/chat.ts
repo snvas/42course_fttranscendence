@@ -54,7 +54,7 @@ export async function joinGroupChat(groupId: number, password?: string): Promise
 
 export async function leaveGroupChat(groupId: number): Promise<void | number> {
 	try {
-		let response = await chatService.leaveGroupChat(groupId);
+		const response = await chatService.leaveGroupChat(groupId);
 		return response.data;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
@@ -69,7 +69,7 @@ export async function addGroupChatUser(
 	profileId: number
 ): Promise<GroupMemberDto | number> {
 	try {
-		let response = await chatService.addGroupChatUser(groupId, profileId);
+		const response = await chatService.addGroupChatUser(groupId, profileId);
 		return response.data;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
@@ -85,7 +85,7 @@ export async function kickGroupChatUser(
 ): Promise<boolean | number> {
 	// [ ] conferir retorno na rota chat/group
 	try {
-		let response = await chatService.kickGroupChatMember(groupId, profileId);
+		const response = await chatService.kickGroupChatMember(groupId, profileId);
 		return response.data.affected;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
@@ -95,28 +95,34 @@ export async function kickGroupChatUser(
 	}
 }
 
-export async function muteGroupChatMember(groupId: number, profileId: number): Promise<boolean | number> {
+export async function muteGroupChatMember(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
 	try {
-		const response = await chatService.muteGroupChatMember(groupId, profileId);
-		return response.data.updated;
-	} catch (error){
-		if(isAxiosError(error) && error.response){
+		await chatService.muteGroupChatMember(groupId, profileId);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
 		throw error;
 	}
 }
 
-export async function unmuteGroupChatMember(groupId: number, profileId: number): Promise<boolean | number> {
-try {
-	const response = await chatService.unmuteGroupChatMember(groupId, profileId);
-	return response.data.updated;
-} catch (error){
-	if(isAxiosError(error) && error.response){
-		return error.response.status;
+export async function unmuteGroupChatMember(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
+	try {
+		await chatService.unmuteGroupChatMember(groupId, profileId);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
 	}
-	throw error;
-}
 }
 
 export async function updateGroupChatPassword(chatId: number, password: string): Promise<boolean> {

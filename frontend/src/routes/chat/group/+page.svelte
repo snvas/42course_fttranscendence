@@ -334,17 +334,21 @@
 
 			let newMembers = history.members.map((member) => {
 				if (member.id === groupMemberDto.profile.id) {
-					return {
-						...member,
-						isMuted: true
+				return {
+					...member,
+					isMuted: true
 					};
-				}
+				};
 				return member;
 			});
-			return {...history, members: newMembers};
+			return { ...history, members: newMembers };
 		});
-		groupChatHistory = newHistory;
-		setSelectedMessagesMembers();
+		if (JSON.stringify(groupChatHistory) != JSON.stringify(newHistory)) {
+			groupChatHistory = newHistory;
+			if ($selectedGroup?.id == groupMemberDto.groupChat.id) {
+				setSelectedMessagesMembers();
+			}
+		}
 	};
 
 	const onUnMutedGroupChatMember = (groupMemberDto: GroupMemberDto): void => {
@@ -356,11 +360,11 @@
 
 			let newMembers = history.members.map((member) => {
 				if (member.id === groupMemberDto.profile.id) {
-					return {
-						...member,
-						isMuted: false
-					};
-				}
+				return {
+					...member,
+					isMuted: false
+						};
+				};
 				return member;
 			});
 			return { ...history, members: newMembers };
@@ -406,6 +410,8 @@
 	setSelectedMessagesMembers();
 
 	$: $selectedGroup, setSelectedMessagesMembers();
+
+	//$: console.log('member.id', groupChatHistory);
 
 	// $: console.log('groupChatHistory', groupChatHistory);
 	// $: console.log('selectedGroup', $selectedGroup);

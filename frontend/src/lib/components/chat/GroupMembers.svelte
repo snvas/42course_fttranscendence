@@ -98,6 +98,7 @@
 							{#if iAmAdminOrOwner($selectedGroup)}
 								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
 								{#if member.isMuted}
+								<!--FIX: do not change button icon, but the return is correct-->
 									<ListButton
 										on:click={() => dispatch('unmute', member.profile.id)}
 										type="unmute"
