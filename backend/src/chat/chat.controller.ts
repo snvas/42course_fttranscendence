@@ -30,7 +30,7 @@ import { ChatGateway } from './chat.gateway';
 import { GroupChatHistoryDto } from './models/group/group-chat-history.dto';
 import { GroupChatDto } from './models/group/group-chat.dto';
 import { GroupMemberDto } from './models/group/group-member.dto';
-import { socketEvent } from '../utils/socket-events';
+import { socketEvent } from '../ws/socket-events';
 import { GroupMemberRoleUpdateDto } from './models/group/group-member-role-update.dto';
 import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updated-response.dto';
 import { Server } from 'socket.io';
@@ -58,7 +58,7 @@ export class ChatController {
   async getUserPrivateMessagesHistory(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<PrivateMessageHistoryDto[]> {
-    return await this.privateChatService.getUserPrivateMessagesHistory(user.id);
+    return await this.privateChatService.getMessageHistory(user.id);
   }
 
   @HttpCode(HttpStatus.OK)
