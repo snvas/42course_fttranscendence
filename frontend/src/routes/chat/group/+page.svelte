@@ -369,8 +369,8 @@
 		handleDeletedGroupChat(groupChatEvent.chatId);
 	};
 
-	async function handleDeletedGroupChat(chatId: number): Promise<number | void> {
-		groupChatHistory = groupChatHistory.filter(history => history.id !== chatId);
+	function handleDeletedGroupChat(chatId: number) {
+		groupsList = groupsList.filter(history => history.id !== chatId);
 			if ($selectedGroup?.id === chatId){
 				$selectedGroup = null;
 			}
