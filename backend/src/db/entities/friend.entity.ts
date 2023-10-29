@@ -1,8 +1,9 @@
 import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ProfileEntity } from './profile.entity';
+import { Friend } from '../../profile/interfaces/friend';
 
 @Entity({ name: 'friends' })
-export class FriendEntity {
+export class FriendEntity implements Friend {
   @PrimaryGeneratedColumn()
   id: number;
 

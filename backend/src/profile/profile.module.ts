@@ -6,10 +6,17 @@ import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { AvatarService } from '../avatar/avatar.service';
 import { PlayerStatusService } from './services/player-status.service';
+import { FriendService } from './services/friend.service';
 
 @Module({
   controllers: [ProfileController],
-  providers: [UserService, ProfileService, AvatarService, PlayerStatusService],
+  providers: [
+    UserService,
+    ProfileService,
+    AvatarService,
+    PlayerStatusService,
+    FriendService,
+  ],
   imports: [TypeOrmModule.forFeature(entities)],
   exports: [UserService, AvatarService, PlayerStatusService],
 })

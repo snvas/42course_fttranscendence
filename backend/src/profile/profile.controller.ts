@@ -32,12 +32,15 @@ import { Response } from 'express';
 import { AvatarEntity } from '../db/entities';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { ProfileNicknameDto } from './models/profile-nickname.dto';
+import { FriendService } from './services/friend.service';
+import { ProfileFriendDto } from './models/profile-friend.dto';
 
 @Controller('profile')
 export class ProfileController {
   constructor(
     private readonly profileService: ProfileService,
     private readonly avatarService: AvatarService,
+    private readonly friendService: FriendService,
   ) {}
 
   @Get()
@@ -130,5 +133,20 @@ export class ProfileController {
     });
 
     return new StreamableFile(stream);
+  }
+
+  @Get('friends')
+  async getFriends(
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<ProfileFriendDto[]> {
+    return await this.friendService.getFriends(user.id);
+  }
+
+  @Post('friend/:profileId')
+  async addFriend(
+    @Req() { user }: { user: FortyTwoUserDto },
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<ProfileDTO> {
+    return await this.friendService.addFriend(user.id, profileId);
   }
 }
