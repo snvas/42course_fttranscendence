@@ -5,6 +5,8 @@ import {
   PrivateMessageEntity,
   UserEntity,
 } from '../../db/entities';
+import { FriendEntity } from '../../db/entities/friend.entity';
+import { BlockEntity } from '../../db/entities/block.entity';
 
 export interface Profile {
   id: number;
@@ -19,6 +21,10 @@ export interface Profile {
   ownedGroupChats: GroupChatEntity[];
   sentPrivateMessages: PrivateMessageEntity[];
   receivedPrivateMessages: PrivateMessageEntity[];
+  friends: FriendEntity[];
+  friendships: FriendEntity[];
+  blockedUsers: BlockEntity[];
+  blockedBy: BlockEntity[];
   createdAt: Date;
   updatedAt: Date;
 }

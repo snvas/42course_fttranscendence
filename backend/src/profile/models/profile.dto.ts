@@ -16,6 +16,8 @@ import {
   GroupMessageEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
+import { BlockEntity } from '../../db/entities/block.entity';
+import { FriendEntity } from '../../db/entities/friend.entity';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
@@ -48,6 +50,14 @@ export class ProfileDTO implements Profile {
   sentPrivateMessages: PrivateMessageEntity[];
   @ValidateNested()
   groupMessages: GroupMessageEntity[];
+  @ValidateNested()
+  blockedBy: BlockEntity[];
+  @ValidateNested()
+  blockedUsers: BlockEntity[];
+  @ValidateNested()
+  friends: FriendEntity[];
+  @ValidateNested()
+  friendships: FriendEntity[];
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;
