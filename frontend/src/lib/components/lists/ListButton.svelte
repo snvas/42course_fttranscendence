@@ -61,15 +61,15 @@
 			text: 'ADD'
 		},
 		'turn-admin': {
-			img: '/adicionar-usuario.png',
+			img: '/admin.png',
 			alt: 'turn admin',
-			text: 'TURN ADMIN'
+			text: 'ADMIN'
 		},
 		'remove-admin': {
 			// TODO: corrigir corrigir icon
-			img: '/botao-excluir.png',
+			img: '/do-utilizador.png',
 			alt: 'remove admin',
-			text: 'REMOVE ADMIN'
+			text: 'MEMBER'
 		},
 		kick: {
 			// TODO: corrigir corrigir icon
