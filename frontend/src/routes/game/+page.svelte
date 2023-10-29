@@ -3,7 +3,13 @@
 	import p5 from 'p5';
 	import { onMount } from 'svelte';
 	import { socket } from '$lib/stores';
-	
+	import { io } from 'socket.io-client';
+
+	type Positions = {
+		positionX: number,
+		positionY: number;
+	}
+
 	let width = 800;
 	let height = 600;
 
@@ -15,6 +21,12 @@
 		window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	$: console.log(heightFull);
 
+	const game_socket = io("http://localhost:3000");
+
+	function sendMessage(msg: string, data: Positions) {
+		game_socket.emit('msg', data)
+  	}
+
 	function sketch(p5: p5) {
 		let game: Game;
 		let hitSound: p5.SoundFile;
@@ -23,6 +35,11 @@
 		let player2: Player;
 		let speedBoost: SpeedBoost;
 		//let sizeIncrease : SizeIncrease;
+
+		game_socket.on('game-data', (data) => {
+			player1.setPositions(data.player);
+			ball1.setPositions(data.ball);
+		})
 
 		p5.setup = () => {
 			p5.createCanvas(width, height);
@@ -120,9 +137,17 @@
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
+			setPositions(data:Positions){
+				this.positionX = data.positionX;
+				this.positionY = data.positionY;
+			}
+
 			move() {
 				this.positionX += this.velocityX;
 				this.positionY += this.velocityY;
+				let positionX = this.positionX;
+				let positionY = this.positionY;
+				sendMessage('ball', {positionX, positionY})
 			}
 
 			checkWalls() {
@@ -237,6 +262,11 @@
 				p5.rect(this.positionX, this.positionY, this.widthP, this.heightP);
 			}
 
+			setPositions(data:Positions){
+				this.positionX = data.positionX;
+				this.positionY = data.positionY;
+			}
+
 			movePlayer() {
 				if (this.id == 1) {
 					if (p5.keyIsDown(87)) {
@@ -267,6 +297,9 @@
 						}
 					}
 				}
+				let positionX = this.positionX;
+				let positionY = this.positionY;
+				sendMessage('player1', {positionX, positionY})
 				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
 					socket.emit('player-move', {
 						playerId: this.id,
