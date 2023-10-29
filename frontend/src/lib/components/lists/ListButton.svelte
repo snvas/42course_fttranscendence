@@ -7,9 +7,11 @@
 		| 'unblock'
 		| 'join'
 		| 'leave'
-		| 'addMember'
 		| 'mute'
 		| 'unmute'
+		| 'add-member'
+		| 'turn-admin'
+		| 'remove-admin'
 		| 'kick';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
@@ -51,10 +53,21 @@
 			alt: 'leave this group',
 			text: 'LEAVE'
 		},
-		addMember: {
+		'add-member': {
 			img: '/adicionar-usuario.png',
 			alt: 'add member',
 			text: 'ADD'
+		},
+		'turn-admin': {
+			img: '/adicionar-usuario.png',
+			alt: 'turn admin',
+			text: 'TURN ADMIN'
+		},
+		'remove-admin': {
+			// TODO: corrigir corrigir icon
+			img: '/botao-excluir.png',
+			alt: 'remove admin',
+			text: 'REMOVE ADMIN'
 		},
 		kick: {
 			// TODO: corrigir corrigir icon

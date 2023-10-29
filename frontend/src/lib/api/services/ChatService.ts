@@ -116,7 +116,6 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}/password`);
 	}
 
-	// TODO:
 	public addGroupChatAdmin(
 		chatId: number,
 		profileId: number
@@ -131,7 +130,6 @@ class ChatService {
 		return this.axiosInstance.post(`/group/${chatId}/user/${profileId}`);
 	}
 
-	// TODO:
 	public updateGroupChatMemberRole(
 		chatId: number,
 		profileId: number,
@@ -147,7 +145,6 @@ class ChatService {
 		return this.axiosInstance.delete(`/group/${chatId}/member/${profileId}`);
 	}
 
-	// TODO
 	public muteGroupChatMember(
 		chatId: number,
 		profileId: number
@@ -155,7 +152,6 @@ class ChatService {
 		return this.axiosInstance.put(`/group/${chatId}/mute/${profileId}`);
 	}
 	
-	// TODO
 	public unmuteGroupChatMember(
 		chatId: number,
 		profileId: number
