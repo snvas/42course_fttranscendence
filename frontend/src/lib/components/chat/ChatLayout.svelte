@@ -35,7 +35,7 @@
 		</div>
 	</div>
 	<div class="flex-1 flex flex-col lg:flex-row gap-5 px-10 pb-10 h-0">
-		<div class="gap-15 flex flex-col lg:w-1/4 flex-none w-full h-full">
+		<div class="gap-15 flex flex-col lg:w-1/4 flex-none w-full h-full sm:order-first order-last">
 			<div class="border-4 border-white w-full flex flex-col h-full rounded-3xl flex-none">
 				<div class="flex-none flex flex-row gap-4 px-4 py-2">
 					<button
@@ -64,7 +64,7 @@
 				<slot name="list" />
 			</div>
 		</div>
-		<div class="flex-1 flex flex-col w-full h-full">
+		<div class="flex-1 flex flex-col h-full">
 			<slot name="messages" />
 		</div>
 	</div>

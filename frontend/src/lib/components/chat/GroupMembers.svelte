@@ -55,7 +55,7 @@
 	// $: console.log(memberStatus);
 </script>
 
-<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-2 rounded-3xl">
+<div class="border-4 border-white h-full flex flex-col flex-none p-2 rounded-3xl">
 	<p class="text-center pb-3">MEMBERS</p>
 	<hr />
 	<div class="overflow-y-auto w-full max-w-full">
@@ -128,7 +128,7 @@
 		{/each}
 	</div>
 	{#if iAmAdminOrOwner}
-		<div>
+		<div class="pt-10">
 			<button
 				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={() => {
