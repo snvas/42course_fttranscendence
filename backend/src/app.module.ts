@@ -9,7 +9,6 @@ import { ProfileModule } from './profile/profile.module';
 import AvatarModule from './avatar/avatar.module';
 import { dataSourceOptions } from './db/data-source-cli';
 import { ChatModule } from './chat/chat.module';
-import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
@@ -28,7 +27,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     ChatModule,
     GameModule,
   ],
-  controllers: [GameController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
