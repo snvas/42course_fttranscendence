@@ -57,7 +57,7 @@ export class ProfileDTO implements Profile {
   @ValidateNested()
   friends: FriendEntity[];
   @ValidateNested()
-  friendships: FriendEntity[];
+  friendBy: FriendEntity[];
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;

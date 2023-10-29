@@ -71,7 +71,7 @@ export class ProfileEntity implements Profile {
   friends: FriendEntity[];
 
   @OneToMany(() => FriendEntity, (friendship) => friendship.friend)
-  friendships: FriendEntity[];
+  friendBy: FriendEntity[];
 
   @OneToMany(() => BlockEntity, (block) => block.profile)
   blockedUsers: BlockEntity[];

@@ -6,7 +6,7 @@ export class FriendEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.friendships)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.friendBy)
   profile: ProfileEntity;
 
   @ManyToOne(() => ProfileEntity, (profile) => profile.friends)

@@ -1,12 +1,12 @@
 import {
   AvatarEntity,
+  BlockEntity,
+  FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
   PrivateMessageEntity,
   UserEntity,
 } from '../../db/entities';
-import { FriendEntity } from '../../db/entities/friend.entity';
-import { BlockEntity } from '../../db/entities/block.entity';
 
 export interface Profile {
   id: number;
@@ -22,7 +22,7 @@ export interface Profile {
   sentPrivateMessages: PrivateMessageEntity[];
   receivedPrivateMessages: PrivateMessageEntity[];
   friends: FriendEntity[];
-  friendships: FriendEntity[];
+  friendBy: FriendEntity[];
   blockedUsers: BlockEntity[];
   blockedBy: BlockEntity[];
   createdAt: Date;
