@@ -40,7 +40,7 @@ import { GroupChatService } from './services/group-chat.service';
 import { GroupMemberService } from './services/group-member.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { ProfileService } from '../profile/profile.service';
-import { PlayerStatusService } from './services/player-status.service';
+import { PlayerStatusService } from '../profile/services/player-status.service';
 
 @Controller('chat')
 export class ChatController {

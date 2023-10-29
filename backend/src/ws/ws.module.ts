@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PlayerStatusService } from '../chat/services/player-status.service';
+import { PlayerStatusService } from '../profile/services/player-status.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { GroupChatService } from '../chat/services/group-chat.service';
@@ -7,6 +7,6 @@ import { GroupChatService } from '../chat/services/group-chat.service';
 @Module({
   providers: [GroupChatService, PlayerStatusService],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [],
+  exports: [GroupChatService, PlayerStatusService],
 })
-export class ChatModule {}
+export class WsModule {}

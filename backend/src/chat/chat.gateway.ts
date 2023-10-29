@@ -14,7 +14,7 @@ import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
 import { socketEvent } from '../ws/ws-events';
-import { PlayerStatusService } from './services/player-status.service';
+import { PlayerStatusService } from '../profile/services/player-status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
 

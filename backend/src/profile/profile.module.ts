@@ -5,11 +5,12 @@ import entities from '../db/entities';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { AvatarService } from '../avatar/avatar.service';
+import { PlayerStatusService } from './services/player-status.service';
 
 @Module({
   controllers: [ProfileController],
-  providers: [UserService, ProfileService, AvatarService],
+  providers: [UserService, ProfileService, AvatarService, PlayerStatusService],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserService],
+  exports: [UserService, AvatarService, PlayerStatusService],
 })
 export class ProfileModule {}

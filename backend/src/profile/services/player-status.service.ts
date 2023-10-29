@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlayerStatusSocket } from '../types/player-status.socket';
-import { AuthenticatedSocket } from '../types/authenticated-socket.type';
-import { ProfileDTO } from '../../profile/models/profile.dto';
-import { PlayerStatusDto } from '../models/player/player-status.dto';
-import { ProfileService } from '../../profile/profile.service';
+import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
+import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
+import { ProfileDTO } from '../models/profile.dto';
+import { PlayerStatusDto } from '../../chat/models/player/player-status.dto';
+import { ProfileService } from '../profile.service';
 
 @Injectable()
 export class PlayerStatusService {
@@ -11,20 +11,6 @@ export class PlayerStatusService {
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(private readonly profileService: ProfileService) {}
-
-  public isPlayerAuthenticated(socket: AuthenticatedSocket): boolean {
-    if (
-      socket.request.user === undefined ||
-      socket.request.user.id === undefined
-    ) {
-      this.logger.warn(`### User not authenticated: [${socket.id}]`);
-      socket.emit('unauthorized', 'User not authenticated');
-      socket.disconnect();
-      return false;
-    }
-
-    return true;
-  }
 
   public async setPlayerStatus(
     socket: AuthenticatedSocket,
