@@ -128,9 +128,9 @@
 		{/each}
 	</div>
 	{#if iAmAdminOrOwner}
-		<div class="pt-10">
+		<div class="pt-10 flex items-center justify-center">
 			<button
-				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
+				class="btn-primary w-3/4 lg:w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={() => {
 					if (!addMember) {
 						addMember = $selectedGroup;

@@ -413,7 +413,6 @@
 		}
 	};
 
-	// TODO fix to work properly
 	const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
 		handleDeletedGroupChat(groupChatEvent.chatId);
@@ -567,9 +566,9 @@
 				/>
 			{/await}
 		</div>
-		<div class="p-3">
+		<div class="p-3 flex items-center justify-center">
 			<button
-				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
+				class="btn-primary w-3/4 lg:w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={onCreateGroup}
 			>
 				Criar um Grupo
@@ -622,7 +621,7 @@
 			{:else}
 				<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 					<div class="flex flex-col w-full items-center gap-3 p-20">
-						<p class="text-lg text-gray-400 flex">no group selected</p>
+						<p class="text-lg text-gray-400 flex text-center">No group selected.<br/> Choose or create one.</p>
 					</div>
 				</div>
 			{/if}
