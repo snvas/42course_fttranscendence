@@ -47,7 +47,7 @@
 </script>
 
 
-<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col">
+<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col p-10">
 <form>
 	
 	{#if confirmJoin}

@@ -413,7 +413,6 @@
 		}
 	};
 
-	// TODO fix to work properly
 	const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
 		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
 		handleDeletedGroupChat(groupChatEvent.chatId);
@@ -567,9 +566,9 @@
 				/>
 			{/await}
 		</div>
-		<div class="p-3">
+		<div class="p-3 flex items-center justify-center">
 			<button
-				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
+				class="btn-primary w-3/4 lg:w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={onCreateGroup}
 			>
 				Criar um Grupo
@@ -578,43 +577,55 @@
 	</div>
 
 	<div class="contents" slot="messages">
-		{#if confirmJoin}
-			<ConfirmJoinGroup bind:confirmJoin joinGroup={onJoinGroup} />
-		{:else if confirmLeave}
-			<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
-		{:else if $selectedGroup}
-			<div class="w-full h-full flex flex-row gap-5">
-				{#if addMember}
-					<AddGroupMember
-						bind:addMember
-						{members}
-						on:add={(e) => onAddGroupChatUser($selectedGroup, e.detail)}
-					/>
-				{:else if configGroup}
-					<GroupConfig bind:configGroup on:delete={() => onDeletedGroupChat($selectedGroup)} />
-				{:else}
-					<GroupMessages bind:messages {sendMessage} bind:configGroup muted={iAmMuted(members)} />
-				{/if}
-				<GroupMembers
-					{members}
-					{getAvatarFromId}
-					iAmAdminOrOwner={iAmAdminOrOwner($selectedGroup, members)}
-					bind:addMember
-					on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
-					on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
-					on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
-					on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
-					on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
-					on:ban={(e) => onBanGroupMember($selectedGroup, e.detail)}
-					on:unban={(e) => onUnbanGroupMember($selectedGroup, e.detail)}
-				/>
-			</div>
-		{:else}
-			<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
-				<div class="flex flex-col w-full items-center gap-3 p-20">
-					<p class="text-lg text-gray-400 flex">no group selected</p>
+		<div class="w-full h-full flex flex-col">
+			{#if confirmJoin}
+				<ConfirmJoinGroup bind:confirmJoin joinGroup={onJoinGroup} />
+			{:else if confirmLeave}
+				<ConfirmLeaveGroup bind:confirmLeave leaveGroup={onLeaveGroup} />
+			{:else if $selectedGroup}
+				<div class="w-full h-full flex flex-col gap-5 lg:flex-row">
+					{#if addMember}
+						<AddGroupMember
+							bind:addMember
+							{members}
+							on:add={(e) => onAddGroupChatUser($selectedGroup, e.detail)}
+							on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
+						/>
+					{:else if configGroup}
+						<GroupConfig bind:configGroup on:delete={() => onDeletedGroupChat($selectedGroup)} />
+					{:else}
+						<div class="2xl:w-2/3 lg:w-1/2 w-full flex flex-row">
+							<GroupMessages
+								bind:messages
+								{sendMessage}
+								bind:configGroup
+								muted={iAmMuted(members)}
+							/>
+						</div>
+					{/if}
+						<div class="2xl:w-1/3 lg:w-1/2 w-full flex flex-row">
+							<GroupMembers
+								{members}
+								{getAvatarFromId}
+								iAmAdminOrOwner={iAmAdminOrOwner($selectedGroup, members)}
+								bind:addMember
+								on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
+								on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
+								on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
+								on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
+								on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
+								on:ban={(e) => onBanGroupMember($selectedGroup, e.detail)}
+								on:unban={(e) => onUnbanGroupMember($selectedGroup, e.detail)}
+							/>
+						</div>
 				</div>
-			</div>
-		{/if}
+			{:else}
+				<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
+					<div class="flex flex-col w-full items-center gap-3 p-20">
+						<p class="text-lg text-gray-400 flex text-center">No group selected.<br/> Choose or create one.</p>
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
 </ChatLayout>
