@@ -68,27 +68,21 @@
 						</div>
 						<div class="flex-1 flex flex-col items-start w-0">
 							<p
-								class=" text-start text-sm w-full truncate {member.isMuted ? 'text-gray-500' : ''} "
+								class=" text-start text-sm w-full truncate {member.isMuted || member.isBanned ? 'text-gray-500' : ''} "
 							>
 								{member.profile.nickname}
 							</p>
 
 							<div class="flex text-xs items-center gap-2">
-								<!-- {#if member.blocked}
-								<div class="text-red-800 text-xs">Blocked</div>
-								{:else} -->
 								<p class="text-yellow-500">
 									{$selectedGroup?.owner.id == member.profile.id ? 'owner' : member.role}
 								</p>
 								<p class={statusColor[member.status]}>{member.status}</p>
 								{#if member.isMuted}
 									<p>muted</p>
-								{/if}
-								<!-- {#if user.friend} -->
-								<!-- <div class="text-gray-600 text-xs">|</div>
-									<div class="text-gray-600 text-xs">Friend</div> -->
-								<!-- {/if} -->
-								<!--{/if} -->
+								{:else if member.isBanned}
+									<p>banned</p>
+									{/if}
 							</div>
 						</div>
 					</div>
@@ -96,7 +90,7 @@
 						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 					>
 						{#if !itIsMyProfile(member) && !($selectedGroup?.owner.id == member.profile.id)}
-							{#if iAmAdminOrOwner}
+							{#if iAmAdminOrOwner && !member.isBanned}
 								{#if $selectedGroup?.owner.id == $profile.id}
 									{#if member.role == 'admin'}
 										<ListButton
@@ -110,15 +104,22 @@
 										/>
 									{/if}
 								{/if}
-								{#if member.isMuted}
-									<ListButton
-										on:click={() => dispatch('unmute', member.profile.id)}
-										type="unmute"
-									/>
-								{:else}
-									<ListButton on:click={() => dispatch('mute', member.profile.id)} type="mute" />
+
+								{#if member.role != 'admin' || $selectedGroup?.owner.id == $profile.id}
+									{#if member.isMuted}
+										<ListButton
+											on:click={() => dispatch('unmute', member.profile.id)}
+											type="unmute"
+										/>
+									{:else}
+										<ListButton on:click={() => dispatch('mute', member.profile.id)} type="mute" />
+									{/if}
+
+									<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
+										<ListButton on:click={() => dispatch('ban', member.profile.id)} type="ban" />
 								{/if}
-								<ListButton on:click={() => dispatch('kick', member.profile.id)} type="kick" />
+							{:else if iAmAdminOrOwner && member.isBanned}
+								<ListButton on:click={() => dispatch('unban', member.profile.id)} type="unban" />
 							{/if}
 						{/if}
 					</div>

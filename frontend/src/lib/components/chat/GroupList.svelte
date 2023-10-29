@@ -11,14 +11,27 @@
 
 	let groups: (GroupChatDto & {
 		belong: boolean;
+		banned?: boolean;
 	})[];
 
 	function getGroupList(all: GroupChatDto[], history: GroupChatHistoryDto[]): typeof groups {
 		return all.map((group) => {
-			let belong = history.find((v) => v.id == group.id) ? true : false;
+			let belong: boolean;
+			let banned: boolean;
+			let thisGroupHistory = history.find((v) => v.id == group.id);
+			if (thisGroupHistory) {
+				belong = true;
+				banned = thisGroupHistory.bannedMembers.find((m) => m.profile.id == $profile.id)
+					? true
+					: false;
+			} else {
+				belong = false;
+				banned = false;
+			}
 			return {
 				...group,
-				belong
+				belong,
+				banned
 			};
 		});
 	}
@@ -34,16 +47,20 @@
 			<button
 				class="items-start w-0 flex flex-col flex-1 enabled:hover:bg-white enabled:hover:bg-opacity-20 rounded-md h-full justify-center p-2"
 				on:click={() => dispatch('select', group)}
-				disabled={!group.belong}
+				disabled={!group.belong || group.banned}
 			>
 				<p class="text-start w-full truncate">{group.name}</p>
 				<p class="text-slate-500 text-xs">{group.visibility}</p>
 			</button>
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
-				{#if !group.belong}
-					<ListButton on:click={() => dispatch('join', group)} type="join" />
-				{:else if group.owner.id != $profile.id}
-					<ListButton on:click={() => dispatch('leave', group)} type="leave" />
+				{#if !group.banned}
+					{#if !group.belong}
+						<ListButton on:click={() => dispatch('join', group)} type="join" />
+					{:else if group.owner.id != $profile.id}
+						<ListButton on:click={() => dispatch('leave', group)} type="leave" />
+					{/if}
+				{:else}
+					You are banned
 				{/if}
 			</div>
 		</div>

@@ -3,7 +3,7 @@
 	import { socket, profile, selectedGroup } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
-	import type{
+	import type {
 		ComponentMessage,
 		GroupMessageDto,
 		GroupChatDto,
@@ -24,7 +24,9 @@
 		unmuteGroupChatMember,
 		deleteGroupChatById,
 		getAvatarFromId,
-		updateGroupChatMemberRole
+		updateGroupChatMemberRole,
+		banGroupChatMember,
+		unbunGroupChatMember
 	} from '$lib/api';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
 	import GroupList from '$lib/components/chat/GroupList.svelte';
@@ -58,7 +60,6 @@
 	}
 
 	async function setSelectedMessagesMembers() {
-		console.log('HERE set');
 		if (!$selectedGroup) return;
 		await loadingGroups;
 
@@ -206,19 +207,19 @@
 	function removeMemberFromGroup(member: GroupMemberDto) {
 		let historyChanged = false;
 
-		for (let history of groupChatHistory){
-			if (history.id === member.groupChat.id){
+		for (let history of groupChatHistory) {
+			if (history.id == member.groupChat.id) {
 				const initialLenght = history.members.length;
 
-				history.members = history.members.filter(m => m.id !== member.id);
+				history.members = history.members.filter((m) => m.profile.id !== member.profile.id);
 
-				if (initialLenght !== history.members.length){
+				if (initialLenght !== history.members.length) {
 					historyChanged = true;
 				}
 				break;
 			}
 		}
-		if (historyChanged && $selectedGroup?.id === member.groupChat.id){
+		if (historyChanged && $selectedGroup?.id == member.groupChat.id) {
 			setSelectedMessagesMembers();
 		}
 	}
@@ -231,7 +232,9 @@
 		let historyChanged = false;
 		for (let history of groupChatHistory) {
 			if (history.id === memberJoined.groupChat.id) {
-				const memberExists = history.members.some((member) => member.id === memberJoined.id);
+				const memberExists = history.members.some(
+					(member) => member.profile.id === memberJoined.profile.id
+				);
 				if (!memberExists) {
 					history.members.push(memberJoined);
 					historyChanged = true;
@@ -244,9 +247,23 @@
 		}
 	}
 
-	async function onDeletedGroupChat(groupChat: GroupChatDto | null){
+	async function onDeletedGroupChat(groupChat: GroupChatDto | null) {
 		let res = await deleteGroupChatById(groupChat!.id);
-		if (typeof res === 'number'){
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
+	async function onBanGroupMember(group: GroupChatDto | null, profileId: number) {
+		let res = await banGroupChatMember(group!.id, profileId);
+		if (typeof res === 'number') {
+			return res;
+		}
+	}
+
+	async function onUnbanGroupMember(group: GroupChatDto | null, profileId: number) {
+		let res = await unbunGroupChatMember(group!.id, profileId);
+		if (typeof res === 'number') {
 			return res;
 		}
 	}
@@ -320,7 +337,7 @@
 
 	const onKickedGroupChatMember = (memberKicked: GroupMemberDto): void => {
 		console.log(`### received kicked group chat member ${JSON.stringify(memberKicked)}`);
-		if (memberKicked.profile.id == $profile.id) {
+		if (memberKicked.profile?.id == $profile?.id) {
 			let newGroupChatHistory = groupChatHistory.filter(
 				(group) => group.id != memberKicked.groupChat.id
 			);
@@ -341,31 +358,31 @@
 	};
 
 	const updateMuteStatusForGroupChatMember = (
-		GroupMemberDto: GroupMemberDto,
+		groupMember: GroupMemberDto,
 		isMuted: boolean
 	): void => {
 		console.log(
 			`### received ${isMuted ? 'muted' : 'unmuted'} group chat member ${JSON.stringify(
-				GroupMemberDto
+				groupMember
 			)}`
 		);
 
 		const groupIndex = groupChatHistory.findIndex(
-			(history) => history.id === GroupMemberDto.groupChat.id
+			(history) => history.id === groupMember.groupChat.id
 		);
 
 		if (groupIndex !== -1) {
 			const group = groupChatHistory[groupIndex];
 
 			const memmberIndex = group.members.findIndex(
-				(member) => member.profile.id === GroupMemberDto.profile.id
+				(member) => member.profile.id === groupMember.profile.id
 			);
 
 			if (memmberIndex !== -1 && group.members[memmberIndex].isMuted != isMuted) {
 				group.members[memmberIndex].isMuted = isMuted;
 
 				groupChatHistory[groupIndex] = { ...group, members: [...group.members] };
-				if ($selectedGroup?.id === GroupMemberDto.groupChat.id) {
+				if ($selectedGroup?.id === groupMember.groupChat.id) {
 					setSelectedMessagesMembers();
 				}
 			}
@@ -403,10 +420,60 @@
 	};
 
 	function handleDeletedGroupChat(chatId: number) {
-		groupsList = groupsList.filter(history => history.id !== chatId);
-			if ($selectedGroup?.id === chatId){
-				$selectedGroup = null;
+		groupsList = groupsList.filter((history) => history.id !== chatId);
+		if ($selectedGroup?.id === chatId) {
+			$selectedGroup = null;
+		}
+	}
+
+	const onBannedGroupChatMember = (groupMember: GroupMemberDto): void => {
+		console.log(`### received group member banned ${JSON.stringify(groupMember)}`);
+		changeBanStatus(groupMember, true);
+	};
+
+	const onUnbannedGroupChatMember = (groupMember: GroupMemberDto): void => {
+		console.log(`### received group member unbanned ${JSON.stringify(groupMember)}`);
+		changeBanStatus(groupMember, false);
+	};
+
+	function changeBanStatus(groupMember: GroupMemberDto, isBanned: boolean) {
+		const groupIndex = groupChatHistory.findIndex(
+			(history) => history.id == groupMember.groupChat.id
+		);
+
+		if (groupIndex !== -1) {
+			const memberIndex = groupChatHistory[groupIndex].members.findIndex(
+				(member) => member.profile.id == groupMember.profile.id
+			);
+
+			if (memberIndex !== -1) {
+				groupChatHistory[groupIndex].members[memberIndex].isBanned = isBanned;
+
+				if ($selectedGroup?.id === groupMember.groupChat.id) {
+					if (groupMember.profile.id == $profile.id) {
+						$selectedGroup = null;
+					}
+					setSelectedMessagesMembers();
+				}
 			}
+		}
+
+		if (isBanned) {
+			if (
+				!groupChatHistory[groupIndex].bannedMembers.find(
+					(v) => v.profile.id == groupMember.profile.id
+				)
+			)
+				groupChatHistory[groupIndex].bannedMembers = [
+					...groupChatHistory[groupIndex].bannedMembers,
+					groupMember
+				];
+		} else {
+			let bannedMembers = groupChatHistory[groupIndex].bannedMembers.filter(
+				(v) => v.profile.id != groupMember.profile.id
+			);
+			groupChatHistory[groupIndex].bannedMembers = bannedMembers;
+		}
 	}
 
 	$socket.on(socketEvent.RECEIVE_GROUP_MESSAGE, onGroupMessage);
@@ -421,6 +488,8 @@
 	$socket.on(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED, onUpdatedGroupChatMemberRole);
 	$socket.on(socketEvent.GROUP_CHAT_MEMBER_MUTED, onMutedGroupChatMember);
 	$socket.on(socketEvent.GROUP_CHAT_MEMBER_UNMUTED, onUnMutedGroupChatMember);
+	$socket.on(socketEvent.GROUP_CHAT_MEMBER_BANNED, onBannedGroupChatMember);
+	$socket.on(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, onUnbannedGroupChatMember);
 
 	onDestroy(() => {
 		$socket.off(socketEvent.RECEIVE_GROUP_MESSAGE);
@@ -435,6 +504,8 @@
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED);
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_MUTED);
 		$socket.off(socketEvent.GROUP_CHAT_MEMBER_UNMUTED);
+		$socket.off(socketEvent.GROUP_CHAT_MEMBER_BANNED);
+		$socket.off(socketEvent.GROUP_CHAT_MEMBER_UNBANNED);
 	});
 
 	function iAmAdminOrOwner(selected: GroupChatDto | null, members: GroupProfileDto[]): boolean {
@@ -534,6 +605,8 @@
 					on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
 					on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
 					on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
+					on:ban={(e) => onBanGroupMember($selectedGroup, e.detail)}
+					on:unban={(e) => onUnbanGroupMember($selectedGroup, e.detail)}
 				/>
 			</div>
 		{:else}
