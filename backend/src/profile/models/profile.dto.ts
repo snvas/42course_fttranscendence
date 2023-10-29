@@ -11,13 +11,13 @@ import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { Type } from 'class-transformer';
 import {
   AvatarEntity,
+  BlockEntity,
+  FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
-import { BlockEntity } from '../../db/entities/block.entity';
-import { FriendEntity } from '../../db/entities/friend.entity';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
