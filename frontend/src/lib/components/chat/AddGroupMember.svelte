@@ -28,7 +28,7 @@
 	$: addMemberList = listAllUsers($playersStatus, members);
 </script>
 
-<div class="w-full h-full flex flex-row gap-10">
+<div class="w-full h-full flex flex-row gap-10 lg:w-1/2">
 	<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 		<div class="flex flex-col justify-end items-end">
 			<button on:click={() => (addMember = null)}>

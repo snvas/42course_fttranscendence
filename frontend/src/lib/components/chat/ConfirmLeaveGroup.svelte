@@ -33,7 +33,7 @@
 
 	$: confirmLeave, (alert = alerts['none']);
 </script>
-<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col">
+<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col p-10">
 <form>
 	{#if confirmLeave}
 	<h1 class="pb-10 text-center">Confirm to leave the group <br/>

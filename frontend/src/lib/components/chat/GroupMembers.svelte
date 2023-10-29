@@ -55,7 +55,7 @@
 	// $: console.log(memberStatus);
 </script>
 
-<div class="border-4 border-white h-full flex flex-col flex-none p-2 rounded-3xl">
+<div class="border-4 border-white md:max-h-full max-h-96 flex flex-col flex-none p-2 rounded-3xl w-full">
 	<p class="text-center pb-3">MEMBERS</p>
 	<hr />
 	<div class="overflow-y-auto w-full max-w-full">
