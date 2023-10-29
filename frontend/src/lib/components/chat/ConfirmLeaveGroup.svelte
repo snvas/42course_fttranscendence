@@ -33,11 +33,13 @@
 
 	$: confirmLeave, (alert = alerts['none']);
 </script>
-
-<form class="h-full w-full">
+<div class="h-full w-full border-4 rounded-3xl items-center justify-center flex flex-col">
+<form>
 	{#if confirmLeave}
-		<h1>Confirm leave group {confirmLeave.name}</h1>
+	<h1 class="pb-10 text-center">Confirm to leave the group <br/>
+		<span class="text-yellow-500 text-4xl">{confirmLeave.name}</span></h1>
 		<p class="text-red-500 {alert != '' ? 'block' : 'invisible'}">{alert}</p>
 		<button class="btn-primary" on:click={() => onLeaveGroup()}>CONFIRM</button>
 	{/if}
 </form>
+</div>
