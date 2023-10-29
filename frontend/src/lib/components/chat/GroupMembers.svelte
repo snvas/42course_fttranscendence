@@ -87,7 +87,7 @@
 						</div>
 					</div>
 					<div
-						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
+						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial mr-2"
 					>
 						{#if !itIsMyProfile(member) && !($selectedGroup?.owner.id == member.profile.id)}
 							{#if iAmAdminOrOwner && !member.isBanned}
