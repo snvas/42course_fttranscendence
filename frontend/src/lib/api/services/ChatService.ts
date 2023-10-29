@@ -151,12 +151,26 @@ class ChatService {
 	): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/mute/${profileId}`);
 	}
-	
+
 	public unmuteGroupChatMember(
 		chatId: number,
 		profileId: number
 	): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
 		return this.axiosInstance.put(`/group/${chatId}/unmute/${profileId}`);
+	}
+
+	public banGroupChatMember(
+		chatId: number,
+		profileId: number
+	): Promise<AxiosResponse<GroupMemberDto>> {
+		return this.axiosInstance.post(`/group/${chatId}/ban/${profileId}`);
+	}
+
+	public unbanGroupChatMember(
+		chatId: number,
+		profileId: number
+	): Promise<AxiosResponse<GroupMemberDto>> {
+		return this.axiosInstance.post(`/group/${chatId}/unban/${profileId}`);
 	}
 }
 

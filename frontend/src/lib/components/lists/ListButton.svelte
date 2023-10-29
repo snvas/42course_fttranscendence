@@ -12,7 +12,9 @@
 		| 'add-member'
 		| 'turn-admin'
 		| 'remove-admin'
-		| 'kick';
+		| 'kick'
+		| 'ban'
+		| 'unban';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
 		chat: {
@@ -76,17 +78,25 @@
 			text: 'KICK'
 		},
 		mute: {
-			// TODO: corrigir corrigir icon
 			img: '/audio-mudo.png',
 			alt: 'mute this member',
 			text: 'MUTE'
 		},
 		unmute: {
-			// TODO: corrigir corrigir icon
 			img: '/microfone.png',
 			alt: 'unmute this member',
 			text: 'UNMUTE'
-		}
+		},
+		ban: {
+			img: '/banir-usuario.png',
+			alt: 'ban this member',
+			text: 'BAN'
+		},
+		unban: {
+			img: '/banir-usuario.png',
+			alt: 'unban this member',
+			text: 'UNBAN'
+		},
 	};
 </script>
 

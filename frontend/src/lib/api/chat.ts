@@ -79,10 +79,7 @@ export async function addGroupChatUser(
 	}
 }
 
-export async function kickGroupChatUser(
-	groupId: number,
-	profileId: number
-): Promise<boolean> {
+export async function kickGroupChatUser(groupId: number, profileId: number): Promise<boolean> {
 	try {
 		await chatService.kickGroupChatMember(groupId, profileId);
 		return true;
@@ -164,15 +161,44 @@ export async function deleteGroupChatPassword(chatId: number): Promise<boolean> 
 	}
 }
 
-export async function deleteGroupChatById(chatId: number) : Promise<number| boolean> {
+export async function deleteGroupChatById(chatId: number): Promise<number | boolean> {
 	try {
 		await chatService.deleteGroupChat(chatId);
 		return true;
-	} catch (error){
-		if (isAxiosError(error) && error.response){
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
 		throw error;
 	}
-	
+}
+
+export async function banGroupChatMember(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
+	try {
+		await chatService.banGroupChatMember(groupId, profileId);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}
+
+export async function unbunGroupChatMember(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
+	try {
+		await chatService.unbanGroupChatMember(groupId, profileId);
+		return true;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
 }
