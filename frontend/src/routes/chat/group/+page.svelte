@@ -589,6 +589,7 @@
 							bind:addMember
 							{members}
 							on:add={(e) => onAddGroupChatUser($selectedGroup, e.detail)}
+							on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
 						/>
 					{:else if configGroup}
 						<GroupConfig bind:configGroup on:delete={() => onDeletedGroupChat($selectedGroup)} />

@@ -46,8 +46,8 @@
 							<ListButton on:click={() => dispatch('add', member.id)} type="add-member" />
 
 						{:else if member.role == "user"}
-							<!---<ListButton on:click={() => dispatch('kick', member.id)} type="kick" />-->
-								<i class="fa fa-user-circle text-3xl icon-link p-1" aria-hidden="true" />
+							<ListButton on:click={() => dispatch('kick', member.id)} type="kick" />
+								<!---<i class="fa fa-user-circle text-3xl icon-link p-1" aria-hidden="true" />-->
 						{/if}
 					</div>
 				</div>
