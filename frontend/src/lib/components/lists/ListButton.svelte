@@ -69,7 +69,7 @@
 			// TODO: corrigir corrigir icon
 			img: '/do-utilizador.png',
 			alt: 'remove admin',
-			text: 'MEMBER'
+			text: 'USER'
 		},
 		kick: {
 			// TODO: corrigir corrigir icon

@@ -594,7 +594,7 @@
 					{:else if configGroup}
 						<GroupConfig bind:configGroup on:delete={() => onDeletedGroupChat($selectedGroup)} />
 					{:else}
-						<div class="xl:w-2/3 lg:w-1/2 w-full flex flex-row">
+						<div class="2xl:w-2/3 lg:w-1/2 w-full flex flex-row">
 							<GroupMessages
 								bind:messages
 								{sendMessage}
@@ -603,7 +603,7 @@
 							/>
 						</div>
 					{/if}
-						<div class="xl:w-1/3 lg:w-1/2 w-full flex flex-row">
+						<div class="2xl:w-1/3 lg:w-1/2 w-full flex flex-row">
 							<GroupMembers
 								{members}
 								{getAvatarFromId}
