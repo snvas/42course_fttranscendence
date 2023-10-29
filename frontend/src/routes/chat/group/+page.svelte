@@ -60,7 +60,6 @@
 	}
 
 	async function setSelectedMessagesMembers() {
-		console.log('HERE set');
 		if (!$selectedGroup) return;
 		await loadingGroups;
 
@@ -209,10 +208,10 @@
 		let historyChanged = false;
 
 		for (let history of groupChatHistory) {
-			if (history.id === member.groupChat.id) {
+			if (history.id == member.groupChat.id) {
 				const initialLenght = history.members.length;
 
-				history.members = history.members.filter((m) => m.id !== member.id);
+				history.members = history.members.filter((m) => m.profile.id !== member.profile.id);
 
 				if (initialLenght !== history.members.length) {
 					historyChanged = true;
@@ -220,7 +219,7 @@
 				break;
 			}
 		}
-		if (historyChanged && $selectedGroup?.id === member.groupChat.id) {
+		if (historyChanged && $selectedGroup?.id == member.groupChat.id) {
 			setSelectedMessagesMembers();
 		}
 	}
@@ -233,7 +232,9 @@
 		let historyChanged = false;
 		for (let history of groupChatHistory) {
 			if (history.id === memberJoined.groupChat.id) {
-				const memberExists = history.members.some((member) => member.id === memberJoined.id);
+				const memberExists = history.members.some(
+					(member) => member.profile.id === memberJoined.profile.id
+				);
 				if (!memberExists) {
 					history.members.push(memberJoined);
 					historyChanged = true;
@@ -336,7 +337,7 @@
 
 	const onKickedGroupChatMember = (memberKicked: GroupMemberDto): void => {
 		console.log(`### received kicked group chat member ${JSON.stringify(memberKicked)}`);
-		if (memberKicked.profile.id == $profile.id) {
+		if (memberKicked.profile?.id == $profile?.id) {
 			let newGroupChatHistory = groupChatHistory.filter(
 				(group) => group.id != memberKicked.groupChat.id
 			);
