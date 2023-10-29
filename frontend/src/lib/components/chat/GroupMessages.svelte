@@ -30,6 +30,7 @@
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-3">
 			{#if $profile.id == $selectedGroup.owner.id}
 				<div class="flex flex-row justify-end gap-5 pr-3">
+					
 					<button class="text-green-200" on:click={() => (configGroup = $selectedGroup)}>
 						<div class="fa fa-cog text-3xl icon-link text-slate-500" aria-hidden="true" />
 					</button>

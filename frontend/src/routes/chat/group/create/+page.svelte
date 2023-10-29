@@ -97,8 +97,10 @@
 				<h2 class="text-center">Set Group Visibility</h2>
 				<div class="flex flex-col gap-5 p-10">
 					{#each options as value}
-						<label class="text-xl">
-							<input type="radio" {value} bind:group={visibility} disabled={created} />
+						<label class="text-xl flex items-center cursor-pointer">
+							<input type="radio" class="sr-only" {value} bind:group={visibility} disabled={created} />
+							<span class="w-6 h-6 border rounded-full mr-2 flex items-center justify-center">
+							<span class="w-3 h-3 rounded-full {value == visibility ? 'bg-green-500' : 'bg-slate-700 '}"></span></span>
 							{value}
 						</label>
 					{/each}

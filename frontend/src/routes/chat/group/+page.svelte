@@ -3,7 +3,7 @@
 	import { socket, profile, selectedGroup } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
-	import type {
+	import type{
 		ComponentMessage,
 		GroupMessageDto,
 		GroupChatDto,
@@ -22,6 +22,7 @@
 		kickGroupChatUser,
 		muteGroupChatMember,
 		unmuteGroupChatMember,
+		deleteGroupChatById,
 		getAvatarFromId,
 		updateGroupChatMemberRole
 	} from '$lib/api';
@@ -203,23 +204,22 @@
 	}
 
 	function removeMemberFromGroup(member: GroupMemberDto) {
-		let newHistory = groupChatHistory.map((history: GroupChatHistoryDto) => {
-			if (history.id != member.groupChat.id) {
-				return history;
-			}
+		let historyChanged = false;
 
-			let newMembers = history.members.filter((v) => v.id != member.id);
+		for (let history of groupChatHistory){
+			if (history.id === member.groupChat.id){
+				const initialLenght = history.members.length;
 
-			return {
-				...history,
-				members: newMembers
-			};
-		});
-		if (JSON.stringify(groupChatHistory) != JSON.stringify(newHistory)) {
-			groupChatHistory = newHistory;
-			if ($selectedGroup?.id == member.groupChat.id) {
-				setSelectedMessagesMembers();
+				history.members = history.members.filter(m => m.id !== member.id);
+
+				if (initialLenght !== history.members.length){
+					historyChanged = true;
+				}
+				break;
 			}
+		}
+		if (historyChanged && $selectedGroup?.id === member.groupChat.id){
+			setSelectedMessagesMembers();
 		}
 	}
 
@@ -241,6 +241,13 @@
 		}
 		if (historyChanged && $selectedGroup?.id === memberJoined.groupChat.id) {
 			setSelectedMessagesMembers();
+		}
+	}
+
+	async function onDeletedGroupChat(groupChat: GroupChatDto | null){
+		let res = await deleteGroupChatById(groupChat!.id);
+		if (typeof res === 'number'){
+			return res;
 		}
 	}
 
@@ -280,11 +287,6 @@
 		if ($selectedGroup?.id == groupChatDto.id) {
 			$selectedGroup = groupsList.find((g) => g.id == $selectedGroup?.id) ?? null;
 		}
-	};
-
-	// TODO
-	const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
-		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
 	};
 
 	const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEventDto): void => {
@@ -394,6 +396,19 @@
 		}
 	};
 
+	// TODO fix to work properly
+	const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
+		console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
+		handleDeletedGroupChat(groupChatEvent.chatId);
+	};
+
+	function handleDeletedGroupChat(chatId: number) {
+		groupsList = groupsList.filter(history => history.id !== chatId);
+			if ($selectedGroup?.id === chatId){
+				$selectedGroup = null;
+			}
+	}
+
 	$socket.on(socketEvent.RECEIVE_GROUP_MESSAGE, onGroupMessage);
 	$socket.on(socketEvent.GROUP_CHAT_CREATED, onGroupChatCreated);
 	$socket.on(socketEvent.GROUP_CHAT_DELETED, onGroupChatDeleted);
@@ -442,7 +457,6 @@
 	$: $selectedGroup, setSelectedMessagesMembers();
 
 	//$: console.log('member.id', groupChatHistory);
-
 	// $: console.log('groupChatHistory', groupChatHistory);
 	// $: console.log('selectedGroup', $selectedGroup);
 	// $: console.log('messages', messages);
@@ -506,7 +520,7 @@
 						on:add={(e) => onAddGroupChatUser($selectedGroup, e.detail)}
 					/>
 				{:else if configGroup}
-					<GroupConfig bind:configGroup />
+					<GroupConfig bind:configGroup on:delete={() => onDeletedGroupChat($selectedGroup)} />
 				{:else}
 					<GroupMessages bind:messages {sendMessage} bind:configGroup muted={iAmMuted(members)} />
 				{/if}

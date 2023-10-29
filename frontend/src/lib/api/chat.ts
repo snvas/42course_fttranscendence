@@ -163,3 +163,16 @@ export async function deleteGroupChatPassword(chatId: number): Promise<boolean> 
 		throw error;
 	}
 }
+
+export async function deleteGroupChatById(chatId: number) : Promise<number| boolean> {
+	try {
+		await chatService.deleteGroupChat(chatId);
+		return true;
+	} catch (error){
+		if (isAxiosError(error) && error.response){
+			return error.response.status;
+		}
+		throw error;
+	}
+	
+}
