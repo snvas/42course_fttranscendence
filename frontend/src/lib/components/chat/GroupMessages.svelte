@@ -9,6 +9,8 @@
 
 	export let sendMessage: (message: string) => void;
 
+	export let muted: boolean = false;
+
 	let onSendMessage = () => {
 		sendMessage(message);
 		message = '';
@@ -26,18 +28,17 @@
 		</div>
 	{:else}
 		<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-3">
-				{#if $profile.id == $selectedGroup.owner.id}
+			{#if $profile.id == $selectedGroup.owner.id}
 				<div class="flex flex-row justify-end gap-5 pr-3">
 					
 					<button class="text-green-200" on:click={() => (configGroup = $selectedGroup)}>
-						<!-- TODO : adicionar botão e formatar -->
 						<div class="fa fa-cog text-3xl icon-link text-slate-500" aria-hidden="true" />
-						
 					</button>
 				</div>
-				{/if}
-				<div class="flex flex-row justify-center">
-				<h1 class="text-center text-yellow-500">{$selectedGroup.name}</h1></div>
+			{/if}
+			<div class="flex flex-row justify-center">
+				<h1 class="text-center text-yellow-500">{$selectedGroup.name}</h1>
+			</div>
 			<div
 				class="border-2 border-white h-full m-2 flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
 			>
@@ -69,16 +70,25 @@
 				{/each}
 			</div>
 			<form
-				class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2"
+				class="flex-initial border-2 border-white m-2 flex items-center justify-center bg-white rounded-md h-16 gap-2 {muted
+					? 'bg-gray-300 border-gray-300'
+					: ''}"
 			>
 				<input
 					bind:value={message}
-					placeholder="Enter the Message"
-					class="text-center w-full h-full text-black text-xl"
+					placeholder={muted ? 'You are muted' : 'Enter the Message'}
+					class="text-center w-full h-full text-black text-xl
+					disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500"
+					disabled={muted}
 				/>
-				<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
-					SEND
-				</button>
+				{#if !muted}
+					<button
+						class="bg-black p-3 rounded-md enabled:hover:bg-slate-500"
+						on:click={onSendMessage}
+					>
+						SEND
+					</button>
+				{/if}
 			</form>
 		</div>
 	{/if}

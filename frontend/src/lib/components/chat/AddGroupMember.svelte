@@ -43,7 +43,7 @@
 					</div>
 					<div>
 						{#if member.role == null}
-							<ListButton on:click={() => dispatch('add', member.id)} type="addMember" />
+							<ListButton on:click={() => dispatch('add', member.id)} type="add-member" />
 						{:else}
 						<div class="fa fa-user-circle p-5 text-2xl icon-link" aria-hidden="true" />
 						{/if}
