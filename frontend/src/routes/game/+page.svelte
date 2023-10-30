@@ -23,8 +23,9 @@
 
 	const game_socket = io("http://localhost:3000");
 
+	const is_ok = game_socket.connect();
 	function sendMessage(msg: string, data: Positions) {
-		game_socket.emit('msg', data)
+		game_socket.emit(msg, data)
   	}
 
 	function sketch(p5: p5) {
@@ -35,11 +36,6 @@
 		let player2: Player;
 		let speedBoost: SpeedBoost;
 		//let sizeIncrease : SizeIncrease;
-
-		game_socket.on('game-data', (data) => {
-			player1.setPositions(data.player);
-			ball1.setPositions(data.ball);
-		})
 
 		p5.setup = () => {
 			p5.createCanvas(width, height);
@@ -57,6 +53,10 @@
 		};
 
 		p5.draw = () => {
+			game_socket.on('game-data', (data) => {
+				player1.setPositions(data.player);
+				ball1.setPositions(data.ball);
+			})
 			p5.background(0);
 			p5.rect(width / 2, 0, 5, height);
 			player1.drawPlayer();
