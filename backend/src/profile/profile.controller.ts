@@ -135,6 +135,14 @@ export class ProfileController {
     return new StreamableFile(stream);
   }
 
+  @Post('friend/:profileId')
+  async addFriend(
+    @Req() { user }: { user: FortyTwoUserDto },
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<ProfileDTO> {
+    return await this.friendService.addFriend(user.id, profileId);
+  }
+
   @Get('friends')
   async getFriends(
     @Req() { user }: { user: FortyTwoUserDto },
@@ -142,11 +150,18 @@ export class ProfileController {
     return await this.friendService.getFriends(user.id);
   }
 
-  @Post('friend/:profileId')
-  async addFriend(
+  @Get('friend-by')
+  async getFriendBy(
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<ProfileFriendDto[]> {
+    return await this.friendService.getFriendBy(user.id);
+  }
+
+  @Delete('friend/:profileId')
+  async deleteFriend(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('profileId', ParseIntPipe) profileId: number,
-  ): Promise<ProfileDTO> {
-    return await this.friendService.addFriend(user.id, profileId);
+  ): Promise<ProfileDeletedResponseDto> {
+    return await this.friendService.deleteFriend(user.id, profileId);
   }
 }
