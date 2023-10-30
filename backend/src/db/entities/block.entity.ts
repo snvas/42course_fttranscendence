@@ -1,7 +1,8 @@
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ProfileEntity } from './profile.entity';
 
 @Entity({ name: 'blocks' })
+@Index(['profile', 'blockedUser'], { unique: true })
 export class BlockEntity {
   @PrimaryGeneratedColumn()
   id: number;

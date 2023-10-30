@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { ProfileFriend } from '../interfaces/profile-friend.interface';
+import { SimpleProfile } from '../interfaces/simples-profile.interface';
 
-export class ProfileFriendDto implements ProfileFriend {
+export class SimpleProfileDto implements SimpleProfile {
   @IsNumber()
   @IsNotEmpty()
   id: number;

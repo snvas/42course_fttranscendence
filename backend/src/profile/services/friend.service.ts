@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -7,11 +8,10 @@ import {
 import { FriendEntity } from '../../db/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
-import { plainToClass } from 'class-transformer';
 import { ProfileService } from '../profile.service';
 import { ProfileDTO } from '../models/profile.dto';
-import { ProfileFriend } from '../interfaces/profile-friend.interface';
-import { ProfileFriendDto } from '../models/profile-friend.dto';
+import { SimpleProfile } from '../interfaces/simples-profile.interface';
+import { SimpleProfileDto } from '../models/simple-profile.dto';
 import { ProfileDeletedResponseDto } from '../models/profile-delete-response.dto';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class FriendService {
   public async addFriend(
     userId: number,
     profileId: number,
-  ): Promise<ProfileDTO> {
+  ): Promise<SimpleProfileDto> {
     const friendProfile: ProfileDTO | null =
       await this.profileService.findByProfileId(profileId);
 
@@ -48,7 +48,11 @@ export class FriendService {
         userFriend,
       );
 
-      return plainToClass(ProfileDTO, userFriendDb.friend);
+      return {
+        id: userFriendDb.friend.id,
+        nickname: userFriendDb.friend.nickname,
+        avatarId: userFriendDb.friend.avatarId,
+      } as SimpleProfileDto;
     } catch (Error) {
       if (Error instanceof QueryFailedError) {
         this.logger.error(Error.message);
@@ -60,7 +64,7 @@ export class FriendService {
     }
   }
 
-  public async getFriends(userId: number): Promise<ProfileFriendDto[]> {
+  public async getFriends(userId: number): Promise<SimpleProfileDto[]> {
     const friends: FriendEntity[] = await this.friendRepository.find({
       where: {
         profile: { userEntity: { id: userId } },
@@ -70,31 +74,32 @@ export class FriendService {
       },
     });
 
-    return friends.map((friend: FriendEntity): ProfileFriendDto => {
+    return friends.map((friendship: FriendEntity): SimpleProfileDto => {
       return {
-        id: friend.friend.id,
-        nickname: friend.friend.nickname,
-        avatarId: friend.friend.avatarId,
-      } as ProfileFriend;
+        id: friendship.friend.id,
+        nickname: friendship.friend.nickname,
+        avatarId: friendship.friend.avatarId,
+      } as SimpleProfile;
     });
   }
 
-  public async getFriendBy(userId: number): Promise<ProfileFriendDto[]> {
+  public async getFriendBy(userId: number): Promise<SimpleProfileDto[]> {
     const friends: FriendEntity[] = await this.friendRepository.find({
       where: {
         friend: { userEntity: { id: userId } },
       },
       relations: {
         friend: true,
+        profile: true,
       },
     });
 
-    return friends.map((friend: FriendEntity): ProfileFriendDto => {
+    return friends.map((friendship: FriendEntity): SimpleProfileDto => {
       return {
-        id: friend.friend.id,
-        nickname: friend.friend.nickname,
-        avatarId: friend.friend.avatarId,
-      } as ProfileFriend;
+        id: friendship.profile.id,
+        nickname: friendship.profile.nickname,
+        avatarId: friendship.profile.avatarId,
+      } as SimpleProfile;
     });
   }
 
@@ -126,8 +131,8 @@ export class FriendService {
     );
 
     if (!deleteResult.affected) {
-      throw new NotFoundException(
-        `Friendship between ${userProfile.nickname} and ${friendProfile.nickname} not found`,
+      throw new InternalServerErrorException(
+        `Friendship between ${userProfile.nickname} and ${friendProfile.nickname} not deleted`,
       );
     }
 

@@ -48,10 +48,6 @@ export class ProfileService {
             groupChat: true,
           },
           ownedGroupChats: true,
-          blockedBy: true,
-          blockedUsers: true,
-          friends: {},
-          friendBy: {},
         },
       });
 

@@ -7,6 +7,7 @@ import { ProfileController } from './profile.controller';
 import { AvatarService } from '../avatar/avatar.service';
 import { PlayerStatusService } from './services/player-status.service';
 import { FriendService } from './services/friend.service';
+import { BlockService } from './services/block.service';
 
 @Module({
   controllers: [ProfileController],
@@ -14,6 +15,7 @@ import { FriendService } from './services/friend.service';
     UserService,
     ProfileService,
     AvatarService,
+    BlockService,
     PlayerStatusService,
     FriendService,
   ],
