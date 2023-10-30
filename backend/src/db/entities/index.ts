@@ -6,6 +6,8 @@ import { GroupMessageEntity } from './group-message.entity';
 import { GroupChatEntity } from './group-chat.entity';
 import { GroupMemberEntity } from './group-member.entity';
 import { PrivateMessageEntity } from './private-message.entity';
+import { FriendEntity } from './friend.entity';
+import { BlockEntity } from './block.entity';
 
 const entities = [
   UserEntity,
@@ -16,6 +18,8 @@ const entities = [
   GroupMemberEntity,
   GroupMessageEntity,
   PrivateMessageEntity,
+  FriendEntity,
+  BlockEntity,
 ];
 
 export {
@@ -27,6 +31,8 @@ export {
   GroupMemberEntity,
   GroupMessageEntity,
   PrivateMessageEntity,
+  FriendEntity,
+  BlockEntity,
 };
 
 export default entities;

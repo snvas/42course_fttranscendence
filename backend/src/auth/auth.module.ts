@@ -26,6 +26,6 @@ import { AvatarService } from '../avatar/avatar.service';
     AuthService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserAuthenticatedGuard],
+  exports: [UserAuthenticatedGuard, AvatarService, ProfileService],
 })
 export class AuthModule {}

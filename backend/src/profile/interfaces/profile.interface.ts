@@ -1,5 +1,7 @@
 import {
   AvatarEntity,
+  BlockEntity,
+  FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
   PrivateMessageEntity,
@@ -19,6 +21,10 @@ export interface Profile {
   ownedGroupChats: GroupChatEntity[];
   sentPrivateMessages: PrivateMessageEntity[];
   receivedPrivateMessages: PrivateMessageEntity[];
+  friends: FriendEntity[];
+  friendBy: FriendEntity[];
+  blockedUsers: BlockEntity[];
+  blockedBy: BlockEntity[];
   createdAt: Date;
   updatedAt: Date;
 }

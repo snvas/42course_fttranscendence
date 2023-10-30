@@ -4,15 +4,15 @@ import {Socket} from "socket.io-client";
 import {NavigateFunction, useNavigate} from "react-router-dom";
 import chatService from "../api/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
-import {PlayerStatusDto} from "../../../backend/src/chat/models/player-status.dto.ts";
-import {ConversationDto} from "../../../backend/src/chat/models/conversation.dto.ts";
+import {PlayerStatusDto} from "../../../backend/src/chat/models/player/player-status.dto.ts";
+import {MessageConversationDto} from "../../../backend/src/chat/models/message/message-conversation.dto.ts";
 import {AxiosResponse} from "axios";
-import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
-import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
-import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
-import {GroupChatEvent} from "../../../backend/src/chat/interfaces/group-chat-event.interface.ts";
-import {GroupChatDto} from "../../../backend/src/chat/models/group-chat.dto.ts";
-import {GroupMemberDto} from "../../../backend/src/chat/models/group-member.dto.ts";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private/private-message-history.dto.ts";
+import {PrivateMessageDto} from "../../../backend/src/chat/models/private/private-message.dto.ts";
+import {GroupMessageDto} from "../../../backend/src/chat/models/group/group-message.dto.ts";
+import {GroupChatDto} from "../../../backend/src/chat/models/group/group-chat.dto.ts";
+import {GroupMemberDto} from "../../../backend/src/chat/models/group/group-member.dto.ts";
+import {GroupChatEventDto} from "../../../backend/src/chat/models/group/group-chat-event.dto.ts";
 
 const ChatContext = createContext({});
 
@@ -105,7 +105,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
                 return prevHistory.map((history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
                     if (history.id === message.sender.id) {
 
-                        if (history.messages.find((m: ConversationDto): boolean => m.id === message.id)) {
+                        if (history.messages.find((m: MessageConversationDto): boolean => m.id === message.id)) {
                             return history;
                         }
 
@@ -137,11 +137,11 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
             console.log(`### received group chat password deleted ${JSON.stringify(groupChatDto)}`);
         }
 
-        const onGroupChatDeleted = (groupChatEvent: GroupChatEvent): void => {
+        const onGroupChatDeleted = (groupChatEvent: GroupChatEventDto): void => {
             console.log(`### received group chat deleted ${JSON.stringify(groupChatEvent)}`);
         }
 
-        const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEvent): void => {
+        const onGroupChatPasswordUpdated = (groupChatEvent: GroupChatEventDto): void => {
             console.log(`### received group chat password updated ${JSON.stringify(groupChatEvent)}`);
         }
 
@@ -259,7 +259,7 @@ export const ChatProvider: FC<WebSocketProviderProps> = ({children}) => {
                 return history;
             }
 
-            if (history.messages.find((m: ConversationDto): boolean => m.id === privateMessageDto.id)) {
+            if (history.messages.find((m: MessageConversationDto): boolean => m.id === privateMessageDto.id)) {
                 return history;
             }
 

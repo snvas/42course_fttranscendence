@@ -7,7 +7,7 @@ import { DataSource } from 'typeorm';
 import { SessionEntity } from './db/entities';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
-import { EventsAdapter } from './chat/adapters/chat.events.adapter';
+import { WsEventsAdapter } from './ws/adapters/ws.events.adapter';
 import { config } from 'dotenv';
 
 async function bootstrap() {
@@ -42,7 +42,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(passport.initialize());
   app.use(passport.session());
-  app.useWebSocketAdapter(new EventsAdapter(sessionMiddleware, app));
+  app.useWebSocketAdapter(new WsEventsAdapter(sessionMiddleware, app));
 
   await app.listen(Number(configService.get<number>('APP_PORT')) || 3000);
 

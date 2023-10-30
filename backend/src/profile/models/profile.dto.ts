@@ -11,6 +11,8 @@ import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
 import { Type } from 'class-transformer';
 import {
   AvatarEntity,
+  BlockEntity,
+  FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
@@ -48,6 +50,14 @@ export class ProfileDTO implements Profile {
   sentPrivateMessages: PrivateMessageEntity[];
   @ValidateNested()
   groupMessages: GroupMessageEntity[];
+  @ValidateNested()
+  blockedBy: BlockEntity[];
+  @ValidateNested()
+  blockedUsers: BlockEntity[];
+  @ValidateNested()
+  friends: FriendEntity[];
+  @ValidateNested()
+  friendBy: FriendEntity[];
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;

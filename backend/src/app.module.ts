@@ -20,13 +20,13 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     AvatarModule,
     ProfileModule,
     ChatModule,
+    ChatModule,
+    GameModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     PassportModule.register({ session: true }),
-    ChatModule,
-    GameModule,
   ],
   controllers: [GameController],
   providers: [
