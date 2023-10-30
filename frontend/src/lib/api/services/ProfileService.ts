@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import type { ProfileDTO, ProfileDeletedResponseDto } from '$lib/dtos';
+import type { ProfileDTO, ProfileDeletedResponseDto, SimpleProfileDto } from '$lib/dtos';
 
 export class ProfileService {
 	private axiosInstance: AxiosInstance;
@@ -48,6 +48,39 @@ export class ProfileService {
 
 	public async readAllUsers(): Promise<AxiosResponse> {
 		return this, this.axiosInstance.get('profiles');
+	}
+
+	public async addFriend(id: string): Promise<SimpleProfileDto> {
+		return this.axiosInstance.post(`friend/${id}`);
+	}	
+
+	public async deleteFriend(id: string): Promise<ProfileDeletedResponseDto> {
+		return this.axiosInstance.delete(`friend/${id}`);
+	}	
+
+	public async getFriends(): Promise<SimpleProfileDto[]> {
+		return this.axiosInstance.get(`friends`);
+	}
+
+	public async getFriendBy(): Promise<SimpleProfileDto[]> {
+		return this.axiosInstance.get(`friend-by`);
+	}
+
+
+	public async blockUser(id: string): Promise<SimpleProfileDto> {
+		return this.axiosInstance.post(`block/${id}`);
+	}	
+
+	public async unblockUser(id: string): Promise<ProfileDeletedResponseDto> {
+		return this.axiosInstance.delete(`block/${id}`);
+	}	
+
+	public async getBlockedUsers(): Promise<SimpleProfileDto[]> {
+		return this.axiosInstance.get(`blocks`);
+	}
+
+	public async getBlockedBy(): Promise<SimpleProfileDto[]> {
+		return this.axiosInstance.get(`blocked-by`);
 	}
 }
 
