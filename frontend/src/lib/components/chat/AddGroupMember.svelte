@@ -28,7 +28,7 @@
 	$: addMemberList = listAllUsers($playersStatus, members);
 </script>
 
-<div class="w-full h-full flex flex-row gap-10">
+<div class="w-full h-full flex flex-row gap-10 lg:w-1/2 2xl:w-2/3">
 	<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 		<div class="flex flex-col justify-end items-end">
 			<button on:click={() => (addMember = null)}>
@@ -41,11 +41,12 @@
 					<div class="p-2 grow">
 						<UserAvatarStatus user={member} getAvatar={getAvatarFromId} />
 					</div>
-					<div>
+					<div class="p-2">
 						{#if member.role == null}
-							<ListButton on:click={() => dispatch('add', member.id)} type="addMember" />
-						{:else}
-							Member
+							<ListButton on:click={() => dispatch('add', member.id)} type="add-member" />
+
+						{:else if member.role == "user"}
+							<ListButton on:click={() => dispatch('kick', member.id)} type="kick" />
 						{/if}
 					</div>
 				</div>

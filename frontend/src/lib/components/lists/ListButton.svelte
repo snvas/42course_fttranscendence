@@ -7,10 +7,14 @@
 		| 'unblock'
 		| 'join'
 		| 'leave'
-		| 'addMember'
 		| 'mute'
 		| 'unmute'
-		| 'kick';
+		| 'add-member'
+		| 'turn-admin'
+		| 'remove-admin'
+		| 'kick'
+		| 'ban'
+		| 'unban';
 
 	const typeObject: { [index: string]: { img: string; alt: string; text: string } } = {
 		chat: {
@@ -51,10 +55,21 @@
 			alt: 'leave this group',
 			text: 'LEAVE'
 		},
-		addMember: {
+		'add-member': {
 			img: '/adicionar-usuario.png',
 			alt: 'add member',
 			text: 'ADD'
+		},
+		'turn-admin': {
+			img: '/admin.png',
+			alt: 'turn admin',
+			text: 'ADMIN'
+		},
+		'remove-admin': {
+			// TODO: corrigir corrigir icon
+			img: '/do-utilizador.png',
+			alt: 'remove admin',
+			text: 'USER'
 		},
 		kick: {
 			// TODO: corrigir corrigir icon
@@ -63,21 +78,29 @@
 			text: 'KICK'
 		},
 		mute: {
-			// TODO: corrigir corrigir icon
 			img: '/audio-mudo.png',
 			alt: 'mute this member',
 			text: 'MUTE'
 		},
 		unmute: {
-			// TODO: corrigir corrigir icon
 			img: '/microfone.png',
 			alt: 'unmute this member',
 			text: 'UNMUTE'
-		}
+		},
+		ban: {
+			img: '/banir-usuario.png',
+			alt: 'ban this member',
+			text: 'BAN'
+		},
+		unban: {
+			img: '/banir-usuario.png',
+			alt: 'unban this member',
+			text: 'UNBAN'
+		},
 	};
 </script>
 
-<button class="w-10 xl:w-12 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
-	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-8 mx-auto" />
-	<p class="max-xl:text-xs lg:text-xs text-center">{typeObject[type].text}</p>
+<button class="w-8 xl:w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
+	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-6 mx-auto" />
+	<p class="text-xs text-center">{typeObject[type].text}</p>
 </button>
