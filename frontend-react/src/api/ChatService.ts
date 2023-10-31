@@ -1,18 +1,21 @@
 import {io, Socket} from "socket.io-client";
 import axios, {AxiosInstance, AxiosResponse} from "axios";
-import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private-message-history.dto.ts";
-import {PrivateMessageDto} from "../../../backend/src/chat/models/private-message.dto.ts";
-import {GroupMessageDto} from "../../../backend/src/chat/models/group-message.dto.ts";
-import {GroupChatDto} from "../../../backend/src/chat/models/group-chat.dto.ts";
-import {GroupChatDeletedResponseDto} from "../../../backend/src/chat/models/group-chat-deleted-response.dto.ts";
-import {PasswordUpdateResponseDto} from "../../../backend/src/chat/models/password-update-response.dto.ts";
-import {GroupMemberDto} from "../../../backend/src/chat/models/group-member.dto.ts";
+
+import {PrivateMessageDto} from "../../../backend/src/chat/models/private/private-message.dto.ts";
+import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private/private-message-history.dto.ts";
+import {GroupMessageDto} from "../../../backend/src/chat/models/group/group-message.dto.ts";
+import {GroupChatDto} from "../../../backend/src/chat/models/group/group-chat.dto.ts";
+import {GroupChatDeletedResponseDto} from "../../../backend/src/chat/models/group/group-chat-deleted-response.dto.ts";
+import {GroupChatPasswordDto} from "../../../backend/src/chat/models/group/group-chat-password.dto.ts";
+import {GroupChatUpdatedResponseDto} from "../../../backend/src/chat/models/group/group-chat-updated-response.dto.ts";
+import {GroupMemberDto} from "../../../backend/src/chat/models/group/group-member.dto.ts";
 import {
     GroupMemberDeletedResponse
-} from "../../../backend/src/chat/interfaces/group-member-deleted-response.interface.ts";
-import {ChatPasswordDto} from "../../../backend/src/chat/models/chat-password.dto.ts";
-import {MemberUpdatedResponseDto} from "../../../backend/src/chat/models/member-updated-response.dto.ts";
-import {GroupCreationDto} from "../../../backend/src/chat/models/group-creation.dto.ts";
+} from "../../../backend/src/chat/interfaces/group/group-member-deleted-response.interface.ts";
+import {
+    GroupMemberUpdatedResponseDto
+} from "../../../backend/src/chat/models/group/group-member-updated-response.dto.ts";
+import {GroupCreationDto} from "../../../backend/src/chat/models/group/group-creation.dto.ts";
 
 class ChatService {
     private readonly socket: Socket;
@@ -82,7 +85,7 @@ class ChatService {
         return this.axiosInstance.delete(`/group/${chatId}`);
     }
 
-    public joinGroupChat(chatId: number, password?: ChatPasswordDto): Promise<AxiosResponse<void>> {
+    public joinGroupChat(chatId: number, password?: GroupChatPasswordDto): Promise<AxiosResponse<void>> {
         if (password) {
             return this.axiosInstance.post(`/group/${chatId}/join`, {password});
         }
@@ -93,11 +96,11 @@ class ChatService {
         return this.axiosInstance.delete(`/group/${chatId}/leave`);
     }
 
-    public updateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
+    public updateGroupChatPassword(chatId: number, password: string): Promise<AxiosResponse<GroupChatPasswordDto>> {
         return this.axiosInstance.put(`/group/${chatId}/password`, {password});
     }
 
-    public deleteGroupChatPassword(chatId: number): Promise<AxiosResponse<PasswordUpdateResponseDto>> {
+    public deleteGroupChatPassword(chatId: number): Promise<AxiosResponse<GroupChatUpdatedResponseDto>> {
         return this.axiosInstance.delete(`/group/${chatId}/password`);
     }
 
@@ -109,7 +112,7 @@ class ChatService {
         return this.axiosInstance.post(`/group/${chatId}/user/${profileId}`);
     }
 
-    public updateGroupChatMemberRole(chatId: number, profileId: number, role: string): Promise<AxiosResponse<MemberUpdatedResponseDto>> {
+    public updateGroupChatMemberRole(chatId: number, profileId: number, role: string): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
         return this.axiosInstance.put(`/group/${chatId}/member/${profileId}/role`, {role});
     }
 
@@ -117,11 +120,11 @@ class ChatService {
         return this.axiosInstance.delete(`/group/${chatId}/member/${profileId}`);
     }
 
-    public muteGroupChatMember(chatId: number, profileId: number): Promise<AxiosResponse<MemberUpdatedResponseDto>> {
+    public muteGroupChatMember(chatId: number, profileId: number): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
         return this.axiosInstance.put(`/group/${chatId}/mute/${profileId}`);
     }
 
-    public unmuteGroupChatMember(chatId: number, profileId: number): Promise<AxiosResponse<MemberUpdatedResponseDto>> {
+    public unmuteGroupChatMember(chatId: number, profileId: number): Promise<AxiosResponse<GroupMemberUpdatedResponseDto>> {
         return this.axiosInstance.put(`/group/${chatId}/unmute/${profileId}`);
     }
 }

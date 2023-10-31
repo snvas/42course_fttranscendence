@@ -64,7 +64,7 @@ export class PrivateChatService {
     } as PrivateMessageDto;
   }
 
-  public async getUserPrivateMessagesHistory(
+  public async getMessageHistory(
     userId: number,
   ): Promise<PrivateMessageHistoryDto[]> {
     const profiles: ProfileDTO[] = await this.getUserPrivateMessagesProfiles(

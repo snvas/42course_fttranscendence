@@ -61,15 +61,15 @@
 			text: 'ADD'
 		},
 		'turn-admin': {
-			img: '/adicionar-usuario.png',
+			img: '/admin.png',
 			alt: 'turn admin',
-			text: 'TURN ADMIN'
+			text: 'ADMIN'
 		},
 		'remove-admin': {
 			// TODO: corrigir corrigir icon
-			img: '/botao-excluir.png',
+			img: '/do-utilizador.png',
 			alt: 'remove admin',
-			text: 'REMOVE ADMIN'
+			text: 'USER'
 		},
 		kick: {
 			// TODO: corrigir corrigir icon
@@ -100,7 +100,7 @@
 	};
 </script>
 
-<button class="w-10 xl:w-12 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
-	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-8 mx-auto" />
-	<p class="max-xl:text-xs lg:text-xs text-center">{typeObject[type].text}</p>
+<button class="w-8 xl:w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1" on:click>
+	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-6 mx-auto" />
+	<p class="text-xs text-center">{typeObject[type].text}</p>
 </button>

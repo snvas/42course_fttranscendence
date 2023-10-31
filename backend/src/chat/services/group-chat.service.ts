@@ -40,6 +40,8 @@ import { GroupMemberDto } from '../models/group/group-member.dto';
 import { GroupMemberDeletedResponse } from '../interfaces/group/group-member-deleted-response.interface';
 import { GroupChatUpdatedResponseDto } from '../models/group/group-chat-updated-response.dto';
 import { GroupChatDeletedResponseDto } from '../models/group/group-chat-deleted-response.dto';
+import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
+import { BlockService } from '../../profile/services/block.service';
 
 @Injectable()
 export class GroupChatService {
@@ -47,6 +49,7 @@ export class GroupChatService {
 
   constructor(
     private readonly profileService: ProfileService,
+    private readonly blockService: BlockService,
     private readonly groupMemberService: GroupMemberService,
     private readonly groupMessageService: GroupMessageService,
     @InjectRepository(GroupChatEntity)
@@ -100,6 +103,9 @@ export class GroupChatService {
     userId: number,
   ): Promise<GroupChatHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const blockedUsers: SimpleProfileDto[] = await this.blockService.getBlocks(
+      userId,
+    );
 
     this.logger.verbose(`### Getting group chats for user: [${userId}]`);
     const groupMemberships: GroupMemberEntity[] =
@@ -138,6 +144,12 @@ export class GroupChatService {
                 avatarId: message.sender.avatarId,
               } as MessageProfile,
             };
+          })
+          .filter((message: MessageConversationDto): boolean => {
+            return !blockedUsers.some(
+              (blocked: SimpleProfileDto): boolean =>
+                blocked.id === message.sender.id,
+            );
           })
           .sort((a: MessageConversationDto, b: MessageConversationDto) => {
             return a.createdAt.getTime() - b.createdAt.getTime();

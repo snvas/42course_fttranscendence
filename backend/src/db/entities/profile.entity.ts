@@ -15,9 +15,9 @@ import { GroupChatEntity } from './group-chat.entity';
 import { GroupMemberEntity } from './group-member.entity';
 import { GroupMessageEntity } from './group-message.entity';
 import { PrivateMessageEntity } from './private-message.entity';
+import { FriendEntity } from './friend.entity';
+import { BlockEntity } from './block.entity';
 
-//TODO: Implementar número de amigos, lista de amigos e lista de usuários bloqueados
-//TODO: Calcular rankings, estatísticas com base nos dados do perfil em tempo de execução
 @Entity({ name: 'profiles' })
 export class ProfileEntity implements Profile {
   @PrimaryGeneratedColumn()
@@ -66,6 +66,18 @@ export class ProfileEntity implements Profile {
 
   @OneToMany(() => PrivateMessageEntity, (message) => message.receiver)
   receivedPrivateMessages: PrivateMessageEntity[];
+
+  @OneToMany(() => FriendEntity, (friendship) => friendship.profile)
+  friends: FriendEntity[];
+
+  @OneToMany(() => FriendEntity, (friendship) => friendship.friend)
+  friendBy: FriendEntity[];
+
+  @OneToMany(() => BlockEntity, (block) => block.profile)
+  blockedUsers: BlockEntity[];
+
+  @OneToMany(() => BlockEntity, (block) => block.blockedUser)
+  blockedBy: BlockEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

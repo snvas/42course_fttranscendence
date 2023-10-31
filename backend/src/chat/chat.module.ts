@@ -14,8 +14,9 @@ import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { GroupChatService } from './services/group-chat.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupMemberService } from './services/group-member.service';
-import { PlayerStatusService } from './services/player-status.service';
+import { PlayerStatusService } from '../profile/services/player-status.service';
 import { GroupMessageService } from './services/group-message.service';
+import { BlockService } from '../profile/services/block.service';
 
 @Module({
   controllers: [ChatController],
@@ -24,6 +25,7 @@ import { GroupMessageService } from './services/group-message.service';
     ChatService,
     PlayerStatusService,
     PrivateChatService,
+    BlockService,
     GroupChatService,
     GroupMessageService,
     GroupMemberService,
@@ -36,6 +38,17 @@ import { GroupMessageService } from './services/group-message.service';
     AvatarService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [],
+  exports: [
+    ChatService,
+    PlayerStatusService,
+    PrivateChatService,
+    GroupChatService,
+    GroupMessageService,
+    GroupMemberService,
+    ProfileService,
+    UserService,
+    AvatarService,
+    BlockService,
+  ],
 })
 export class ChatModule {}

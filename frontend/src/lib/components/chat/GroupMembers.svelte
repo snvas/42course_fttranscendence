@@ -55,7 +55,7 @@
 	// $: console.log(memberStatus);
 </script>
 
-<div class="border-4 border-white h-full flex flex-col flex-none w-1/3 p-2 rounded-3xl">
+<div class="border-4 border-white md:max-h-full max-h-96 flex flex-col flex-none p-2 rounded-3xl w-full">
 	<p class="text-center pb-3">MEMBERS</p>
 	<hr />
 	<div class="overflow-y-auto w-full max-w-full">
@@ -87,7 +87,7 @@
 						</div>
 					</div>
 					<div
-						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
+						class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial mr-2"
 					>
 						{#if !itIsMyProfile(member) && !($selectedGroup?.owner.id == member.profile.id)}
 							{#if iAmAdminOrOwner && !member.isBanned}
@@ -128,9 +128,9 @@
 		{/each}
 	</div>
 	{#if iAmAdminOrOwner}
-		<div>
+		<div class="pt-10 flex items-center justify-center">
 			<button
-				class="btn-primary w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
+				class="btn-primary w-3/4 lg:w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={() => {
 					if (!addMember) {
 						addMember = $selectedGroup;
