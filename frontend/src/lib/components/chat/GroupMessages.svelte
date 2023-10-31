@@ -59,7 +59,7 @@
 					<div class="flex flex-row w-full gap-2 border-b border-white border-opacity-20">
 						<div class="flex flex-col grow w-0">
 							<p class="text-xs text-gray-400">{conversation.nickname}</p>
-							<p class="text-lg break-words font-roboto>
+							<p class="text-lg break-words font-roboto">
 								{conversation.message}
 							</p>
 							<div class="flex flex-row w-full justify-end">

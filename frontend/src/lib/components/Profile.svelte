@@ -3,10 +3,11 @@
 	import type { ProfileDTO } from '$lib/dtos';
 	import AvatarImage from './AvatarImage.svelte';
 	import Button from '$lib/components/Button.svelte';
-
+	import LevelIndicator from '$lib/components/LevelIndicator.svelte';
 	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
+	let percentage = 23;
 </script>
 
 <div class="flex flex-col w-full h-full gap-10">
@@ -35,12 +36,8 @@
 				</div>
 			{/if}
 		</div>
-		<div
-			class="w-full min-w-fit flex border-4 border-white justify-center items-center rounded-md h-10"
-		>
-			<!-- TODO: level? -->
-			<p class="">LEVEL 2 - 23%</p>
-		</div>
+		<LevelIndicator levelPercentage={percentage} />
+
 		<div class="flex flex-row w-full min-w-fit">
 			<p class="mb-5">ACHIEVEMENTS</p>
 		</div>
