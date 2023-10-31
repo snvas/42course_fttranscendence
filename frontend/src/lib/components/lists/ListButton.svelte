@@ -3,8 +3,9 @@
 		| 'chat'
 		| 'play'
 		| 'block'
-		| 'friend'
 		| 'unblock'
+		| 'friend'
+		| 'unfriend'
 		| 'join'
 		| 'leave'
 		| 'mute'
@@ -66,13 +67,11 @@
 			text: 'ADMIN'
 		},
 		'remove-admin': {
-			// TODO: corrigir corrigir icon
 			img: '/do-utilizador.png',
 			alt: 'remove admin',
 			text: 'USER'
 		},
 		kick: {
-			// TODO: corrigir corrigir icon
 			img: '/botao-excluir.png',
 			alt: 'kick this member',
 			text: 'KICK'
@@ -97,6 +96,12 @@
 			alt: 'unban this member',
 			text: 'UNBAN'
 		},
+		unfriend: {
+			// TODO: atualizar icone
+			img: '/do-utilizador.png',
+			alt: 'remove friend',
+			text: 'FRIEND'
+		}
 	};
 </script>
 

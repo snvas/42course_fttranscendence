@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { PlayerStatusDto } from '$lib/dtos';
+	import type { DashboardUsersList } from '$lib/dtos';
 	import { getAvatarFromId } from '$lib/api';
 	import UserAvatarStatus from '../UserAvatarStatus.svelte';
 	import ListButton from '../lists/ListButton.svelte';
 
 	const dispatch = createEventDispatcher();
 
-	export let historyList: PlayerStatusDto[];
+	export let historyList: DashboardUsersList[];
 </script>
 
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">

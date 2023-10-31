@@ -1,3 +1,5 @@
+import type { PlayerStatusDto } from '../../../../backend/src/chat/models/player/player-status.dto';
+
 export * from '../../../../backend/src/auth/models/response-message.dto';
 export * from '../../../../backend/src/auth/models/one-time-password.dto';
 export * from '../../../../backend/src/user/models/forty-two-user.dto';
@@ -27,4 +29,9 @@ export type ComponentMessage = {
 	createdAt: string;
 	nickname: string;
 	sync: boolean;
+};
+
+export type DashboardUsersList = PlayerStatusDto & {
+	isFriend: boolean;
+	isBlocked: boolean;
 };

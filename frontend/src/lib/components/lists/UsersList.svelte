@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PlayerStatusDto } from '$lib/dtos';
+	import type { DashboardUsersList } from '$lib/dtos';
 	import type { AxiosResponse } from 'axios';
 	import { createEventDispatcher } from 'svelte';
 	import { profile } from '$lib/stores';
@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 	import ListButton from './ListButton.svelte';
 
-	export let users: PlayerStatusDto[];
+	export let users: DashboardUsersList[];
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
 	export let loading: Promise<any>;
 	const dispatch = createEventDispatcher();
@@ -15,8 +15,6 @@
 	function onSelectUser(id: number) {
 		goto(`public/${id}`);
 	}
-
-	// TODO: limitar caracteres de nickname min 3 e max 12
 </script>
 
 <div class="border-4 border-white h-full flex flex-col rounded-3xl pb-2">
@@ -49,8 +47,11 @@
 							<ListButton on:click={() => dispatch('chat', user)} type="chat" />
 							<ListButton on:click={() => dispatch('block', user.id)} type="block" />
 							<ListButton on:click={() => dispatch('play', user.id)} type="play" />
-							<ListButton on:click={() => dispatch('friend', user.id)} type="friend" />
-
+							{#if user.isFriend}
+								<ListButton on:click={() => dispatch('unfriend', user.id)} type="unfriend" />
+							{:else}
+								<ListButton on:click={() => dispatch('friend', user.id)} type="friend" />
+							{/if}
 							<!-- {:else}
 				<button class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
 					<img src="/bloqueado.png" alt="block this user" width="90%" />

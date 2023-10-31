@@ -7,6 +7,7 @@
 	import { chatService } from '$lib/api/services/ChatService';
 	import type {
 		ComponentMessage,
+		DashboardUsersList,
 		MessageConversationDto,
 		MessageProfileDto,
 		PlayerStatusDto,
@@ -25,7 +26,7 @@
 
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
 
-	let historyList: PlayerStatusDto[];
+	let historyList: DashboardUsersList[];
 
 	let loading = getPrivateMessageHistory();
 
@@ -227,10 +228,10 @@
 
 	function getHistoryFromStatus(
 		history: PrivateMessageHistoryDto[],
-		playerStatus: PlayerStatusDto[]
-	): PlayerStatusDto[] {
+		playerStatus: DashboardUsersList[]
+	): DashboardUsersList[] {
 		if (playerStatus.length == 0) return [];
-		let list: PlayerStatusDto[] = history.map((hist) => {
+		let list: DashboardUsersList[] = history.map((hist) => {
 			// console.log(playerStatus);
 			return playerStatus.find((usr) => usr.id == hist.id)!;
 		});
