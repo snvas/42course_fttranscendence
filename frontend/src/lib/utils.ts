@@ -16,3 +16,18 @@ export function validateNicknameInput(nickname: string): true | string {
 
 	return true;
 }
+
+export function validateGroupName(groupName: string): true | string {
+	const maxLength = 40;
+	const minLength = 3;
+
+	if (groupName.length < minLength) {
+		return `group name must have at least ${minLength} characters`;
+	}
+
+	if (groupName.length > maxLength) {
+		return `group name is too long, maximum size is ${maxLength} characters`;
+	}
+
+	return true;
+}
