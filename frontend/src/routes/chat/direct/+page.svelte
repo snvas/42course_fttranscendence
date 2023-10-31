@@ -17,6 +17,9 @@
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 
+	//  [ ]: verificar se socket está conectado antes de conectar de novo
+	$socket.connect();
+
 	let messages: ComponentMessage[] | null = null;
 	let selectedHistory: PrivateMessageHistoryDto | null = null;
 

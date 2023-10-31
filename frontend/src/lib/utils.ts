@@ -31,3 +31,13 @@ export function validateGroupName(groupName: string): true | string {
 
 	return true;
 }
+
+export function validateMessage(message: string): true | string {
+	const maxLength = 200;
+
+	if (message.length > maxLength) {
+		return `message is too long, maximum size is ${maxLength} characters`;
+	}
+	
+	return true;
+}
