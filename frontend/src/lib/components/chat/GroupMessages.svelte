@@ -56,30 +56,32 @@
 				class="border-2 border-white h-full flex flex-col gap-5 items-start p-5 justify-start rounded-lg overflow-auto"
 			>
 				{#each messages as conversation}
-					<div class="flex flex-row w-full gap-2">
+					<div class="flex flex-row w-full gap-2 border-b border-white border-opacity-20">
 						<div class="flex flex-col grow w-0">
 							<p class="text-xs text-gray-400">{conversation.nickname}</p>
 							<p class="text-lg break-words">
 								{conversation.message}
 							</p>
-						</div>
-						<div class="flex flex-row">
-							{#if !conversation.sync}
-								Loading
-							{:else}
-								<div class="flex flex-row items-center gap-1 text-xs text-gray-400">
-									<p>
-										{formatDistanceToNow(
-											new Date(
-												parseISO(conversation.createdAt).getTime() -
-													parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
-											)
-										)}
-										ago
-									</p>
-									<img class="w-10" src="/mensagem-recebida.png" alt="mensagem recebida" />
-								</div>
-							{/if}
+							<div class="flex flex-row w-full justify-end">
+								{#if !conversation.sync}
+									<div class="text-xs text-gray-400">
+										Loading
+									</div>
+								{:else}
+									<div class="flex flex-row items-center gap-1 text-xs text-gray-400">
+										<p>
+											{formatDistanceToNow(
+												new Date(
+													parseISO(conversation.createdAt).getTime() -
+														parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
+												)
+											)}
+											ago
+										</p>
+										<img class="w-8" src="/mensagem-recebida.png" alt="mensagem recebida" />
+									</div>
+								{/if}
+							</div>
 						</div>
 					</div>
 				{/each}
