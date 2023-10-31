@@ -83,6 +83,17 @@ export class BlockService {
     });
   }
 
+  public async isUserBlocked(profileId: number, receiverId: number) {
+    const block: BlockEntity | null = await this.blockRepository.findOne({
+      where: {
+        profile: { id: profileId },
+        blockedUser: { id: receiverId },
+      },
+    });
+
+    return !!block;
+  }
+
   public async getBlockedBy(userId: number): Promise<SimpleProfileDto[]> {
     const blocks: BlockEntity[] = await this.blockRepository.find({
       where: {
