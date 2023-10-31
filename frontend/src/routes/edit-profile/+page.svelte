@@ -8,6 +8,7 @@
 	import Camera from '$lib/components/Camera.svelte';
 	import type { ProfileDTO } from '$lib/dtos';
 	import { isAxiosError } from 'axios';
+	import { validateNicknameInput } from '$lib/utils';
 
 	let auth = useAuth();
 
@@ -95,6 +96,11 @@
 	async function onProfileUpload() {
 		resetAlerts();
 		try {
+			let validated = validateNicknameInput(tempProfile.nickname!)
+			if (validated != true) {
+				profileAlert = validated;
+				return;
+			}
 			await profileService.updateProfile(tempProfile);
 			profileAlert = profileSuccess.update;
 		} catch (error) {
@@ -147,7 +153,7 @@
 				<p class="md:text-3xl text-2xl">Edit Your Profile</p>
 				<div
 					class={`flex flex-col items-start w-full ${
-						profileAlert == profileAlerts.unavaliable ? 'text-red-500 border-red-500' : ''
+						(profileAlert != profileAlerts.none && profileAlert != profileSuccess.update) ? 'text-red-500 border-red-500' : ''
 					}`}
 				>
 					<p class="md:text-2xl text-xl pb-5">Nickname</p>
@@ -155,9 +161,9 @@
 				</div>
 				<div class="flex w-full items-center flex-col text-xl gap-4">
 					<p
-						class={Object.values(profileAlerts).indexOf(profileAlert) > -1
-							? 'text-red-500 '
-							: 'text-emerald-500'}
+						class={Object.values(profileSuccess).indexOf(profileAlert) > -1
+							? 'text-green-500 '
+							: 'text-red-500'}
 					>
 						{profileAlert}
 					</p>
