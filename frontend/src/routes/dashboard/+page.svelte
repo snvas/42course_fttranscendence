@@ -122,6 +122,7 @@
 		goto('/login');
 	}
 
+	// TODO: entrar ou convidar o usuário para jogar 
 	async function onGame() {
 		goto('/game');
 	}

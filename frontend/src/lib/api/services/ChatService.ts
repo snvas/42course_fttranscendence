@@ -84,7 +84,6 @@ class ChatService {
 		return this.axiosInstance.post('/group/create', group);
 	}
 
-	// TODO:
 	public deleteGroupChat(chatId: number): Promise<AxiosResponse<GroupChatDeletedResponseDto>> {
 		return this.axiosInstance.delete(`/group/${chatId}`);
 	}

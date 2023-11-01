@@ -6,6 +6,7 @@
 		| 'unblock'
 		| 'friend'
 		| 'unfriend'
+		| 'profile'
 		| 'join'
 		| 'leave'
 		| 'mute'
@@ -39,8 +40,7 @@
 			text: 'FRIEND'
 		},
 		unblock: {
-			// TODO: outro icon
-			img: '/bloqueado.png',
+			img: 'cadeado-desbloqueado.png',
 			alt: 'unblock this user',
 			text: 'UNBLOCK'
 		},
@@ -55,6 +55,12 @@
 			img: '/bloqueado.png',
 			alt: 'leave this group',
 			text: 'LEAVE'
+		},
+		profile: {
+			// TODO: corrigir corrigir icon
+			img: '/admin.png',
+			alt: 'see profile',
+			text: 'PROFILE'
 		},
 		'add-member': {
 			img: '/adicionar-usuario.png',
