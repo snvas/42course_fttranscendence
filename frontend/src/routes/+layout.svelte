@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { DashboardUsersList, PlayerStatusDto, ProfileDTO, SimpleProfileDto } from '$lib/dtos';
-	import { onlineUsers, playersStatus, socket, allUsers, friendsList } from '$lib/stores';
+	import { onlineUsers, playersStatus, socket, allUsers, friendsList, blockList } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
-	import { readAllUsers, readFriends } from '$lib/api';
+	import { readAllUsers, readBlockeds, readFriends } from '$lib/api';
 	import { page } from '$app/stores';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 
@@ -14,20 +14,21 @@
 		}
 		$allUsers = await readAllUsers();
 		$friendsList = await readFriends();
+		$blockList = await readBlockeds();
 
-		updatePlayersStatus($onlineUsers, $allUsers, $friendsList);
+		updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
 	}
 
-	async function updatePlayersStatus(onlineUsers: PlayerStatusDto[], allUsers: ProfileDTO[], friendsList: SimpleProfileDto[]) {
+	async function updatePlayersStatus(onlineUsers: PlayerStatusDto[], allUsers: ProfileDTO[], friendsList: SimpleProfileDto[], blockList: SimpleProfileDto[]) {
+		console.log("updatePlayerStatus")
 		let online: DashboardUsersList[] = [];
 		let offline: DashboardUsersList[] = [];
 
 		let temp: PlayerStatusDto | null;
 		for (let user of allUsers) {
 			temp = onlineUsers.find((v) => v.id == user.id) ?? null;
-			// TODO:
 			let isFriend = friendsList.find((v) => v.id == user.id) ? true : false;
-			let isBlocked = false;
+			let isBlocked = blockList.find((v) => v.id == user.id) ? true : false;;
 			if (temp) {
 				online.push({
 					...user,
@@ -83,10 +84,8 @@
 	fetchAllPlayersStatus()
 
 	// TODO: socket para receber quando um usuário novo é criado
-	// $: $onlineUsers, fetchAllPlayersStatus();
-	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList);
-
-	$: console.log($friendsList);
+	$: $onlineUsers, fetchAllPlayersStatus();
+	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
 </script>
 
 <slot />

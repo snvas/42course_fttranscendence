@@ -66,15 +66,15 @@ export class ProfileService {
 		return this.axiosInstance.get(`friend-by`);
 	}
 
-	public async blockUser(id: string): Promise<SimpleProfileDto> {
+	public async blockUser(id: string): Promise<AxiosResponse<SimpleProfileDto>> {
 		return this.axiosInstance.post(`block/${id}`);
 	}
 
-	public async unblockUser(id: string): Promise<ProfileDeletedResponseDto> {
+	public async unblockUser(id: string): Promise<AxiosResponse<ProfileDeletedResponseDto>> {
 		return this.axiosInstance.delete(`block/${id}`);
 	}
 
-	public async getBlockedUsers(): Promise<SimpleProfileDto[]> {
+	public async getBlockedUsers(): Promise<AxiosResponse<SimpleProfileDto[]>> {
 		return this.axiosInstance.get(`blocks`);
 	}
 

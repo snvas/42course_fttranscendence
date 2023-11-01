@@ -37,27 +37,18 @@
 						<div
 							class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 						>
-							<!-- {#if !user.blocked}
-				{#if !user.friend}
-					<button class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
-						<img src="/adicionar-usuario.png" alt="add friend" width="90%" />
-						<p class="text-center">FRIEND</p>
-					</button>
-				{/if} -->
-							<ListButton on:click={() => dispatch('chat', user)} type="chat" />
-							<ListButton on:click={() => dispatch('block', user.id)} type="block" />
-							<ListButton on:click={() => dispatch('play', user.id)} type="play" />
-							{#if user.isFriend}
-								<ListButton on:click={() => dispatch('unfriend', user.id)} type="unfriend" />
+							{#if !user.isBlocked}
+								<ListButton on:click={() => dispatch('chat', user)} type="chat" />
+								<ListButton on:click={() => dispatch('block', user.id)} type="block" />
+								<ListButton on:click={() => dispatch('play', user.id)} type="play" />
+								{#if user.isFriend}
+									<ListButton on:click={() => dispatch('unfriend', user.id)} type="unfriend" />
+								{:else}
+									<ListButton on:click={() => dispatch('friend', user.id)} type="friend" />
+								{/if}
 							{:else}
-								<ListButton on:click={() => dispatch('friend', user.id)} type="friend" />
+								<ListButton on:click={() => dispatch('unblock', user.id)} type="unblock" />
 							{/if}
-							<!-- {:else}
-				<button class="w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1">
-					<img src="/bloqueado.png" alt="block this user" width="90%" />
-					<p class="text-center">UNBLOCK</p>
-				</button>
-			{/if} -->
 						</div>
 					</div>
 				{/if}

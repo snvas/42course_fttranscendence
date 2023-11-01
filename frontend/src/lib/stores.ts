@@ -64,3 +64,5 @@ export let playersStatus = writable<DashboardUsersList[]>([]);
 export let selectedGroup = writable<GroupChatDto | null>();
 
 export let friendsList = writable<SimpleProfileDto[]>([]);
+
+export let blockList = writable<SimpleProfileDto[]>([]);

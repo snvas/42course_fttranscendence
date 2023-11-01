@@ -99,3 +99,38 @@ export async function deleteFriend(userId: number): Promise<boolean | number> {
 		throw error;
 	}
 }
+
+export async function blockUser(userId: number): Promise<SimpleProfileDto | number> {
+	try {
+		let res: AxiosResponse<SimpleProfileDto> = await profileService.blockUser(`${userId}`);
+		return res.data;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}
+
+export async function readBlockeds() {
+	try {
+		let blockeds: AxiosResponse<SimpleProfileDto[]> = await profileService.getBlockedUsers();
+		return blockeds.data;
+	} catch (error) {
+		return [];
+	}
+}
+
+export async function unblockUser(userId: number): Promise<boolean | number> {
+	try {
+		let res: AxiosResponse<ProfileDeletedResponseDto> = await profileService.unblockUser(
+			`${userId}`
+		);
+		return res.data.deleted;
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			return error.response.status;
+		}
+		throw error;
+	}
+}

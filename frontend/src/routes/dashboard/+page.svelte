@@ -8,7 +8,8 @@
 		playersStatus,
 		allUsers,
 		selectedGroup,
-		friendsList
+		friendsList,
+		blockList
 	} from '$lib/stores';
 	import {
 		authService,
@@ -17,7 +18,10 @@
 		getAvatarFromId,
 		readAllUsers,
 		addFriend,
-		deleteFriend
+		deleteFriend,
+		blockUser,
+		unblockUser,
+		chatService
 	} from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -104,7 +108,7 @@
 		goto('/login');
 	}
 
-	$socket.connect();
+	chatService.connect();
 
 	let loadUsers = readAllUsers();
 
@@ -143,6 +147,24 @@
 		let res = await deleteFriend(userId);
 		if (res == true) {
 			$friendsList = $friendsList.filter((v) => v.id != userId);
+		}
+	}
+
+	async function onBlock(userId: number) {
+		let res = await blockUser(userId);
+		if (typeof res !== 'number') {
+			if (!$blockList.find((v) => v.id == userId)) {
+				$blockList.push(res);
+				$blockList = $blockList;
+			}
+		}
+		console.log(res);
+	}
+
+	async function onUnblock(userId: number) {
+		let res = await unblockUser(userId);
+		if (res == true) {
+			$blockList = $blockList.filter((v) => v.id != userId);
 		}
 	}
 
@@ -202,6 +224,8 @@
 					on:chat={(e) => onChat(e.detail)}
 					on:friend={(e) => onFriend(e.detail)}
 					on:unfriend={(e) => onUnfriend(e.detail)}
+					on:block={(e) => onBlock(e.detail)}
+					on:unblock={(e) => onUnblock(e.detail)}
 				/>
 			</div>
 		{/await}
