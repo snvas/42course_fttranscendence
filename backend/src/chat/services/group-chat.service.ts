@@ -99,7 +99,7 @@ export class GroupChatService {
     } as GroupMessageDto;
   }
 
-  public async getUserGroupChatsHistory(
+  public async getMessageHistory(
     userId: number,
   ): Promise<GroupChatHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
@@ -181,7 +181,7 @@ export class GroupChatService {
     );
   }
 
-  public async createGroupChat(
+  public async create(
     groupCreationDto: GroupCreationDto,
     userId: number,
   ): Promise<GroupChatDto> {
@@ -232,9 +232,7 @@ export class GroupChatService {
     }
   }
 
-  public async deleteGroupChatById(
-    id: number,
-  ): Promise<GroupChatDeletedResponseDto> {
+  public async deleteById(id: number): Promise<GroupChatDeletedResponseDto> {
     this.logger.verbose(`### Deleting group chat by id: [${id}]`);
 
     const groupChatDeleteResult: DeleteResult =
@@ -255,7 +253,7 @@ export class GroupChatService {
     };
   }
 
-  public async joinGroupChat(
+  public async join(
     chatId: number,
     userId: number,
     requestPassword: Partial<GroupChatPasswordDto>,
@@ -305,7 +303,7 @@ export class GroupChatService {
     );
   }
 
-  public async leaveGroupChat(
+  public async leave(
     chatId: number,
     userId: number,
   ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
@@ -322,10 +320,7 @@ export class GroupChatService {
       );
     }
 
-    return await this.groupMemberService.removeMemberFromGroupChat(
-      groupChat,
-      profile,
-    );
+    return await this.groupMemberService.removeMember(groupChat, profile);
   }
 
   public async getGroupChatDtoById(id: number): Promise<GroupChatDto> {
@@ -334,7 +329,7 @@ export class GroupChatService {
     return this.createGroupChatDto(groupChat, groupChat.owner);
   }
 
-  public async addMemberToGroupChat(
+  public async addMember(
     chatId: number,
     profileId: number,
     chatRole: ChatRole,
@@ -360,13 +355,10 @@ export class GroupChatService {
 
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
 
-    return await this.groupMemberService.removeMemberFromGroupChat(
-      groupChat,
-      profile,
-    );
+    return await this.groupMemberService.removeMember(groupChat, profile);
   }
 
-  public async changeGroupChatPassword(
+  public async changePassword(
     chatId: number,
     password: GroupChatPasswordDto,
   ): Promise<GroupChatUpdatedResponseDto> {
@@ -393,7 +385,7 @@ export class GroupChatService {
     };
   }
 
-  public async deleteGroupChatPassword(
+  public async deletePassword(
     chatId: number,
   ): Promise<GroupChatUpdatedResponseDto> {
     this.logger.verbose(`### Removing group chat [${chatId}] password`);
@@ -445,7 +437,7 @@ export class GroupChatService {
   public async getPlayerGroupChatNames(
     socket: AuthenticatedSocket,
   ): Promise<string[]> {
-    const rooms: string[] = await this.getUserGroupChatsHistory(
+    const rooms: string[] = await this.getMessageHistory(
       socket.request.user.id,
     ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
       groupChatHistory.map(
@@ -460,8 +452,7 @@ export class GroupChatService {
     return rooms;
   }
 
-  //TODO:: Temporário
-  public async saveGroupMessage(
+  public async saveMessage(
     chatId: number,
     userId: number,
     message: ChatMessageDto,

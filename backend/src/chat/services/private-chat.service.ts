@@ -91,8 +91,7 @@ export class PrivateChatService {
     );
   }
 
-  //TODO: remover depois
-  public async savePrivateMessage(
+  public async saveMessage(
     senderUserId: number,
     receiverProfileId: number,
     message: ChatMessageDto,
