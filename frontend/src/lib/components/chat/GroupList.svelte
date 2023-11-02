@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import type { GroupChatDto, GroupChatHistoryDto } from '$lib/dtos';
 	import ListButton from '../lists/ListButton.svelte';
-	import { profile } from '$lib/stores';
+	import { profile, selectedGroup } from '$lib/stores';
 
 	const dispatch = createEventDispatcher();
 
@@ -42,7 +42,7 @@
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
 	{#each groups as group}
 		<div
-			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between"
+			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between  {$selectedGroup?.id == group.id ? 'bg-[#570b0b]' : ''} "
 		>
 			<button
 				class="items-start w-0 flex flex-col flex-1 enabled:hover:bg-white enabled:hover:bg-opacity-20 rounded-md h-full justify-center p-2"

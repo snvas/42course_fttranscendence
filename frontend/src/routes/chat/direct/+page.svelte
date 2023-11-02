@@ -259,7 +259,7 @@
 		$socket.off('receivePrivateMessage');
 	});
 
-	// TODO: entrar ou convidar o usuário para jogar 
+	// TODO: entrar ou convidar o usuário para jogar
 	async function onGame() {
 		goto('/game');
 	}
@@ -307,15 +307,19 @@
 
 <ChatLayout selected="direct">
 	<div class="contents" slot="list">
-		<DirectList
-			{historyList}
-			on:select={(e) => onSelectChat(e.detail)}
-			on:friend={(e) => onFriend(e.detail)}
-			on:unfriend={(e) => onUnfriend(e.detail)}
-			on:block={(e) => onBlock(e.detail)}
-			on:unblock={(e) => onUnblock(e.detail)}
-			on:profile={(e) => goto(`/public/${e.detail}`)}
-		/>
+		{#await loading}
+			<div class="w-full h-full flex items-center justify-center">Loading</div>
+		{:then}
+			<DirectList
+				{historyList}
+				on:select={(e) => onSelectChat(e.detail)}
+				on:friend={(e) => onFriend(e.detail)}
+				on:unfriend={(e) => onUnfriend(e.detail)}
+				on:block={(e) => onBlock(e.detail)}
+				on:unblock={(e) => onUnblock(e.detail)}
+				on:profile={(e) => goto(`/public/${e.detail}`)}
+			/>
+		{/await}
 	</div>
 
 	<div class="contents" slot="messages">
