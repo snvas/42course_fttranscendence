@@ -27,7 +27,8 @@
 		deleteFriend,
 		blockUser,
 		unblockUser,
-		chatService
+		chatService,
+		blockedBy
 	} from '$lib/api';
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
@@ -88,7 +89,8 @@
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
 					nickname: message.sender.nickname == $profile.nickname ? 'me' : message.sender.nickname,
-					sync: true
+					sync: true,
+					blocked: false
 				};
 			}) ?? null;
 		selectedHistory = history;
@@ -159,7 +161,8 @@
 			message: message,
 			createdAt: messageDate,
 			nickname: 'me',
-			sync: false
+			sync: false,
+			blocked: false
 		};
 
 		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
@@ -192,6 +195,12 @@
 
 		messages = [...(messages ?? []), componentMessage];
 
+		if (await blockedBy(receiver.id)) {
+			messages[messages.length - 1].sync = true;
+			messages[messages.length - 1].blocked = true;
+			return;
+		}
+
 		const privateMessage: PrivateMessageDto = {
 			message,
 			receiver: {
@@ -211,6 +220,7 @@
 			console.log('Error when sending private message');
 			return;
 		}
+
 		const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory.map(
 			(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
 				if (history.id != backendMessage!.receiver.id) {
@@ -239,8 +249,6 @@
 		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 
-	$socket.on(socketEvent.RECEIVE_PRIVATE_MESSAGE, onPrivateMessage);
-
 	function getHistoryFromStatus(
 		history: PrivateMessageHistoryDto[],
 		playerStatus: DashboardUsersList[]
@@ -253,7 +261,7 @@
 		return list;
 	}
 
-	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
+	$socket.on(socketEvent.RECEIVE_PRIVATE_MESSAGE, onPrivateMessage);
 
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
@@ -300,6 +308,16 @@
 		}
 	}
 
+	function isBlocked(
+		playersStatus: DashboardUsersList[],
+		selected: MessageProfileDto | null
+	): boolean {
+		let blocked = playersStatus.find((v) => v.id == selected?.id)?.isBlocked ?? false;
+		return blocked;
+	}
+
+	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
+	$: blocked = isBlocked($playersStatus, $selectedDirect);
 	// $: console.log(historyList);
 	// $: console.log(privateMessageHistory);
 	// $: console.log($playersStatus);
@@ -323,6 +341,6 @@
 	</div>
 
 	<div class="contents" slot="messages">
-		<DirectMessages bind:messages sendMessage={sendPrivateMessage} />
+		<DirectMessages bind:messages sendMessage={sendPrivateMessage} {blocked} />
 	</div>
 </ChatLayout>

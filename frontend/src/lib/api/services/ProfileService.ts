@@ -78,7 +78,7 @@ export class ProfileService {
 		return this.axiosInstance.get(`blocks`);
 	}
 
-	public async getBlockedBy(): Promise<SimpleProfileDto[]> {
+	public async getBlockedBy(): Promise<AxiosResponse<SimpleProfileDto[]>> {
 		return this.axiosInstance.get(`blocked-by`);
 	}
 }

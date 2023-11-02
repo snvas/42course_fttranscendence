@@ -6,6 +6,8 @@
 
 	export let messages: ComponentMessage[] | null;
 
+	export let blocked: boolean;
+
 	export let sendMessage: (message: string) => void;
 
 	let alert: string | null = null;
@@ -47,11 +49,13 @@
 						<p class="text-lg break-words font-roboto">
 							{conversation.message}
 						</p>
-						<div class="flex flex-row w-full justify-end">
+						<div class="flex flex-row w-full justify-end text-xs text-gray-400">
 							{#if !conversation.sync}
-								<div class="text-xs text-gray-400">Loading</div>
+								Loading
+							{:else if conversation.blocked}
+								<div class="text-red-500">Message not sent, you are blocked by this user</div>
 							{:else}
-								<div class="flex flex-row items-center gap-1 text-xs text-gray-400">
+								<div class="flex flex-row items-center gap-1">
 									<p>
 										{formatDistanceToNow(
 											new Date(
@@ -77,16 +81,25 @@
 				</p>
 			</div>
 			<form
-				class="border-2 border-white flex items-center justify-center bg-white rounded-md h-16 gap-2"
+				class="flex-initial border-2 border-white flex items-center justify-center bg-white rounded-md h-16 gap-2 {blocked
+					? 'bg-gray-300 border-gray-300'
+					: ''}"
 			>
 				<input
 					bind:value={message}
-					placeholder="Enter the Message"
-					class="text-center w-full h-full text-black text-xl"
+					placeholder={blocked ? 'You blocked this user' : 'Enter the Message'}
+					class="text-center w-full h-full text-black text-xl
+					disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500"
+					disabled={blocked}
 				/>
-				<button class="bg-black p-3 rounded-md hover:bg-slate-500" on:click={onSendMessage}>
-					SEND
-				</button>
+				{#if !blocked}
+					<button
+						class="bg-black p-3 rounded-md enabled:hover:bg-slate-500"
+						on:click={onSendMessage}
+					>
+						SEND
+					</button>
+				{/if}
 			</form>
 		</div>
 	{/if}
