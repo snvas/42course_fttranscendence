@@ -69,11 +69,6 @@ export class ProfileService {
           groupMemberships: {
             groupChat: true,
           },
-          ownedGroupChats: true,
-          blockedBy: true,
-          blockedUsers: true,
-          friends: true,
-          friendBy: true,
         },
       });
 
