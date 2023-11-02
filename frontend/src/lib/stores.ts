@@ -4,7 +4,9 @@ import type {
 	FortyTwoUserDto,
 	MessageProfileDto,
 	ProfileDTO,
-	GroupChatDto
+	GroupChatDto,
+	SimpleProfileDto,
+	DashboardUsersList
 } from './dtos';
 import { authService } from './api';
 import type { Socket } from 'socket.io-client';
@@ -57,6 +59,10 @@ export let onlineUsers = writable<PlayerStatusDto[]>([]);
 
 export let allUsers = writable<ProfileDTO[]>([]);
 
-export let playersStatus = writable<PlayerStatusDto[]>([]);
+export let playersStatus = writable<DashboardUsersList[]>([]);
 
 export let selectedGroup = writable<GroupChatDto | null>();
+
+export let friendsList = writable<SimpleProfileDto[]>([]);
+
+export let blockList = writable<SimpleProfileDto[]>([]);
