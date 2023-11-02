@@ -30,7 +30,7 @@ import { GroupChatHistoryDto } from '../models/group/group-chat-history.dto';
 import { MessageConversationDto } from '../models/message/message-conversation.dto';
 import { MessageProfile } from '../interfaces/message/message-profile.interface';
 import { GroupProfileDto } from '../models/group/group-profile.dto';
-import { ChatMessageDto } from '../models/tmp/chat-message.dto';
+import { MessageHttpDto } from '../models/message/message-http.dto';
 import { GroupCreationDto } from '../models/group/group-creation.dto';
 import { GroupChatDto } from '../models/group/group-chat.dto';
 import { comparePassword, hashPassword } from '../../utils/bcrypt';
@@ -42,6 +42,9 @@ import { GroupChatUpdatedResponseDto } from '../models/group/group-chat-updated-
 import { GroupChatDeletedResponseDto } from '../models/group/group-chat-deleted-response.dto';
 import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { BlockService } from '../../profile/services/block.service';
+import { socketEvent } from '../../ws/ws-events';
+import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { PlayerStatusService } from '../../profile/services/player-status.service';
 
 @Injectable()
 export class GroupChatService {
@@ -49,6 +52,7 @@ export class GroupChatService {
 
   constructor(
     private readonly profileService: ProfileService,
+    private readonly playerStatusService: PlayerStatusService,
     private readonly blockService: BlockService,
     private readonly groupMemberService: GroupMemberService,
     private readonly groupMessageService: GroupMessageService,
@@ -57,6 +61,43 @@ export class GroupChatService {
   ) {}
 
   public async handleGroupMessage(
+    @MessageBody() message: GroupMessageDto,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<GroupMessageDto | null> {
+    this.logger.verbose(
+      `### handleGroupMessage by [${socket.request.user.id}] | [${socket.id}]`,
+    );
+
+    try {
+      const blockedPlayersSockets: string[] =
+        await this.playerStatusService.getBlockedByPlayersSockets(socket);
+
+      const groupMessage: GroupMessageDto = await this.saveGroupMessage(
+        socket,
+        message,
+      );
+
+      if (groupMessage.groupChat.id) {
+        socket
+          .to(`${groupMessage.groupChat.id}`)
+          .except(blockedPlayersSockets)
+          .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
+      }
+
+      return groupMessage;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        this.logger.debug(
+          `Unauthorized group message from sender [${message.sender.id}]`,
+        );
+      } else {
+        this.logger.error(error);
+      }
+      return null;
+    }
+  }
+
+  public async saveGroupMessage(
     socket: AuthenticatedSocket,
     groupMessageDto: GroupMessageDto,
   ): Promise<GroupMessageDto> {
@@ -441,10 +482,10 @@ export class GroupChatService {
     return rooms;
   }
 
-  public async saveMessage(
+  public async saveHttpMessage(
     chatId: number,
     userId: number,
-    message: ChatMessageDto,
+    message: MessageHttpDto,
   ): Promise<GroupMessageDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);

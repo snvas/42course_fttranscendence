@@ -8,16 +8,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
 import { socketEvent } from '../ws/ws-events';
-import { PlayerStatusService } from '../profile/services/player-status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
-import { BlockService } from '../profile/services/block.service';
 
 @WebSocketGateway({
   cors: {
@@ -33,8 +31,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(
-    private readonly playerService: PlayerStatusService,
-    private readonly blockService: BlockService,
     private readonly privateChatService: PrivateChatService,
     private readonly groupChatService: GroupChatService,
   ) {}
@@ -61,36 +57,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: PrivateMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<PrivateMessageDto | null> {
-    try {
-      if (
-        await this.blockService.isUserBlocked(
-          message.receiver.id,
-          message.sender.id,
-        )
-      ) {
-        this.logger.debug(
-          `### User [${message.sender.nickname}] is blocked by [${message.receiver.nickname}]`,
-        );
-        return null;
-      }
-
-      const receiverSocket: AuthenticatedSocket | undefined =
-        await this.playerService.getPlayerSocket(message.receiver.id);
-
-      const privateMessage: PrivateMessageDto =
-        await this.privateChatService.handlePrivateMessage(message);
-
-      if (receiverSocket) {
-        socket
-          .to(receiverSocket?.id)
-          .emit(socketEvent.RECEIVE_PRIVATE_MESSAGE, privateMessage);
-      }
-
-      return privateMessage;
-    } catch (error) {
-      this.logger.error(error);
-      return null;
-    }
+    return await this.privateChatService.handlePrivateMessage(message, socket);
   }
 
   @UseGuards(WsAuthenticatedGuard)
@@ -99,34 +66,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: GroupMessageDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<GroupMessageDto | null> {
-    this.logger.verbose(
-      `### handleGroupMessage by [${socket.request.user.id}] | [${socket.id}]`,
-    );
-
-    try {
-      const blockedPlayersSockets: string[] =
-        await this.playerService.getBlockedByPlayersSockets(socket);
-
-      const groupMessage: GroupMessageDto =
-        await this.groupChatService.handleGroupMessage(socket, message);
-
-      if (groupMessage.groupChat.id) {
-        socket
-          .to(`${groupMessage.groupChat.id}`)
-          .except(blockedPlayersSockets)
-          .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
-      }
-
-      return groupMessage;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        this.logger.debug(
-          `Unauthorized group message from sender [${message.sender.id}]`,
-        );
-      } else {
-        this.logger.error(error);
-      }
-      return null;
-    }
+    return await this.groupChatService.handleGroupMessage(message, socket);
   }
 }

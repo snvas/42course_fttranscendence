@@ -300,13 +300,13 @@ export class ChatService {
     return groupMemberDto;
   }
 
-  public async saveGroupMessage(
+  public async saveHttpGroupMessage(
     userId: number,
     chatId: number,
     messageDto: any,
   ): Promise<any> {
     const groupMessage: GroupMessageDto =
-      await this.groupChatService.saveMessage(chatId, userId, messageDto);
+      await this.groupChatService.saveHttpMessage(chatId, userId, messageDto);
 
     (await this.messageGateway.getServer())
       .to(`${chatId}`)
@@ -315,12 +315,12 @@ export class ChatService {
     return groupMessage;
   }
 
-  public async savePrivateMessage(
+  public async saveHttpPrivateMessage(
     userId: number,
     profileId: number,
     messageDto: any,
   ): Promise<any> {
-    const privateMessage: any = await this.privateChatService.saveMessage(
+    const privateMessage: any = await this.privateChatService.saveHttpMessage(
       userId,
       profileId,
       messageDto,

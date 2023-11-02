@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { GroupCreationDto } from './models/group/group-creation.dto';
-import { ChatMessageDto } from './models/tmp/chat-message.dto';
+import { MessageHttpDto } from './models/message/message-http.dto';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { PrivateMessageHistoryDto } from './models/private/private-message-history.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
@@ -199,14 +199,19 @@ export class ChatController {
     return await this.chatService.unbanGroupChatMember(chatId, profileId);
   }
 
+  //debug routes
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Body() messageDto: ChatMessageDto,
+    @Body() messageDto: MessageHttpDto,
   ): Promise<GroupMessageDto> {
-    return await this.chatService.saveGroupMessage(user.id, chatId, messageDto);
+    return await this.chatService.saveHttpGroupMessage(
+      user.id,
+      chatId,
+      messageDto,
+    );
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -214,9 +219,9 @@ export class ChatController {
   async savePrivateMessage(
     @Req() { user }: { user: FortyTwoUserDto },
     @Param('profileId', ParseIntPipe) profileId: number,
-    @Body() messageDto: ChatMessageDto,
+    @Body() messageDto: MessageHttpDto,
   ): Promise<PrivateMessageDto> {
-    return await this.chatService.savePrivateMessage(
+    return await this.chatService.saveHttpPrivateMessage(
       user.id,
       profileId,
       messageDto,
