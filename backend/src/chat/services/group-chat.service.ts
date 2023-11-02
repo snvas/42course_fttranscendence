@@ -347,17 +347,6 @@ export class GroupChatService {
     );
   }
 
-  public async removeMemberFromGroupChat(
-    chatId: number,
-    userId: number,
-  ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
-
-    return await this.groupMemberService.removeMember(groupChat, profile);
-  }
-
   public async changePassword(
     chatId: number,
     password: GroupChatPasswordDto,

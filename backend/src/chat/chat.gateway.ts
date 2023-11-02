@@ -46,13 +46,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    this.logger.verbose(`### Client connected to chat socket: ${socket.id}`);
+    this.logger.verbose(`### Client connected to chat socket: [${socket.id}]`);
   }
 
   async handleDisconnect(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
+    this.logger.verbose(`Client disconnected from chat socket: [${socket.id}]`);
   }
 
   @UseGuards(WsAuthenticatedGuard)
@@ -100,7 +100,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<GroupMessageDto | null> {
     this.logger.verbose(
-      `### handleGroupMessage by ${socket.request.user.id} | ${socket.id}`,
+      `### handleGroupMessage by [${socket.request.user.id}] | [${socket.id}]`,
     );
 
     try {
