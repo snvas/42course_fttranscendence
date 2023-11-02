@@ -3,8 +3,10 @@
 		| 'chat'
 		| 'play'
 		| 'block'
-		| 'friend'
 		| 'unblock'
+		| 'friend'
+		| 'unfriend'
+		| 'profile'
 		| 'join'
 		| 'leave'
 		| 'mute'
@@ -38,8 +40,7 @@
 			text: 'FRIEND'
 		},
 		unblock: {
-			// TODO: outro icon
-			img: '/bloqueado.png',
+			img: 'cadeado-desbloqueado.png',
 			alt: 'unblock this user',
 			text: 'UNBLOCK'
 		},
@@ -55,6 +56,12 @@
 			alt: 'leave this group',
 			text: 'LEAVE'
 		},
+		profile: {
+			// TODO: corrigir corrigir icon
+			img: '/admin.png',
+			alt: 'see profile',
+			text: 'PROFILE'
+		},
 		'add-member': {
 			img: '/adicionar-usuario.png',
 			alt: 'add member',
@@ -66,13 +73,11 @@
 			text: 'ADMIN'
 		},
 		'remove-admin': {
-			// TODO: corrigir corrigir icon
 			img: '/do-utilizador.png',
 			alt: 'remove admin',
 			text: 'USER'
 		},
 		kick: {
-			// TODO: corrigir corrigir icon
 			img: '/botao-excluir.png',
 			alt: 'kick this member',
 			text: 'KICK'
@@ -97,6 +102,12 @@
 			alt: 'unban this member',
 			text: 'UNBAN'
 		},
+		unfriend: {
+			// TODO: atualizar icone
+			img: '/do-utilizador.png',
+			alt: 'remove friend',
+			text: 'FRIEND'
+		}
 	};
 </script>
 

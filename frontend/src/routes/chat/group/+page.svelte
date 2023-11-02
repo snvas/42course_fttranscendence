@@ -342,7 +342,7 @@
 				(group) => group.id != memberKicked.groupChat.id
 			);
 			groupChatHistory = newGroupChatHistory;
-			if ($selectedGroup!.id == memberKicked.groupChat.id) {
+			if ($selectedGroup?.id == memberKicked.groupChat.id) {
 				$selectedGroup = null;
 			}
 		}

@@ -1,36 +1,29 @@
-import {
-  ConnectedSocket,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
+import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Positions } from './types/positions.type';
+import { GameService } from './game.service';
 
-@WebSocketGateway({
-  cors: {
-    origin: process.env.APP_CORS_ORIGIN,
-    credentials: true,
-  },
-  namespace: 'chat',
-})
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+@WebSocketGateway()
+export class GameGateway {
+  constructor(private readonly gameService:GameService){}
   @WebSocketServer()
-  private readonly server: Server;
-
-  private readonly logger: Logger = new Logger(GameGateway.name);
-
-  async handleConnection(
-    @ConnectedSocket() socket: AuthenticatedSocket,
-  ): Promise<void> {
-    this.logger.verbose(`### Client connected to game socket: ${socket.id}`);
+  server: Server;
+ 
+  @SubscribeMessage('player1')
+  handlePlayer1(@MessageBody() data: Positions) {
+    this.gameService.setPlayer1(data);
+    this.server.emit('game-data', this.gameService.allData());
   }
 
-  async handleDisconnect(
-    @ConnectedSocket() socket: AuthenticatedSocket,
-  ): Promise<void> {
-    this.logger.verbose(`Client disconnected from game socket: ${socket.id}`);
+  @SubscribeMessage('player2')
+  handlePlayer2(@MessageBody() data: Positions) {
+    this.gameService.setPlayer2(data);
+    this.server.emit('game-data', this.gameService.allData());
+  }
+
+  @SubscribeMessage('ball')
+  handleBall(@MessageBody() data: Positions) {
+    this.gameService.setBall(data);
+    this.server.emit('game-data', this.gameService.allData());
   }
 }

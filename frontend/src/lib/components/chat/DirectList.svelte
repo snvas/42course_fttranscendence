@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { PlayerStatusDto } from '$lib/dtos';
+	import type { DashboardUsersList } from '$lib/dtos';
 	import { getAvatarFromId } from '$lib/api';
 	import UserAvatarStatus from '../UserAvatarStatus.svelte';
 	import ListButton from '../lists/ListButton.svelte';
 
 	const dispatch = createEventDispatcher();
 
-	export let historyList: PlayerStatusDto[];
+	export let historyList: DashboardUsersList[];
 </script>
 
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
@@ -22,8 +22,18 @@
 				<UserAvatarStatus user={history} getAvatar={getAvatarFromId} />
 			</button>
 			<div class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-wrap">
-				<ListButton on:click={() => dispatch('block', history.id)} type="block" />
-				<ListButton on:click={() => dispatch('play', history.id)} type="play" />
+				<ListButton on:click={() => dispatch('profile', history.id)} type="profile" />
+				{#if !history.isBlocked}
+					<ListButton on:click={() => dispatch('block', history.id)} type="block" />
+					<ListButton on:click={() => dispatch('play', history.id)} type="play" />
+					{#if history.isFriend}
+						<ListButton on:click={() => dispatch('unfriend', history.id)} type="unfriend" />
+					{:else}
+						<ListButton on:click={() => dispatch('friend', history.id)} type="friend" />
+					{/if}
+				{:else}
+					<ListButton on:click={() => dispatch('unblock', history.id)} type="unblock" />
+				{/if}
 			</div>
 		</div>
 	{/each}

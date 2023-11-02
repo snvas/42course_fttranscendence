@@ -25,6 +25,7 @@
 			{match.mineScore > match.oponentScore ? 'green' : 
 			match.mineScore === match.oponentScore ? 'yellow' : 'red'}">
 				<div class="w-full flex flex-row gap-2 items-center justify-center min-w-fit">
+					<p>{match.openentNick}</p>
 					<img
 						class="avatar max-w-sm aspect-square xl:w-20 w-12"
 						src={match.oponentAvatar}
@@ -35,6 +36,7 @@
 					<div class="xl:w-20 w-12">
 						<AvatarImage {avatar} />
 					</div>
+					<p>{match.openentNick}</p>
 				</div>
 			</div>
 		{/each}
