@@ -40,7 +40,7 @@
 			text: 'FRIEND'
 		},
 		unblock: {
-			img: 'cadeado-desbloqueado.png',
+			img: '/cadeado-desbloqueado.png',
 			alt: 'unblock this user',
 			text: 'UNBLOCK'
 		},

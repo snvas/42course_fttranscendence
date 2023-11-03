@@ -29,6 +29,7 @@ export type ComponentMessage = {
 	createdAt: string;
 	nickname: string;
 	sync: boolean;
+	blocked: boolean;
 };
 
 export type DashboardUsersList = PlayerStatusDto & {

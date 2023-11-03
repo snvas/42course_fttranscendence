@@ -4,6 +4,7 @@
 	import { getAvatarFromId } from '$lib/api';
 	import UserAvatarStatus from '../UserAvatarStatus.svelte';
 	import ListButton from '../lists/ListButton.svelte';
+	import { selectedDirect } from '$lib/stores';
 
 	const dispatch = createEventDispatcher();
 
@@ -13,7 +14,8 @@
 <div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
 	{#each historyList as history}
 		<div
-			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between"
+			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between
+			{$selectedDirect?.id == history.id ? 'bg-[#570b0b]' : ''}"
 		>
 			<button
 				class="items-start grow hover:bg-white hover:bg-opacity-20 rounded-md h-full"
