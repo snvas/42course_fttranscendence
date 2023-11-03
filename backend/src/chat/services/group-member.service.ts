@@ -130,7 +130,7 @@ export class GroupMemberService {
     return !!groupMember;
   }
 
-  public async removeMemberFromGroupChat(
+  public async removeMember(
     chat: GroupChatEntity,
     profile: ProfileEntity,
   ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
@@ -167,7 +167,7 @@ export class GroupMemberService {
     };
   }
 
-  public async updateGroupChatMemberRole(
+  public async updateRole(
     chatId: number,
     profileId: number,
     chatRole: GroupMemberRoleUpdateDto,
@@ -206,7 +206,7 @@ export class GroupMemberService {
     };
   }
 
-  public async muteGroupChatMember(
+  public async mute(
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberUpdatedResponseDto & GroupMemberDto> {
@@ -229,21 +229,18 @@ export class GroupMemberService {
     return groupMember.role === 'admin' ? { role: 'admin' } : { role: 'user' };
   }
 
-  public async unmuteGroupChatMember(
+  public async unmute(
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberUpdatedResponseDto & GroupMemberDto> {
     return await this.handleMute(profileId, chatId, false);
   }
 
-  public async banGroupChatMember(
-    chatId: number,
-    profileId: number,
-  ): Promise<GroupMemberDto> {
+  public async ban(chatId: number, profileId: number): Promise<GroupMemberDto> {
     return await this.handleBan(profileId, chatId, true);
   }
 
-  public async unbanGroupChatMember(
+  public async unban(
     chatId: number,
     profileId: number,
   ): Promise<GroupMemberDto> {
