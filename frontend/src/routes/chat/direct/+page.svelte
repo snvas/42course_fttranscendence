@@ -1,28 +1,48 @@
 <script lang="ts">
 	import DirectMessages from '$lib/components/chat/DirectMessages.svelte';
-	import { onlineUsers, playersStatus, profile, selectedDirect, socket } from '$lib/stores';
+	import {
+		onlineUsers,
+		selectedDirect,
+		socket,
+		profile,
+		playersStatus,
+		friendsList,
+		blockList
+	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
 	import ChatLayout from '$lib/components/chat/ChatLayout.svelte';
-	import { chatService } from '$lib/api/services/ChatService';
 	import type {
 		ComponentMessage,
+		DashboardUsersList,
 		MessageConversationDto,
 		MessageProfileDto,
 		PlayerStatusDto,
 		PrivateMessageDto,
 		PrivateMessageHistoryDto
 	} from '$lib/dtos';
-	import { getPrivateMessageHistory } from '$lib/api';
+	import {
+		getPrivateMessageHistory,
+		addFriend,
+		deleteFriend,
+		blockUser,
+		unblockUser,
+		chatService,
+		blockedBy
+	} from '$lib/api';
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
+	import { goto } from '$app/navigation';
+
+	//  [ ]: verificar se socket está conectado antes de conectar de novo
+	$socket.connect();
 
 	let messages: ComponentMessage[] | null = null;
 	let selectedHistory: PrivateMessageHistoryDto | null = null;
 
 	let privateMessageHistory: PrivateMessageHistoryDto[] = [];
 
-	let historyList: PlayerStatusDto[];
+	let historyList: DashboardUsersList[];
 
 	let loading = getPrivateMessageHistory();
 
@@ -69,7 +89,8 @@
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
 					nickname: message.sender.nickname == $profile.nickname ? 'me' : message.sender.nickname,
-					sync: true
+					sync: true,
+					blocked: false
 				};
 			}) ?? null;
 		selectedHistory = history;
@@ -140,7 +161,8 @@
 			message: message,
 			createdAt: messageDate,
 			nickname: 'me',
-			sync: false
+			sync: false,
+			blocked: false
 		};
 
 		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
@@ -173,6 +195,12 @@
 
 		messages = [...(messages ?? []), componentMessage];
 
+		if (await blockedBy(receiver.id)) {
+			messages[messages.length - 1].sync = true;
+			messages[messages.length - 1].blocked = true;
+			return;
+		}
+
 		const privateMessage: PrivateMessageDto = {
 			message,
 			receiver: {
@@ -192,6 +220,7 @@
 			console.log('Error when sending private message');
 			return;
 		}
+
 		const newHistory: PrivateMessageHistoryDto[] = privateMessageHistory.map(
 			(history: PrivateMessageHistoryDto): PrivateMessageHistoryDto => {
 				if (history.id != backendMessage!.receiver.id) {
@@ -220,26 +249,75 @@
 		console.log(`Private message sent: ${JSON.stringify(backendMessage)}`);
 	}
 
-	$socket.on(socketEvent.RECEIVE_PRIVATE_MESSAGE, onPrivateMessage);
-
 	function getHistoryFromStatus(
 		history: PrivateMessageHistoryDto[],
-		playerStatus: PlayerStatusDto[]
-	): PlayerStatusDto[] {
+		playerStatus: DashboardUsersList[]
+	): DashboardUsersList[] {
 		if (playerStatus.length == 0) return [];
-		let list: PlayerStatusDto[] = history.map((hist) => {
+		let list: DashboardUsersList[] = history.map((hist) => {
 			// console.log(playerStatus);
 			return playerStatus.find((usr) => usr.id == hist.id)!;
 		});
 		return list;
 	}
 
-	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
+	$socket.on(socketEvent.RECEIVE_PRIVATE_MESSAGE, onPrivateMessage);
 
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
 	});
 
+	// TODO: entrar ou convidar o usuário para jogar
+	async function onGame() {
+		goto('/game');
+	}
+
+	async function onFriend(userId: number) {
+		let res = await addFriend(userId);
+		if (typeof res !== 'number') {
+			if (!$friendsList.find((v) => v.id == userId)) {
+				$friendsList.push(res);
+				$friendsList = $friendsList;
+			}
+		}
+		console.log(res);
+	}
+
+	async function onUnfriend(userId: number) {
+		let res = await deleteFriend(userId);
+		if (res == true) {
+			$friendsList = $friendsList.filter((v) => v.id != userId);
+		}
+	}
+
+	async function onBlock(userId: number) {
+		let res = await blockUser(userId);
+		if (typeof res !== 'number') {
+			if (!$blockList.find((v) => v.id == userId)) {
+				$blockList.push(res);
+				$blockList = $blockList;
+			}
+		}
+		console.log(res);
+	}
+
+	async function onUnblock(userId: number) {
+		let res = await unblockUser(userId);
+		if (res == true) {
+			$blockList = $blockList.filter((v) => v.id != userId);
+		}
+	}
+
+	function isBlocked(
+		playersStatus: DashboardUsersList[],
+		selected: MessageProfileDto | null
+	): boolean {
+		let blocked = playersStatus.find((v) => v.id == selected?.id)?.isBlocked ?? false;
+		return blocked;
+	}
+
+	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
+	$: blocked = isBlocked($playersStatus, $selectedDirect);
 	// $: console.log(historyList);
 	// $: console.log(privateMessageHistory);
 	// $: console.log($playersStatus);
@@ -247,15 +325,22 @@
 
 <ChatLayout selected="direct">
 	<div class="contents" slot="list">
-		<DirectList
-			{historyList}
-			on:select={(e) => {
-				onSelectChat(e.detail);
-			}}
-		/>
+		{#await loading}
+			<div class="w-full h-full flex items-center justify-center">Loading</div>
+		{:then}
+			<DirectList
+				{historyList}
+				on:select={(e) => onSelectChat(e.detail)}
+				on:friend={(e) => onFriend(e.detail)}
+				on:unfriend={(e) => onUnfriend(e.detail)}
+				on:block={(e) => onBlock(e.detail)}
+				on:unblock={(e) => onUnblock(e.detail)}
+				on:profile={(e) => goto(`/public/${e.detail}`)}
+			/>
+		{/await}
 	</div>
 
 	<div class="contents" slot="messages">
-		<DirectMessages bind:messages sendMessage={sendPrivateMessage} />
+		<DirectMessages bind:messages sendMessage={sendPrivateMessage} {blocked} />
 	</div>
 </ChatLayout>

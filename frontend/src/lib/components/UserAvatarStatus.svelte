@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { PlayerStatusDto } from '$lib/dtos';
+	import type { DashboardUsersList } from '$lib/dtos';
 	import type { AxiosResponse } from 'axios';
 	import AvatarImage from './AvatarImage.svelte';
 
-	export let user: PlayerStatusDto;
+	export let user: DashboardUsersList;
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
 
 	const statusColor: { [index: string]: any } = {
@@ -21,15 +21,15 @@
 		<p class=" text-start w-full truncate">{user.nickname}</p>
 
 		<div class="flex items-center gap-2">
-			<!-- {#if user.blocked}
+			{#if user.isBlocked}
 				<div class="text-red-800 text-xs">Blocked</div>
-				{:else} -->
-			<p class="{statusColor[user.status]} text-xs">{user.status}</p>
-			<!-- {#if user.friend} -->
-			<!-- <div class="text-gray-600 text-xs">|</div>
-					<div class="text-gray-600 text-xs">Friend</div> -->
-			<!-- {/if} -->
-			<!--{/if} -->
+			{:else}
+				<p class="{statusColor[user.status]} text-xs">{user.status}</p>
+				{#if user.isFriend}
+					<div class="text-gray-600 text-xs">|</div>
+					<div class="text-yellow-600 text-xs">Friend</div>
+				{/if}
+			{/if}
 		</div>
 	</div>
 </div>

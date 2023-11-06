@@ -21,8 +21,8 @@ import { BlockService } from '../profile/services/block.service';
 @Module({
   controllers: [ChatController],
   providers: [
-    ChatGateway,
     ChatService,
+    ChatGateway,
     PlayerStatusService,
     PrivateChatService,
     BlockService,
@@ -40,15 +40,17 @@ import { BlockService } from '../profile/services/block.service';
   imports: [TypeOrmModule.forFeature(entities)],
   exports: [
     ChatService,
+    ChatGateway,
     PlayerStatusService,
     PrivateChatService,
+    BlockService,
     GroupChatService,
     GroupMessageService,
     GroupMemberService,
+    WsAuthenticatedGuard,
     ProfileService,
     UserService,
     AvatarService,
-    BlockService,
   ],
 })
 export class ChatModule {}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import GroupMessages from '$lib/components/chat/GroupMessages.svelte';
-	import { socket, profile, selectedGroup } from '$lib/stores';
+	import { socket, profile, selectedGroup, selectedDirect, playersStatus } from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import type {
@@ -342,7 +342,7 @@
 				(group) => group.id != memberKicked.groupChat.id
 			);
 			groupChatHistory = newGroupChatHistory;
-			if ($selectedGroup!.id == memberKicked.groupChat.id) {
+			if ($selectedGroup?.id == memberKicked.groupChat.id) {
 				$selectedGroup = null;
 			}
 		}
@@ -521,6 +521,13 @@
 		return members.find((m) => m.profile.id == $profile.id)?.isMuted ?? false;
 	}
 
+	function onDirectChat(memberId: number) {
+		$selectedDirect = $playersStatus.find((v) => v.id == memberId) ?? null;
+		$selectedGroup = null;
+
+		goto('/chat/direct');
+	}
+
 	loadingGroups = loadAllGroups();
 	setSelectedMessagesMembers();
 
@@ -545,7 +552,9 @@
 <ChatLayout selected="group">
 	<div class="contents" slot="list">
 		<div class="w-full flex flex-col grow overflow-x-auto">
-			{#await loadingGroups then}
+			{#await loadingGroups}
+				<div class="w-full h-full flex items-center justify-center">Loading</div>
+			{:then}
 				<GroupList
 					allGroups={groupsList}
 					myHistory={groupChatHistory}
@@ -603,26 +612,29 @@
 							/>
 						</div>
 					{/if}
-						<div class="2xl:w-1/3 lg:w-1/2 w-full flex flex-row">
-							<GroupMembers
-								{members}
-								{getAvatarFromId}
-								iAmAdminOrOwner={iAmAdminOrOwner($selectedGroup, members)}
-								bind:addMember
-								on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
-								on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
-								on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
-								on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
-								on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
-								on:ban={(e) => onBanGroupMember($selectedGroup, e.detail)}
-								on:unban={(e) => onUnbanGroupMember($selectedGroup, e.detail)}
-							/>
-						</div>
+					<div class="2xl:w-1/3 lg:w-1/2 w-full flex flex-row">
+						<GroupMembers
+							{members}
+							{getAvatarFromId}
+							iAmAdminOrOwner={iAmAdminOrOwner($selectedGroup, members)}
+							bind:addMember
+							on:kick={(e) => onKickGroupChatUser($selectedGroup, e.detail)}
+							on:mute={(e) => onMuteGroupChatMember($selectedGroup, e.detail)}
+							on:unmute={(e) => onUnmuteGroupChatMember($selectedGroup, e.detail)}
+							on:turn-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'admin')}
+							on:remove-admin={(e) => onUpdateMemberRole($selectedGroup, e.detail, 'user')}
+							on:ban={(e) => onBanGroupMember($selectedGroup, e.detail)}
+							on:unban={(e) => onUnbanGroupMember($selectedGroup, e.detail)}
+							on:chat={(e) => onDirectChat(e.detail)}
+						/>
+					</div>
 				</div>
 			{:else}
 				<div class="border-4 border-white w-full h-full flex flex-col rounded-3xl p-5">
 					<div class="flex flex-col w-full items-center gap-3 p-20">
-						<p class="text-lg text-gray-400 flex text-center">No group selected.<br/> Choose or create one.</p>
+						<p class="text-lg text-gray-400 flex text-center">
+							No group selected.<br /> Choose or create one.
+						</p>
 					</div>
 				</div>
 			{/if}

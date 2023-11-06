@@ -9,9 +9,14 @@ import { Repository } from 'typeorm';
 import { PrivateMessageHistoryDto } from '../models/private/private-message-history.dto';
 import { MessageConversationDto } from '../models/message/message-conversation.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { ChatMessageDto } from '../models/tmp/chat-message.dto';
+import { MessageHttpDto } from '../models/message/message-http.dto';
 import { MessageConversation } from '../interfaces/message/message-conversation.interface';
 import { MessageProfile } from '../interfaces/message/message-profile.interface';
+import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { AuthenticatedSocket } from '../types/authenticated-socket.type';
+import { socketEvent } from '../../ws/ws-events';
+import { PlayerStatusService } from '../../profile/services/player-status.service';
+import { BlockService } from '../../profile/services/block.service';
 
 @Injectable()
 export class PrivateChatService {
@@ -19,11 +24,50 @@ export class PrivateChatService {
 
   constructor(
     private readonly profileService: ProfileService,
+    private readonly blockService: BlockService,
+    private readonly playerStatusService: PlayerStatusService,
     @InjectRepository(PrivateMessageEntity)
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
 
   async handlePrivateMessage(
+    @MessageBody() message: PrivateMessageDto,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<PrivateMessageDto | null> {
+    try {
+      if (
+        await this.blockService.isUserBlocked(
+          message.receiver.id,
+          message.sender.id,
+        )
+      ) {
+        this.logger.debug(
+          `### User [${message.sender.nickname}] is blocked by [${message.receiver.nickname}]`,
+        );
+        return null;
+      }
+
+      const receiverSocket: AuthenticatedSocket | undefined =
+        await this.playerStatusService.getPlayerSocket(message.receiver.id);
+
+      const privateMessage: PrivateMessageDto = await this.savePrivateMessage(
+        message,
+      );
+
+      if (receiverSocket) {
+        socket
+          .to(receiverSocket?.id)
+          .emit(socketEvent.RECEIVE_PRIVATE_MESSAGE, privateMessage);
+      }
+
+      return privateMessage;
+    } catch (error) {
+      this.logger.error(error);
+      return null;
+    }
+  }
+
+  async savePrivateMessage(
     privateMessageDto: PrivateMessageDto,
   ): Promise<PrivateMessageDto> {
     const sender: ProfileDTO = await this.profileService.findByProfileId(
@@ -91,11 +135,10 @@ export class PrivateChatService {
     );
   }
 
-  //TODO: remover depois
-  public async savePrivateMessage(
+  public async saveHttpMessage(
     senderUserId: number,
     receiverProfileId: number,
-    message: ChatMessageDto,
+    message: MessageHttpDto,
   ): Promise<PrivateMessageDto> {
     const sender: ProfileDTO = await this.profileService.findByUserId(
       senderUserId,

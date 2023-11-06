@@ -6,6 +6,7 @@
 	import type { GroupChatDto } from '$lib/dtos';
 	import { isAxiosError, type AxiosResponse } from 'axios';
 	import { chatService } from '$lib/api';
+	import { validateGroupName } from '$lib/utils';
 
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
@@ -31,7 +32,7 @@
 
 	async function onCreateGroup() {
 		if (created) {
-			$selectedGroup = createdGroup.data
+			$selectedGroup = createdGroup.data;
 			goto('/chat/group');
 			return;
 		}
@@ -39,10 +40,16 @@
 		alertName = null;
 		alertPassword = null;
 
-		if (name == '' || (visibility == 'private' && password == '')) {
-			if (name == '') {
-				alertName = alerts.empty;
-			}
+		name = name.trim();
+
+		let validated = validateGroupName(name);
+		if (validated != true) {
+			alertName = validated;
+			isLoading = false;
+			return;
+		}
+
+		if (visibility == 'private' && password == '') {
 			if (visibility == 'private' && password == '') {
 				alertPassword = alerts.empty;
 			}
@@ -98,9 +105,20 @@
 				<div class="flex flex-col gap-5 p-10">
 					{#each options as value}
 						<label class="text-xl flex items-center cursor-pointer">
-							<input type="radio" class="sr-only" {value} bind:group={visibility} disabled={created} />
+							<input
+								type="radio"
+								class="sr-only"
+								{value}
+								bind:group={visibility}
+								disabled={created}
+							/>
 							<span class="w-6 h-6 border rounded-full mr-2 flex items-center justify-center">
-							<span class="w-3 h-3 rounded-full {value == visibility ? 'bg-green-500' : 'bg-slate-700 '}"></span></span>
+								<span
+									class="w-3 h-3 rounded-full {value == visibility
+										? 'bg-green-500'
+										: 'bg-slate-700 '}"
+								/></span
+							>
 							{value}
 						</label>
 					{/each}
