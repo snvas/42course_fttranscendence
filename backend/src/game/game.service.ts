@@ -7,6 +7,10 @@ export class GameService {
     private player1: Positions;
     private player2:Positions;
     private ball: Positions;
+    private isReady: Array<string>;
+    constructor(){
+        this.isReady = [];
+    }
 
     setPlayer1(data: Positions){
         this.player1 = data;
@@ -18,6 +22,33 @@ export class GameService {
 
     setBall(data: Positions){
         this.ball = data;
+    }
+
+    ballValidation(user: string) {
+        if (user == this.isReady[0]) {
+            console.log("ball validated")
+            return true;
+        }
+        return false;
+    }
+
+    setReady(user: string){
+        if (this.isReady.length) {
+            if (this.isReady.indexOf(user) == -1) {
+                this.isReady.push(user);
+            }
+        }
+        else {
+            this.isReady.push(user);
+        }
+    }
+
+    isPlayersReady(){
+        console.log(this.isReady.length == 2)
+        if (this.isReady.length == 2){
+            return true;
+        }
+        return false;
     }
 
     allData(): SocketGameMessage {
