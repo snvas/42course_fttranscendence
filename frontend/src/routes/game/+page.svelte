@@ -4,12 +4,14 @@
 	import { onMount } from 'svelte';
 	import { socket } from '$lib/stores';
 	import { io } from 'socket.io-client';
+	import axios from 'axios';
+	import { waitFor } from '@testing-library/svelte';
 
 	type Positions = {
 		positionX: number,
 		positionY: number;
 	}
-
+	
 	let width = 800;
 	let height = 600;
 
@@ -28,7 +30,18 @@
 		game_socket.emit(msg, data)
   	}
 
-	function sketch(p5: p5) {
+	async function getPlay() {
+        const response = await axios.get('http://localhost:3000/api/game');
+        return response.data;
+    }
+	// function waitingList(){
+	// 	if (player1 && player2)
+	// 		//contruct sketch
+	// }
+
+	// player1 and 2 passade for paramther
+	async function sketch(p5: p5) {
+		let canStart:boolean = false;
 		let game: Game;
 		let hitSound: p5.SoundFile;
 		let ball1: Ball;
@@ -37,13 +50,21 @@
 		let speedBoost: SpeedBoost;
 		//let sizeIncrease : SizeIncrease;
 
-		p5.setup = () => {
+		game_socket.on('is-ready', (data) => {
+			console.log("fora");
+			if (data == true){
+				console.log("dentro");
+				canStart = true;
+			}
+		})
+
+		p5.setup = async () => {
 			p5.createCanvas(width, height);
 			game = new Game();
 			hitSound = p5.loadSound('PingPongHitBall.mp3'); //
 			ball1 = new Ball(game);
-			player1 = new Player(1);
-			player2 = new Player(2);
+			player1 = new Player(1, "player1");
+			player2 = new Player(2, "player2");
 			game.setBall(ball1);
 			p5.textSize(32);
 			p5.textAlign(p5.CENTER, p5.CENTER);
@@ -54,8 +75,9 @@
 
 		p5.draw = () => {
 			game_socket.on('game-data', (data) => {
-				player1.setPositions(data.player);
-				ball1.setPositions(data.ball);
+				player1.setPositions(data.player1);
+				player2.setPositions(data.player2);
+				ball1.setPositions(data.ball)
 			})
 			p5.background(0);
 			p5.rect(width / 2, 0, 5, height);
@@ -101,9 +123,13 @@
 			} else {
 				if (!game.running && !game.winner) {
 					if (p5.keyIsDown(p5.ENTER)) {
-						game.start();
+						game_socket.emit("ready");
 					}
 				}
+			}
+			if (canStart){
+				canStart = false;
+				game.start();
 			}
 		};
 
@@ -238,6 +264,7 @@
 		}
 
 		class Player {
+			private msg;
 			public id: number;
 			public heightP: number;
 			public widthP: number;
@@ -245,7 +272,8 @@
 			public positionY: number;
 			public velocityY: number;
 
-			constructor(typeP: number) {
+			constructor(typeP: number, player:string) {
+				this.msg = player
 				this.id = typeP;
 				this.heightP = 60;
 				this.widthP = 20;
@@ -299,7 +327,7 @@
 				}
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage('player1', {positionX, positionY})
+				sendMessage(String(this.msg), {positionX, positionY})
 				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
 					socket.emit('player-move', {
 						playerId: this.id,
