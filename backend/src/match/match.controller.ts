@@ -14,15 +14,15 @@ export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('join')
+  @Post('queue/join')
   async joinMatchQueue(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {
-    await this.matchService.handleMatchStatus(user.id, 'waiting_match');
+    await this.matchService.handleMatchStatus(user.id, 'waitingMatch');
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('leave')
+  @Post('queue/leave')
   async leaveMatchQueue(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {

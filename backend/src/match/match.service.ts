@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PlayerStatusService } from '../profile/services/player-status.service';
 import { MatchGateway } from './match.gateway';
 import { Server } from 'socket.io';
-import { PlayerStatusDto } from '../chat/models/player/player-status.dto';
+import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
 import { socketEvent } from '../ws/ws-events';
 import { ProfileService } from '../profile/profile.service';
@@ -22,7 +22,7 @@ export class MatchService {
 
   public async handleMatchStatus(
     userId: number,
-    status: 'waiting_match' | 'online',
+    status: 'waitingMatch' | 'online',
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
 
@@ -56,7 +56,7 @@ export class MatchService {
       await this.playerStatusService.getPlayersStatus();
 
     const waitingMatchPlayers: PlayerStatusDto[] = playerStatus.filter(
-      (player: PlayerStatusDto): boolean => player.status === 'waiting_match',
+      (player: PlayerStatusDto): boolean => player.status === 'waitingMatch',
     );
 
     if (waitingMatchPlayers.length < 2) {
@@ -94,11 +94,11 @@ export class MatchService {
         if (p1Socket && p2Socket) {
           await this.playerStatusService.setPlayerStatus(
             p1Socket,
-            'waiting_game',
+            'waitingGame',
           );
           await this.playerStatusService.setPlayerStatus(
             p2Socket,
-            'waiting_game',
+            'waitingGame',
           );
 
           this.logger.debug(
@@ -107,17 +107,11 @@ export class MatchService {
 
           server
             .to(p1Socket.id)
-            .emit(
-              socketEvent.MATCH_FOUND,
-              this.createMatchEvent(p1, p2, 'Player1'),
-            );
+            .emit(socketEvent.MATCH_FOUND, this.createMatchEvent(p1, p2, 'p1'));
 
           server
             .to(p2Socket.id)
-            .emit(
-              socketEvent.MATCH_FOUND,
-              this.createMatchEvent(p1, p2, 'Player2'),
-            );
+            .emit(socketEvent.MATCH_FOUND, this.createMatchEvent(p1, p2, 'p2'));
         }
       }
     }
@@ -130,7 +124,7 @@ export class MatchService {
       await this.playerStatusService.getPlayersStatus();
 
     const waitingGamePlayers: PlayerStatusDto[] = playerStatus.filter(
-      (player: PlayerStatusDto): boolean => player.status === 'waiting_game',
+      (player: PlayerStatusDto): boolean => player.status === 'waitingGame',
     );
 
     for (const player of waitingGamePlayers) {
@@ -155,7 +149,7 @@ export class MatchService {
 
       await this.playerStatusService.setPlayerStatus(
         playerSocket,
-        'waiting_match',
+        'waitingMatch',
       );
     }
   }
@@ -163,7 +157,7 @@ export class MatchService {
   private createMatchEvent(
     p1Profile: ProfileDTO,
     p2Profile: ProfileDTO,
-    as: 'Player1' | 'Player2',
+    as: 'p1' | 'p2',
   ): MatchEventDto {
     return {
       as: as,
@@ -177,6 +171,6 @@ export class MatchService {
         nickname: p2Profile.nickname,
         avatarId: p2Profile.avatarId,
       },
-    };
+    } as MatchEventDto;
   }
 }

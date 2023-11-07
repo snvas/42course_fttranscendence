@@ -11,12 +11,12 @@ export class MatchMakingService {
         });
     }
 
-    public async joinMatch(): Promise<AxiosResponse<void>> {
-        return this.axiosInstance.post('/start');
+    public async joinMatchQueue(): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.post('/queue/join');
     }
 
-    public async cancelMatch(): Promise<AxiosResponse<void>> {
-        return this.axiosInstance.post('/cancel');
+    public async cancelMatchQueue(): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.post('/queue/leave');
     }
 }
 
