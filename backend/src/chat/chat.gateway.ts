@@ -22,7 +22,6 @@ import { GroupChatService } from './services/group-chat.service';
     origin: process.env.APP_CORS_ORIGIN,
     credentials: true,
   },
-  namespace: 'chat',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

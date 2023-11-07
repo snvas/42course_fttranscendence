@@ -14,7 +14,6 @@ import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
     origin: process.env.APP_CORS_ORIGIN,
     credentials: true,
   },
-  namespace: 'pong',
 })
 export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

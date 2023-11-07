@@ -21,7 +21,8 @@
 		deleteFriend,
 		blockUser,
 		unblockUser,
-		chatService
+		chatService,
+		matchMakingService,
 	} from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -124,7 +125,8 @@
 
 	// TODO: entrar ou convidar o usuário para jogar 
 	async function onGame() {
-		goto('/game');
+		await matchMakingService.joinMatchQueue();
+		//goto('/game');
 	}
 
 	async function onChat(user: PlayerStatusDto | null) {
@@ -179,6 +181,10 @@
 		} else {
 			$profile = v.data;
 		}
+	});
+
+	$socket.on('matchFound', (data) => {
+		console.log(data);
 	});
 
 	$: avatar = getUserAvatar(loadProfile);
