@@ -27,6 +27,8 @@ export class ProfileDTO implements Profile {
   @IsNotEmpty()
   nickname: string;
   @IsNumber()
+  level?: number;
+  @IsNumber()
   wins?: number;
   @IsNumber()
   losses?: number;

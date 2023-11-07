@@ -11,6 +11,7 @@ import {
 export interface Profile {
   id: number;
   nickname?: string;
+  level?: number;
   wins?: number;
   losses?: number;
   draws?: number;
