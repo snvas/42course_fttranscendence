@@ -8,7 +8,6 @@ import {
 import { Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
-import { PlayerStatusService } from '../profile/services/player-status.service';
 
 @WebSocketGateway({
   cors: {
@@ -22,8 +21,6 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly server: Server;
 
   private readonly logger: Logger = new Logger(MatchGateway.name);
-
-  constructor(private readonly playerStatusService: PlayerStatusService) {}
 
   async getServer(): Promise<Server> {
     return this.server;
