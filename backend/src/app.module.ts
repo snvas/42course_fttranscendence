@@ -11,6 +11,8 @@ import { dataSourceOptions } from './db/data-source-cli';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MatchModule } from './match/match.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     ChatModule,
     ChatModule,
     GameModule,
+    MatchModule,
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

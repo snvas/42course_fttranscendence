@@ -3,4 +3,5 @@ export interface PlayerStatus {
   nickname: string;
   avatarId?: number;
   status: string;
+  updatedAt: Date;
 }

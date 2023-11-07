@@ -25,15 +25,16 @@ export class PlayerStatusService {
       socket.request.user.id,
     );
 
-    const onlineUser: PlayerStatusSocket = {
+    const playerStatus: PlayerStatusSocket = {
       id: profile.id,
       nickname: profile.nickname,
       avatarId: profile.avatarId,
       status,
+      updatedAt: new Date(),
       socket,
     };
 
-    this.playerStatusSocket.set(profile.id, onlineUser);
+    this.playerStatusSocket.set(profile.id, playerStatus);
   }
 
   public async removePlayerStatus(socket: AuthenticatedSocket): Promise<void> {
@@ -56,6 +57,7 @@ export class PlayerStatusService {
           nickname: onlineUser.nickname,
           status: onlineUser.status,
           avatarId: onlineUser.avatarId,
+          updatedAt: onlineUser.updatedAt,
         } as PlayerStatusDto;
       },
     );
