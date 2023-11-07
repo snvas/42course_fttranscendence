@@ -9,6 +9,7 @@ export interface MatchHistory {
   p2Joined: boolean;
   p1Score: number;
   p2Score: number;
+  winner: 'p1' | 'p2' | 'draw';
   createdAt: Date;
   updatedAt: Date;
 }
