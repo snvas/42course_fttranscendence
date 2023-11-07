@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PlayerStatusService } from '../profile/services/player-status.service';
 import { MatchGateway } from './match.gateway';
 import { Server } from 'socket.io';
 import { PlayerStatusDto } from '../chat/models/player/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
-import { SimpleProfileDto } from '../profile/models/simple-profile.dto';
 import { socketEvent } from '../ws/ws-events';
 import { ProfileService } from '../profile/profile.service';
 import { ProfileDTO } from '../profile/models/profile.dto';
+import { MatchEventDto } from './models/match-event.dto';
 
 @Injectable()
 export class MatchService {
@@ -19,6 +19,34 @@ export class MatchService {
     private readonly playerStatusService: PlayerStatusService,
     private readonly matchGateway: MatchGateway,
   ) {}
+
+  public async handleMatchStatus(
+    userId: number,
+    status: 'waiting_match' | 'online',
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    const socket: AuthenticatedSocket | undefined =
+      await this.playerStatusService.getPlayerSocket(profile.id);
+
+    if (!socket) {
+      throw new BadRequestException('Player not connected');
+    }
+
+    await this.playerStatusService.setPlayerStatus(socket, status);
+
+    this.logger.verbose(
+      `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
+    );
+
+    const playersStatus: PlayerStatusDto[] =
+      await this.playerStatusService.getPlayersStatus();
+
+    (await this.matchGateway.getServer()).emit(
+      socketEvent.PLAYERS_STATUS,
+      playersStatus,
+    );
+  }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async matchMakingJob(): Promise<void> {
@@ -73,31 +101,29 @@ export class MatchService {
             'waiting_game',
           );
 
-          server.to(p1Socket.id).emit(socketEvent.MATCH_FOUND, {
-            as: 'Player1',
-            with: {
-              id: p2.id,
-              nickname: p2.nickname,
-              avatar: p2.avatarId,
-            } as SimpleProfileDto,
-          });
+          this.logger.debug(
+            `Match found between [${p1.id}] | [${p1.nickname}] and [${p2.id}] | [${p2.nickname}]`,
+          );
 
-          server.to(p2Socket.id).emit(socketEvent.MATCH_FOUND, {
-            as: 'Player2',
-            with: {
-              id: p1.id,
-              nickname: p1.nickname,
-              avatar: p1.avatarId,
-            } as SimpleProfileDto,
-          });
+          server
+            .to(p1Socket.id)
+            .emit(
+              socketEvent.MATCH_FOUND,
+              this.createMatchEvent(p1, p2, 'Player1'),
+            );
+
+          server
+            .to(p2Socket.id)
+            .emit(
+              socketEvent.MATCH_FOUND,
+              this.createMatchEvent(p1, p2, 'Player2'),
+            );
         }
       }
     }
   }
 
-  // Se o frontend não enviar o evento de cancelar a procura de partida
-  //  ou não criar a match para mudar o status para playing),
-  //  esse job vai ser responsável por mudar o status para awaiting_match após um timeout de 15s.
+  // Esse job vai ser responsável por mudar o status para awaiting_match após um timeout de 15s.
   @Cron(CronExpression.EVERY_5_SECONDS)
   async gameWaitingTimeout(): Promise<void> {
     const playerStatus: PlayerStatusDto[] =
@@ -128,5 +154,25 @@ export class MatchService {
         'waiting_match',
       );
     }
+  }
+
+  private createMatchEvent(
+    p1Profile: ProfileDTO,
+    p2Profile: ProfileDTO,
+    as: 'Player1' | 'Player2',
+  ): MatchEventDto {
+    return {
+      as: as,
+      p1: {
+        id: p1Profile.id,
+        nickname: p1Profile.nickname,
+        avatarId: p1Profile.avatarId,
+      },
+      p2: {
+        id: p2Profile.id,
+        nickname: p2Profile.nickname,
+        avatarId: p2Profile.avatarId,
+      },
+    };
   }
 }

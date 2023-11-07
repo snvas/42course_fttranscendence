@@ -29,7 +29,7 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger: Logger = new Logger(MatchGateway.name);
 
-  constructor(private readonly playerService: PlayerStatusService) {}
+  constructor(private readonly playerStatusService: PlayerStatusService) {}
 
   async getServer(): Promise<Server> {
     return this.server;
@@ -47,23 +47,13 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.verbose(`Client disconnected from match socket: ${socket.id}`);
   }
 
-  //TODO:
-  // Enviar status Waiting ao procurar partida, Playing ao começar partida, e Online quando terminar
-  // Os dois últimos talvez podem ser enviados através de métodos HTTP para o match making
   @UseGuards(WsAuthenticatedGuard)
   @SubscribeMessage(socketEvent.START_MATCH_MAKING)
   async startMatchMaking(
     @MessageBody() message: PlayerStatusDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    if (message.status !== 'waiting_match') {
-      throw new WsException('Invalid status');
-    }
-
-    await this.playerService.setPlayerStatus(socket, message.status);
-    const playersStatus: PlayerStatusDto[] =
-      await this.playerService.getPlayersStatus();
-    this.server.emit(socketEvent.PLAYERS_STATUS, playersStatus);
+    await this.handleMatchStatus(message, socket, 'waiting_match');
   }
 
   @UseGuards(WsAuthenticatedGuard)
@@ -72,13 +62,21 @@ export class MatchGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: PlayerStatusDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    if (message.status !== 'online') {
+    await this.handleMatchStatus(message, socket, 'online');
+  }
+
+  private async handleMatchStatus(
+    message: PlayerStatusDto,
+    socket: AuthenticatedSocket,
+    status: 'waiting_match' | 'online',
+  ): Promise<void> {
+    if (message.status !== status) {
       throw new WsException('Invalid status');
     }
 
-    await this.playerService.setPlayerStatus(socket, message.status);
+    await this.playerStatusService.setPlayerStatus(socket, message.status);
     const playersStatus: PlayerStatusDto[] =
-      await this.playerService.getPlayersStatus();
+      await this.playerStatusService.getPlayersStatus();
     this.server.emit(socketEvent.PLAYERS_STATUS, playersStatus);
   }
 }
