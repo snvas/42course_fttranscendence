@@ -46,29 +46,21 @@ export class PlayerStatusService {
   }
 
   public async getPlayersStatus(): Promise<PlayerStatusDto[]> {
-    const onlineUserSocket: PlayerStatusSocket[] = Array.from(
+    const playersStatusSockets: PlayerStatusSocket[] = Array.from(
       this.playerStatusSocket.values(),
     );
 
-    const playerStatus: PlayerStatusDto[] = onlineUserSocket.map(
-      (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
+    return playersStatusSockets.map(
+      (playersStatus: PlayerStatusSocket): PlayerStatusDto => {
         return {
-          id: onlineUser.id,
-          nickname: onlineUser.nickname,
-          status: onlineUser.status,
-          avatarId: onlineUser.avatarId,
-          updatedAt: onlineUser.updatedAt,
+          id: playersStatus.id,
+          nickname: playersStatus.nickname,
+          status: playersStatus.status,
+          avatarId: playersStatus.avatarId,
+          updatedAt: playersStatus.updatedAt,
         } as PlayerStatusDto;
       },
     );
-
-    this.logger.debug(
-      `### Online users nicknames: [${playerStatus.map(
-        (u: PlayerStatusDto) => u.nickname,
-      )}]`,
-    );
-
-    return playerStatus;
   }
 
   public async getPlayerSocket(

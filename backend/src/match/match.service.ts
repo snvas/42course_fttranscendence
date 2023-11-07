@@ -7,12 +7,15 @@ import { PlayerStatusDto } from '../chat/models/player/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
 import { SimpleProfileDto } from '../profile/models/simple-profile.dto';
 import { socketEvent } from '../ws/ws-events';
+import { ProfileService } from '../profile/profile.service';
+import { ProfileDTO } from '../profile/models/profile.dto';
 
 @Injectable()
 export class MatchService {
   private readonly logger: Logger = new Logger(MatchService.name);
 
   constructor(
+    private readonly profileService: ProfileService,
     private readonly playerStatusService: PlayerStatusService,
     private readonly matchGateway: MatchGateway,
   ) {}
@@ -32,13 +35,29 @@ export class MatchService {
       return;
     }
 
-    // Sort waitingMatchPlayers by level in ascending order
-    //waitingMatchPlayers.sort((a, b) => a.level - b.level);
+    const waitingMatchProfiles: ProfileDTO[] = await Promise.all(
+      waitingMatchPlayers.map(
+        (player: PlayerStatusDto): Promise<ProfileDTO> =>
+          this.profileService.findByUserId(player.id),
+      ),
+    );
 
-    for (let i = 0; i < waitingMatchPlayers.length; i++) {
-      for (let j = i + 1; j < waitingMatchPlayers.length; j++) {
-        const p1: PlayerStatusDto = waitingMatchPlayers[i];
-        const p2: PlayerStatusDto = waitingMatchPlayers[j];
+    waitingMatchProfiles.sort((p1: ProfileDTO, p2: ProfileDTO): number => {
+      if (p1.level && p2.level && p1.level !== p2.level) {
+        return p1.level - p2.level;
+      }
+
+      if (p1.wins && p2.wins && p1.wins !== p2.wins) {
+        return p1.wins - p2.wins;
+      }
+
+      return 0;
+    });
+
+    for (let i = 0; i < waitingMatchProfiles.length; i++) {
+      for (let j = i + 1; j < waitingMatchProfiles.length; j++) {
+        const p1: ProfileDTO = waitingMatchProfiles[i];
+        const p2: ProfileDTO = waitingMatchProfiles[j];
         const p1Socket: AuthenticatedSocket | undefined =
           await this.playerStatusService.getPlayerSocket(p1.id);
         const p2Socket: AuthenticatedSocket | undefined =

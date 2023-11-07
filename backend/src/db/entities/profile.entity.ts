@@ -26,6 +26,9 @@ export class ProfileEntity implements Profile {
   @Column({ unique: true })
   nickname: string;
 
+  @Column({ nullable: true, default: 1 })
+  level?: number;
+
   @Column({ nullable: true, default: 0 })
   wins?: number;
 
