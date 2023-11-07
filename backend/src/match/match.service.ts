@@ -66,7 +66,7 @@ export class MatchService {
     const waitingMatchProfiles: ProfileDTO[] = await Promise.all(
       waitingMatchPlayers.map(
         (player: PlayerStatusDto): Promise<ProfileDTO> =>
-          this.profileService.findByUserId(player.id),
+          this.profileService.findByProfileId(player.id),
       ),
     );
 
@@ -134,7 +134,10 @@ export class MatchService {
     );
 
     for (const player of waitingGamePlayers) {
-      if (player.updatedAt.getTime() + 15000 < new Date().getTime()) {
+      const timeout: number = player.updatedAt.getTime() + 15000;
+      const now: number = new Date().getTime();
+
+      if (now < timeout) {
         continue;
       }
 
@@ -145,9 +148,10 @@ export class MatchService {
         continue;
       }
 
-      this.logger.error(
+      this.logger.warn(
         `Player [${player.id}] | [${player.nickname}] timed out waiting game, setting status to waiting match`,
       );
+      this.logger.verbose(`Timeout {${timeout}} now {${now}}`);
 
       await this.playerStatusService.setPlayerStatus(
         playerSocket,
