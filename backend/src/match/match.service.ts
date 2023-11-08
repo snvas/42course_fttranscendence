@@ -9,6 +9,10 @@ import { socketEvent } from '../ws/ws-events';
 import { ProfileService } from '../profile/profile.service';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { MatchEventDto } from './models/match-event.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MatchEntity } from '../db/entities';
+import { Repository } from 'typeorm';
+import * as UUID from 'uuid';
 
 @Injectable()
 export class MatchService {
@@ -18,6 +22,8 @@ export class MatchService {
     private readonly profileService: ProfileService,
     private readonly playerStatusService: PlayerStatusService,
     private readonly matchGateway: MatchGateway,
+    @InjectRepository(MatchEntity)
+    private readonly matchRepository: Repository<MatchEntity>,
   ) {}
 
   public async handleMatchStatus(
@@ -40,7 +46,7 @@ export class MatchService {
     );
 
     const playersStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getPlayersStatus();
+      await this.playerStatusService.getPlayerFrontEndStatus();
 
     (await this.matchGateway.getServer()).emit(
       socketEvent.PLAYERS_STATUS,
@@ -53,7 +59,7 @@ export class MatchService {
     const server: Server = await this.matchGateway.getServer();
 
     const playerStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getPlayersStatus();
+      await this.playerStatusService.getAllPlayersStatus();
 
     const waitingMatchPlayers: PlayerStatusDto[] = playerStatus.filter(
       (player: PlayerStatusDto): boolean => player.status === 'waitingMatch',
@@ -105,6 +111,12 @@ export class MatchService {
             `Match found between [${p1.id}] | [${p1.nickname}] and [${p2.id}] | [${p2.nickname}]`,
           );
 
+          await this.matchRepository.save({
+            id: UUID.v4(),
+            p1: p1,
+            p2: p2,
+          });
+
           server
             .to(p1Socket.id)
             .emit(socketEvent.MATCH_FOUND, this.createMatchEvent(p1, p2, 'p1'));
@@ -117,11 +129,10 @@ export class MatchService {
     }
   }
 
-  // Esse job vai ser responsável por mudar o status para awaiting_match após um timeout de 15s.
   @Cron(CronExpression.EVERY_5_SECONDS)
   async gameWaitingTimeout(): Promise<void> {
     const playerStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getPlayersStatus();
+      await this.playerStatusService.getAllPlayersStatus();
 
     const waitingGamePlayers: PlayerStatusDto[] = playerStatus.filter(
       (player: PlayerStatusDto): boolean => player.status === 'waitingGame',
