@@ -18,6 +18,7 @@ import {
   GroupMessageEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
+import { MatchEntity } from '../../db/entities/match.entity';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
@@ -60,6 +61,10 @@ export class ProfileDTO implements Profile {
   friends: FriendEntity[];
   @ValidateNested()
   friendBy: FriendEntity[];
+  @ValidateNested()
+  matchsAsP1: MatchEntity[];
+  @ValidateNested()
+  matchsAsP2: MatchEntity[];
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;

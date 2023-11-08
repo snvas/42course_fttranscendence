@@ -52,7 +52,7 @@ export class WsEventsAdapter extends IoAdapter {
           })
           .then((rooms: string[]) => {
             socket.join(rooms);
-            return this.playerService.getPlayersStatus();
+            return this.playerService.getPlayerFrontEndStatus();
           })
           .then((playersStatus: PlayerStatusDto[]): void => {
             server.emit(socketEvent.PLAYERS_STATUS, playersStatus);
@@ -82,7 +82,7 @@ export class WsEventsAdapter extends IoAdapter {
       this.playerService
         .removePlayerStatus(socket)
         .then(() => {
-          return this.playerService.getPlayersStatus();
+          return this.playerService.getPlayerFrontEndStatus();
         })
         .then((playersStatus: PlayerStatusDto[]): void => {
           socket.broadcast.emit(socketEvent.PLAYERS_STATUS, playersStatus);

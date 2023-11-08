@@ -8,6 +8,7 @@ import { GroupMemberEntity } from './group-member.entity';
 import { PrivateMessageEntity } from './private-message.entity';
 import { FriendEntity } from './friend.entity';
 import { BlockEntity } from './block.entity';
+import { MatchEntity } from './match.entity';
 
 const entities = [
   UserEntity,
@@ -20,6 +21,7 @@ const entities = [
   PrivateMessageEntity,
   FriendEntity,
   BlockEntity,
+  MatchEntity,
 ];
 
 export {
@@ -33,6 +35,7 @@ export {
   PrivateMessageEntity,
   FriendEntity,
   BlockEntity,
+  MatchEntity,
 };
 
 export default entities;

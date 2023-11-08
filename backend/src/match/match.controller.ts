@@ -29,14 +29,6 @@ export class MatchController {
     await this.matchService.handleMatchStatus(user.id, 'online');
   }
 
-  @HttpCode(HttpStatus.CREATED)
-  @Post('create')
-  async createMatch(
-    @Req() { user }: { user: FortyTwoUserDto }, // @Body() matchEventDto: CreateMatchDto,
-  ) {
-    //return await this.matchService.createMatch(user.id);
-  }
-
   @HttpCode(HttpStatus.OK)
   @Put('finish')
   async finishMatch(

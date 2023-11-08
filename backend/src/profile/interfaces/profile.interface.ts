@@ -7,6 +7,7 @@ import {
   PrivateMessageEntity,
   UserEntity,
 } from '../../db/entities';
+import { MatchEntity } from '../../db/entities/match.entity';
 
 export interface Profile {
   id: number;
@@ -26,6 +27,8 @@ export interface Profile {
   friendBy: FriendEntity[];
   blockedUsers: BlockEntity[];
   blockedBy: BlockEntity[];
+  matchsAsP1: MatchEntity[];
+  matchsAsP2: MatchEntity[];
   createdAt: Date;
   updatedAt: Date;
 }

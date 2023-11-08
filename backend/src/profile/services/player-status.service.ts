@@ -45,7 +45,25 @@ export class PlayerStatusService {
     this.playerStatusSocket.delete(profile.id);
   }
 
-  public async getPlayersStatus(): Promise<PlayerStatusDto[]> {
+  public async getPlayerFrontEndStatus(): Promise<PlayerStatusDto[]> {
+    const playersStatusSockets: PlayerStatusSocket[] = Array.from(
+      this.playerStatusSocket.values(),
+    );
+
+    return playersStatusSockets.map(
+      (playersStatus: PlayerStatusSocket): PlayerStatusDto => {
+        return {
+          id: playersStatus.id,
+          nickname: playersStatus.nickname,
+          status: playersStatus.status !== 'playing' ? 'online' : 'playing',
+          avatarId: playersStatus.avatarId,
+          updatedAt: playersStatus.updatedAt,
+        } as PlayerStatusDto;
+      },
+    );
+  }
+
+  public async getAllPlayersStatus(): Promise<PlayerStatusDto[]> {
     const playersStatusSockets: PlayerStatusSocket[] = Array.from(
       this.playerStatusSocket.values(),
     );
@@ -104,7 +122,7 @@ export class PlayerStatusService {
     const blockedUsers: SimpleProfileDto[] =
       await this.blockService.getBlockedBy(socket.request.user.id);
 
-    const players: PlayerStatusDto[] = await this.getPlayersStatus();
+    const players: PlayerStatusDto[] = await this.getPlayerFrontEndStatus();
 
     const blockedPlayersSockets: string[] = (
       await Promise.all(
