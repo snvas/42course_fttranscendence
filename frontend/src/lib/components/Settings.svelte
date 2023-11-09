@@ -9,6 +9,10 @@
 		goto('/edit-profile');
 	}
 
+	async function onGameCustomize() {
+		goto('/customize');
+	}
+
 	async function onDelete() {
 		await profileService.deleteAccount();
 		goto('/deleted');
@@ -33,6 +37,7 @@
 		{message}
 	</div>
 	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
+	<button class="btn-primary" on:click={onGameCustomize}>Customize your game</button>
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
