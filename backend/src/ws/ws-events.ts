@@ -1,6 +1,8 @@
 export const socketEvent = {
   PLAYERS_STATUS: 'playersStatus',
   MATCH_FOUND: 'matchFound',
+  MATCH_STARTED: 'matchStarted',
+  MATCH_REJECTED: 'matchRejected',
   SEND_PRIVATE_MESSAGE: 'sendPrivateMessage',
   RECEIVE_PRIVATE_MESSAGE: 'receivePrivateMessage',
   SEND_GROUP_MESSAGE: 'sendGroupMessage',

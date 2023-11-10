@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   HttpCode,
   HttpStatus,
@@ -8,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { MatchEventDto } from './models/match-event.dto';
+import { MatchUpdatedDto } from './models/match-updated.dto';
 
 @Controller('match')
 export class MatchController {
@@ -27,6 +30,28 @@ export class MatchController {
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {
     await this.matchService.handleMatchStatus(user.id, 'online');
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('accept')
+  async acceptMatch(
+    @Body() matchEventDto: MatchEventDto,
+  ): Promise<MatchUpdatedDto> {
+    return await this.matchService.acceptMatch(
+      matchEventDto.matchId,
+      matchEventDto.as,
+    );
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('reject')
+  async rejectMatch(
+    @Body() matchEventDto: MatchEventDto,
+  ): Promise<MatchEventDto> {
+    return await this.matchService.rejectMatch(
+      matchEventDto.matchId,
+      matchEventDto.as,
+    );
   }
 
   @HttpCode(HttpStatus.OK)
