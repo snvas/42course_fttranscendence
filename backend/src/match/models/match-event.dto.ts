@@ -11,8 +11,11 @@ import {
 export class MatchEventDto implements MatchEvent {
   @IsNotEmpty()
   @IsString()
+  matchId: string;
+  @IsNotEmpty()
+  @IsString()
   @IsIn(['p1', 'p2'])
-  as: string;
+  as: 'p1' | 'p2';
   @IsNotEmptyObject()
   @ValidateNested()
   p1: MatchPlayerDto;
