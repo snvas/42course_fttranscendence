@@ -88,12 +88,13 @@ export class MatchService {
             'waitingGame',
           );
 
-          this.logger.debug(
-            `Match found between [${p1.id}] | [${p1.nickname}] and [${p2.id}] | [${p2.nickname}]`,
-          );
-
           //Validar se retorna as relations
           const matchEntity: MatchEntity = await this.createMatch(p1, p2);
+
+          this.logger.debug(
+            `Match [${matchEntity.id}] found between [${p1.id}] | [${p1.nickname}] and [${p2.id}] | [${p2.nickname}]`,
+          );
+
           await this.handleMatchEvent(matchEntity, socketEvent.MATCH_FOUND);
         }
       }
@@ -106,7 +107,7 @@ export class MatchService {
       await this.getMatchPlayerByStatus('waitingGame');
 
     for (const player of waitingGamePlayers) {
-      const timeout: number = player.updatedAt.getTime() + 15000;
+      const timeout: number = player.updatedAt.getTime() + 35000;
       const now: number = new Date().getTime();
 
       if (now < timeout) {
@@ -158,6 +159,8 @@ export class MatchService {
           : ({ p2Joined: true } as Partial<MatchEntity>),
       );
 
+      this.logger.verbose(`Match [${matchEntity.id}] accepted by [${as}]`);
+
       if (!updateResult.affected) {
         throw new InternalServerErrorException('Match join not updated');
       }
@@ -186,10 +189,7 @@ export class MatchService {
     }
   }
 
-  public async rejectMatch(
-    matchId: string,
-    as: 'p1' | 'p2',
-  ): Promise<MatchEventDto> {
+  public async rejectMatch(matchId: string): Promise<MatchUpdatedDto> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -206,9 +206,25 @@ export class MatchService {
 
       await this.handleMatchEvent(matchEntity, socketEvent.MATCH_REJECTED);
 
+      const updateResult: UpdateResult = await this.updateMatchTransactional(
+        queryRunner,
+        matchId,
+        {
+          status: 'rejected',
+        },
+      );
+
+      if (!updateResult.affected) {
+        throw new InternalServerErrorException('Match status not updated');
+      }
+
       await queryRunner.commitTransaction();
 
-      return this.createMatchEvent(matchId, matchEntity.p1, matchEntity.p2, as);
+      return {
+        updated: updateResult.affected > 0,
+        affected: updateResult.affected,
+        matchStarted: updateResult !== null,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (
