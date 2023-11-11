@@ -1,5 +1,6 @@
 import type {AxiosInstance, AxiosResponse} from 'axios';
 import axios from 'axios';
+import type {MatchAnswerDto} from '$lib/dtos';
 
 export class MatchMakingService {
     private axiosInstance: AxiosInstance;
@@ -17,6 +18,14 @@ export class MatchMakingService {
 
     public async cancelMatchQueue(): Promise<AxiosResponse<void>> {
         return this.axiosInstance.post('/queue/leave');
+    }
+
+    public async acceptMatch(matchId: string, as: 'p1' | 'p2'): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.post('/accept', {matchId, as} as MatchAnswerDto);
+    }
+
+    public async rejectMatch(matchId: string, as: 'p1' | 'p2'): Promise<AxiosResponse<void>> {
+        return this.axiosInstance.post('/reject', {matchId, as} as MatchAnswerDto);
     }
 }
 
