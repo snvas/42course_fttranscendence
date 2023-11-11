@@ -17,8 +17,8 @@ export class MatchHistoryDto implements MatchHistory {
   id: string;
   @IsNotEmpty()
   @IsString()
-  @IsIn(['waitingPlayers', 'started', 'finished', 'canceled', 'abandoned'])
-  status: 'waitingPlayers' | 'started' | 'finished' | 'canceled' | 'abandoned';
+  @IsIn(['waitingPlayers', 'started', 'finished', 'rejected', 'abandoned'])
+  status: 'waitingPlayers' | 'started' | 'finished' | 'rejected' | 'abandoned';
   @IsNotEmptyObject()
   @ValidateNested()
   p1: SimpleProfileDto;

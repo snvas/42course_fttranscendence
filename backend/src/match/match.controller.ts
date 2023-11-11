@@ -4,13 +4,12 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Put,
   Req,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
-import { MatchEventDto } from './models/match-event.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
+import { MatchAnswer } from './interfaces/match-answer.interface';
 
 @Controller('match')
 export class MatchController {
@@ -35,30 +34,19 @@ export class MatchController {
   @HttpCode(HttpStatus.CREATED)
   @Post('accept')
   async acceptMatch(
-    @Body() matchEventDto: MatchEventDto,
+    @Body() matchAnswerDto: MatchAnswer,
   ): Promise<MatchUpdatedDto> {
     return await this.matchService.acceptMatch(
-      matchEventDto.matchId,
-      matchEventDto.as,
+      matchAnswerDto.matchId,
+      matchAnswerDto.as,
     );
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('reject')
   async rejectMatch(
-    @Body() matchEventDto: MatchEventDto,
-  ): Promise<MatchEventDto> {
-    return await this.matchService.rejectMatch(
-      matchEventDto.matchId,
-      matchEventDto.as,
-    );
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Put('finish')
-  async finishMatch(
-    @Req() { user }: { user: FortyTwoUserDto }, // @Body() matchEventDto: FinishMatchDto,
-  ) {
-    //return await this.matchService.finishMatch(user.id);
+    @Body() matchAnswerDto: MatchAnswer,
+  ): Promise<MatchUpdatedDto> {
+    return await this.matchService.rejectMatch(matchAnswerDto.matchId);
   }
 }
