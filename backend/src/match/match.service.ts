@@ -223,7 +223,7 @@ export class MatchService {
       return {
         updated: updateResult.affected > 0,
         affected: updateResult.affected,
-        matchStarted: updateResult !== null,
+        matchStarted: false,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
