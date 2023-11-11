@@ -372,13 +372,12 @@ export class MatchService {
     queryRunner: QueryRunner,
     matchId: string,
     partialEntity: Partial<MatchEntity>,
-  ) {
-    const updateResult: UpdateResult = await queryRunner.manager.update(
+  ): Promise<UpdateResult> {
+    return await queryRunner.manager.update(
       MatchEntity,
       { id: matchId },
       partialEntity,
     );
-    return updateResult;
   }
 
   private async createMatch(
