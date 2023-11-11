@@ -10,12 +10,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { MatchService } from './match.service';
 import { MatchGateway } from './match.gateway';
+import { MatchGameService } from './services/match-game.service';
 
 @Module({
   controllers: [MatchController],
   providers: [
     WsAuthenticatedGuard,
     MatchService,
+    MatchGameService,
     MatchGateway,
     PlayerStatusService,
     BlockService,
@@ -31,6 +33,7 @@ import { MatchGateway } from './match.gateway';
     AvatarService,
     BlockService,
     MatchService,
+    MatchGameService,
   ],
 })
 export class MatchModule {}
