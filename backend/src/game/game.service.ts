@@ -29,6 +29,7 @@ export class GameService {
             console.log("ball validated")
             return true;
         }
+        console.log("ball Invalida")
         return false;
     }
 
@@ -41,6 +42,13 @@ export class GameService {
         else {
             this.isReady.push(user);
         }
+    }
+
+    playerDisconected(id:string) {
+        if (this.isReady.indexOf(id) == 1) {
+            this.isReady.reverse();
+        }
+        this.isReady.pop();
     }
 
     isPlayersReady(){
@@ -56,5 +64,10 @@ export class GameService {
         const player2 = this.player2;
         const ball = this.ball;
         return {player1, player2, ball}
+    }
+
+    ballData() {
+        const ball = this.ball;
+        return {ball}
     }
 }

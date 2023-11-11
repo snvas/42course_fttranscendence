@@ -1,12 +1,14 @@
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { Positions } from './types/positions.type';
 import { GameService } from './game.service';
 import { AuthenticatedSocket } from 'src/chat/types/authenticated-socket.type';
 import { Socket } from 'socket.io';
-
 @WebSocketGateway()
-export class GameGateway {
+export class GameGateway implements OnGatewayDisconnect{
+  private readonly logger: Logger = new Logger(GameGateway.name);
+
   constructor(private readonly gameService:GameService){}
   @WebSocketServer()
   server: Server;
@@ -28,8 +30,16 @@ export class GameGateway {
 
   @SubscribeMessage('ready')
   setReady(@ConnectedSocket() socket: Socket) {
-    this.gameService.setReady(String(socket.id));
+    this.gameService.setReady(socket.id);
     console.log(String(socket.id))
+    this.server.emit('is-ready', this.gameService.isPlayersReady());
+  }
+
+  async handleDisconnect(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<void> {
+    this.gameService.playerDisconected(socket.id);
+    this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
     this.server.emit('is-ready', this.gameService.isPlayersReady());
   }
 
@@ -40,7 +50,7 @@ export class GameGateway {
   {
     if (this.gameService.ballValidation(socket.id)) {
       this.gameService.setBall(data);
-      this.server.emit('game-data', this.gameService.allData());
+      this.server.emit('game-data', this.gameService.ballData());
     }
   }
 }

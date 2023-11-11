@@ -41,7 +41,7 @@
 
 	// player1 and 2 passade for paramther
 	async function sketch(p5: p5) {
-		let canStart:boolean = false;
+		let canStart:boolean;
 		let game: Game;
 		let hitSound: p5.SoundFile;
 		let ball1: Ball;
@@ -51,11 +51,7 @@
 		//let sizeIncrease : SizeIncrease;
 
 		game_socket.on('is-ready', (data) => {
-			console.log("fora");
-			if (data == true){
-				console.log("dentro");
-				canStart = true;
-			}
+			canStart = data;
 		})
 
 		p5.setup = async () => {
@@ -74,11 +70,11 @@
 		};
 
 		p5.draw = () => {
-			game_socket.on('game-data', (data) => {
-				player1.setPositions(data.player1);
-				player2.setPositions(data.player2);
-				ball1.setPositions(data.ball)
-			})
+			// game_socket.on('game-data', (data) => {
+			// 	player1.setPositions(data.player1);
+			// 	player2.setPositions(data.player2);
+			// 	ball1.setPositions(data.ball)
+			// })
 			p5.background(0);
 			p5.rect(width / 2, 0, 5, height);
 			player1.drawPlayer();
@@ -128,8 +124,9 @@
 				}
 			}
 			if (canStart){
-				canStart = false;
 				game.start();
+			} else {
+				game.stop();
 			}
 		};
 
@@ -148,8 +145,8 @@
 			constructor(game: Game) {
 				this.positionX = width / 2;
 				this.positionY = height / 2;
-				this.velocityX = p5.random([-5, 13, 33, 50]);
-				this.velocityY = p5.random([-5, 13, 33, 50]);
+				this.velocityX = 33;
+				this.velocityY = 33;
 				this.diam = 20;
 				this.game = game;
 				this.yminor = 0;
@@ -160,6 +157,10 @@
 			}
 
 			draw() {
+				// game_socket.on('ball-data', (data) => {
+				// 	this.positionX = data.ball.positionX
+				// 	this.positionY = data.ball.positionY
+				// })
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
