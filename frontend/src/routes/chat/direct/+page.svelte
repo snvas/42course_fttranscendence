@@ -7,7 +7,10 @@
 		profile,
 		playersStatus,
 		friendsList,
-		blockList
+		blockList,
+
+		match
+
 	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
@@ -28,7 +31,10 @@
 		blockUser,
 		unblockUser,
 		chatService,
-		blockedBy
+		blockedBy,
+
+		matchMakingService
+
 	} from '$lib/api';
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
@@ -316,6 +322,17 @@
 		return blocked;
 	}
 
+	
+	async function privateGame(userId: number) {
+		try {
+			let privateMatch = await matchMakingService.createPrivateMatch(userId);
+			$match = privateMatch.data;
+			goto('/private-room');
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
 	$: historyList = getHistoryFromStatus(privateMessageHistory, $playersStatus);
 	$: blocked = isBlocked($playersStatus, $selectedDirect);
 	// $: console.log(historyList);
@@ -330,6 +347,7 @@
 		{:then}
 			<DirectList
 				{historyList}
+				on:play={(e) => privateGame(e.detail)}
 				on:select={(e) => onSelectChat(e.detail)}
 				on:friend={(e) => onFriend(e.detail)}
 				on:unfriend={(e) => onUnfriend(e.detail)}
