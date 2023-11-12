@@ -9,7 +9,10 @@
 		allUsers,
 		selectedGroup,
 		friendsList,
-		blockList
+		blockList,
+
+		match
+
 	} from '$lib/stores';
 	import {
 		authService,
@@ -125,8 +128,22 @@
 
 	// TODO: entrar ou convidar o usuário para jogar 
 	async function onGame() {
-		await matchMakingService.joinMatchQueue();
-		//goto('/game');
+		try {
+			await matchMakingService.joinMatchQueue();
+			goto('/room');
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function privateGame(userId: number) {
+		try {
+			let privateMatch = await matchMakingService.createPrivateMatch(userId);
+			$match = privateMatch.data;
+			goto('/private-room');
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async function onChat(user: PlayerStatusDto | null) {
@@ -228,6 +245,7 @@
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}
 					loading={loadUsers}
+					on:play={(e) => privateGame(e.detail)}
 					on:chat={(e) => onChat(e.detail)}
 					on:friend={(e) => onFriend(e.detail)}
 					on:unfriend={(e) => onUnfriend(e.detail)}

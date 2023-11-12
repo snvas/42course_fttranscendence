@@ -6,7 +6,8 @@ import type {
 	ProfileDTO,
 	GroupChatDto,
 	SimpleProfileDto,
-	DashboardUsersList
+	DashboardUsersList,
+	MatchEventDto
 } from './dtos';
 import { authService } from './api';
 import type { Socket } from 'socket.io-client';
@@ -24,7 +25,7 @@ let authState: AuthState = {
 
 // ??? como fazer a requisição se repetir e manter o
 export function useAuth(): Readable<AuthState> {
-	let auth = readable<AuthState>(authState, (set) => {
+	const auth = readable<AuthState>(authState, (set) => {
 		set({
 			loading: true,
 			session: authState.session
@@ -49,20 +50,22 @@ export function useAuth(): Readable<AuthState> {
 	return auth;
 }
 
-export let socket = writable<Socket>(chatService.getSocket());
+export const socket = writable<Socket>(chatService.getSocket());
 
-export let selectedDirect = writable<MessageProfileDto | null>();
+export const selectedDirect = writable<MessageProfileDto | null>();
 
-export let profile = writable<ProfileDTO>();
+export const profile = writable<ProfileDTO>();
 
-export let onlineUsers = writable<PlayerStatusDto[]>([]);
+export const onlineUsers = writable<PlayerStatusDto[]>([]);
 
-export let allUsers = writable<ProfileDTO[]>([]);
+export const allUsers = writable<ProfileDTO[]>([]);
 
-export let playersStatus = writable<DashboardUsersList[]>([]);
+export const playersStatus = writable<DashboardUsersList[]>([]);
 
-export let selectedGroup = writable<GroupChatDto | null>();
+export const selectedGroup = writable<GroupChatDto | null>();
 
-export let friendsList = writable<SimpleProfileDto[]>([]);
+export const friendsList = writable<SimpleProfileDto[]>([]);
 
-export let blockList = writable<SimpleProfileDto[]>([]);
+export const blockList = writable<SimpleProfileDto[]>([]);
+
+export const match = writable<MatchEventDto | null>(null);
