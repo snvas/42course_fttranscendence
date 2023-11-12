@@ -33,7 +33,7 @@ export class MatchEntity implements MatchHistory {
   p2Score: number;
 
   @Column({ default: 'waitingPlayers' })
-  status: string;
+  status: 'waitingPlayers' | 'started' | 'finished' | 'rejected' | 'abandoned';
 
   @Column({ default: 'draw' })
   winner: 'p1' | 'p2' | 'draw';

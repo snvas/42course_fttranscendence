@@ -38,4 +38,30 @@ export class MatchGameService {
 
     return await this.matchRepository.save(match);
   }
+
+  public async endMatch(
+    matchId: string,
+    winner: 'p1' | 'p2',
+    p1Score: number,
+    p2Score: number,
+    status: 'finished' | 'abandoned',
+  ): Promise<MatchEntity> {
+    const match: MatchEntity | null = await this.matchRepository.findOne({
+      where: { id: matchId },
+      relations: {
+        p1: true,
+        p2: true,
+      },
+    });
+
+    if (!match) {
+      throw new NotFoundException('Match not found');
+    }
+
+    match.status = status;
+    match.winner = winner;
+    match.p1Score = p1Score;
+    match.p2Score = p2Score;
+    return await this.matchRepository.save(match);
+  }
 }
