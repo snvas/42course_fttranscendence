@@ -29,7 +29,7 @@ export class MatchGameService {
 
   public async finishMatch(matchId: string): Promise<MatchEntity> {
     const match: MatchEntity = await this.getMatch(matchId);
-    const winner: 'p1' | 'p2' | 'draw' = this.getWinner(match);
+    const winner: 'p1' | 'p2' = this.getWinner(match);
 
     if (winner === 'p1') {
       await this.profileService.update(match.p1.id, {
@@ -77,12 +77,8 @@ export class MatchGameService {
     return await this.matchRepository.save(match);
   }
 
-  private getWinner(match: MatchEntity): 'p1' | 'p2' | 'draw' {
-    return match.p1Score === match.p2Score
-      ? 'draw'
-      : match.p1Score > match.p2Score
-      ? 'p1'
-      : 'p2';
+  private getWinner(match: MatchEntity): 'p1' | 'p2' {
+    return match.p1Score > match.p2Score ? 'p1' : 'p2';
   }
 
   private async getMatch(matchId: string): Promise<MatchEntity> {

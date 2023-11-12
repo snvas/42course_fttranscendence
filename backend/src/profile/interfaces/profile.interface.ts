@@ -15,7 +15,6 @@ export interface Profile {
   level: number;
   wins: number;
   losses: number;
-  draws: number;
   avatarId?: number;
   avatar?: AvatarEntity;
   userEntity: UserEntity;
