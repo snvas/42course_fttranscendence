@@ -9,9 +9,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
-import { MatchHistory } from '../interfaces/match-history.interface';
+import { Match } from '../interfaces/match.interface';
 
-export class MatchHistoryDto implements MatchHistory {
+export class MatchDto implements Match {
   @IsNotEmpty()
   @IsString()
   id: string;
@@ -39,8 +39,8 @@ export class MatchHistoryDto implements MatchHistory {
   p2Score: number;
   @IsNotEmpty()
   @IsString()
-  @IsIn(['p1', 'p2', 'draw'])
-  winner: 'p1' | 'p2' | 'draw';
+  @IsIn(['p1', 'p2'])
+  winner?: 'p1' | 'p2';
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;

@@ -34,8 +34,6 @@ export class ProfileDTO implements Profile {
   @IsNumber()
   losses: number;
   @IsNumber()
-  draws: number;
-  @IsNumber()
   avatarId?: number;
   @IsNotEmptyObject()
   @ValidateNested()

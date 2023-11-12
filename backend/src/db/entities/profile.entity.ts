@@ -36,9 +36,6 @@ export class ProfileEntity implements Profile {
   @Column({ default: 0 })
   losses: number;
 
-  @Column({ default: 0 })
-  draws: number;
-
   @OneToOne(() => AvatarEntity, {
     nullable: true,
   })

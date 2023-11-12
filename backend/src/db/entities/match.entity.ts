@@ -6,11 +6,11 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MatchHistory } from '../../match/interfaces/match-history.interface';
+import { Match } from '../../match/interfaces/match.interface';
 import { ProfileEntity } from './profile.entity';
 
 @Entity('matchs')
-export class MatchEntity implements MatchHistory {
+export class MatchEntity implements Match {
   @PrimaryColumn()
   id: string;
 
@@ -35,8 +35,8 @@ export class MatchEntity implements MatchHistory {
   @Column({ default: 'waitingPlayers' })
   status: 'waitingPlayers' | 'started' | 'finished' | 'rejected' | 'abandoned';
 
-  @Column({ default: 'draw' })
-  winner: 'p1' | 'p2' | 'draw';
+  @Column({ nullable: true })
+  winner?: 'p1' | 'p2';
 
   @UpdateDateColumn()
   updatedAt: Date;

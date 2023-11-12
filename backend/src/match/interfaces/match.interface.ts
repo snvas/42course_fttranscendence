@@ -1,6 +1,6 @@
 import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 
-export interface MatchHistory {
+export interface Match {
   id: string;
   status: string;
   p1: SimpleProfileDto;
@@ -9,7 +9,7 @@ export interface MatchHistory {
   p2Joined: boolean;
   p1Score: number;
   p2Score: number;
-  winner: 'p1' | 'p2' | 'draw';
+  winner?: 'p1' | 'p2';
   createdAt: Date;
   updatedAt: Date;
 }
