@@ -27,17 +27,17 @@ export class ProfileEntity implements Profile {
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ nullable: true, default: 1 })
-  level?: number;
+  @Column({ default: 1 })
+  level: number;
 
-  @Column({ nullable: true, default: 0 })
-  wins?: number;
+  @Column({ default: 0 })
+  wins: number;
 
-  @Column({ nullable: true, default: 0 })
-  losses?: number;
+  @Column({ default: 0 })
+  losses: number;
 
-  @Column({ nullable: true, default: 0 })
-  draws?: number;
+  @Column({ default: 0 })
+  draws: number;
 
   @OneToOne(() => AvatarEntity, {
     nullable: true,
