@@ -4,18 +4,18 @@ import {
   FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
+  MatchEntity,
   PrivateMessageEntity,
   UserEntity,
 } from '../../db/entities';
-import { MatchEntity } from '../../db/entities/match.entity';
 
 export interface Profile {
   id: number;
   nickname?: string;
-  level?: number;
-  wins?: number;
-  losses?: number;
-  draws?: number;
+  level: number;
+  wins: number;
+  losses: number;
+  draws: number;
   avatarId?: number;
   avatar?: AvatarEntity;
   userEntity: UserEntity;

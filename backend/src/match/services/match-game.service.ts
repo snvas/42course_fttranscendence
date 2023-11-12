@@ -2,35 +2,23 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MatchEntity } from '../../db/entities';
 import { Repository } from 'typeorm';
+import { ProfileService } from '../../profile/profile.service';
 
 @Injectable()
 export class MatchGameService {
   constructor(
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
+    private readonly profileService: ProfileService,
   ) {}
 
   public async savePoints(
     matchId: string,
-    playerId: number,
+    player: 'p1' | 'p2',
   ): Promise<MatchEntity> {
-    const match: MatchEntity | null = await this.matchRepository.findOne({
-      where: { id: matchId },
-      relations: {
-        p1: true,
-        p2: true,
-      },
-    });
+    const match: MatchEntity = await this.getMatch(matchId);
 
-    if (!match) {
-      throw new NotFoundException('Match not found');
-    }
-
-    if (match.p1.id !== playerId && match.p2.id !== playerId) {
-      throw new NotFoundException('Player not found');
-    }
-
-    if (match.p1.id === playerId) {
+    if (player === 'p1') {
       match.p1Score += 1;
     } else {
       match.p2Score += 1;
@@ -39,13 +27,73 @@ export class MatchGameService {
     return await this.matchRepository.save(match);
   }
 
-  public async endMatch(
-    matchId: string,
-    winner: 'p1' | 'p2',
-    p1Score: number,
-    p2Score: number,
-    status: 'finished' | 'abandoned',
-  ): Promise<MatchEntity> {
+  public async finishMatch(matchId: string): Promise<MatchEntity> {
+    const match: MatchEntity = await this.getMatch(matchId);
+    const winner: 'p1' | 'p2' | 'draw' = this.getWinner(match);
+
+    if (winner === 'p1') {
+      await this.profileService.update(match.p1.id, {
+        level: match.p1.level + 40,
+        wins: match.p1.wins + 1,
+      });
+    } else {
+      await this.profileService.update(match.p2.id, {
+        level: match.p2.level + 10,
+        wins: match.p2.losses + 1,
+      });
+    }
+
+    match.status = 'finished';
+    match.winner = winner;
+    return await this.matchRepository.save(match);
+  }
+
+  public async abandonMatch(matchId: string): Promise<MatchEntity> {
+    const match: MatchEntity = await this.getMatch(matchId);
+
+    const winner: 'p1' | 'p2' | 'draw' = this.getWinner(match);
+
+    if (winner === 'draw') {
+      await this.profileService.update(match.p1.id, {
+        draws: match.p1.draws + 1,
+        level: match.p1.level + 10,
+      });
+      await this.profileService.update(match.p2.id, {
+        draws: match.p2.draws + 1,
+        level: match.p2.level + 10,
+      });
+    } else if (winner === 'p1') {
+      await this.profileService.update(match.p1.id, {
+        level: match.p1.level + 20,
+        wins: match.p1.wins + 1,
+      });
+      await this.profileService.update(match.p2.id, {
+        wins: match.p2.losses + 1,
+      });
+    } else {
+      await this.profileService.update(match.p1.id, {
+        wins: match.p1.losses + 1,
+      });
+      await this.profileService.update(match.p2.id, {
+        level: match.p2.level + 20,
+        wins: match.p2.wins + 1,
+      });
+    }
+
+    match.status = 'abandoned';
+    match.winner = winner;
+    return await this.matchRepository.save(match);
+  }
+
+  private getWinner(match: MatchEntity): 'p1' | 'p2' | 'draw' {
+    return match.p1Score === match.p2Score
+      ? 'draw'
+      : match.p1Score > match.p2Score
+      ? 'p1'
+      : 'p2';
+  }
+
+  private async getMatch(matchId: string): Promise<MatchEntity> {
     const match: MatchEntity | null = await this.matchRepository.findOne({
       where: { id: matchId },
       relations: {
@@ -58,10 +106,9 @@ export class MatchGameService {
       throw new NotFoundException('Match not found');
     }
 
-    match.status = status;
-    match.winner = winner;
-    match.p1Score = p1Score;
-    match.p2Score = p2Score;
-    return await this.matchRepository.save(match);
+    if (!match.p1 || !match.p2) {
+      throw new NotFoundException('Match players not found');
+    }
+    return match;
   }
 }

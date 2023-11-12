@@ -107,7 +107,7 @@ export class MatchService {
       await this.getMatchPlayerByStatus('waitingGame');
 
     for (const player of waitingGamePlayers) {
-      const timeout: number = player.updatedAt.getTime() + 35000;
+      const timeout: number = player.updatedAt.getTime() + 15000;
       const now: number = new Date().getTime();
 
       if (now < timeout) {
