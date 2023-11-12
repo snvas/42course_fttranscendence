@@ -41,11 +41,6 @@ export class MatchService {
     const opponentProfile: ProfileDTO =
       await this.profileService.findByProfileId(opponentProfileId);
 
-    const matchEntity: MatchEntity = await this.createPrivateMatch(
-      profile,
-      opponentProfile,
-    );
-
     const profileSocket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(profile.id);
     const opponentSocket: AuthenticatedSocket | undefined =
@@ -54,6 +49,15 @@ export class MatchService {
     if (!profileSocket || !opponentSocket) {
       throw new BadRequestException('Player not connected');
     }
+
+    const matchEntity: MatchEntity = await this.createPrivateMatch(
+      profile,
+      opponentProfile,
+    );
+
+    this.logger.debug(
+      `Private Match [${matchEntity.id}] created between [${profile.id}] | [${profile.nickname}] and [${opponentProfile.id}] | [${opponentProfile.nickname}]`,
+    );
 
     (await this.matchGateway.getServer())
       .to(opponentSocket.id)
@@ -92,7 +96,7 @@ export class MatchService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_SECOND)
   async matchMakingJob(): Promise<void> {
     const waitingMatchPlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingMatch');
@@ -135,7 +139,7 @@ export class MatchService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_SECOND)
   async gameWaitingTimeout(): Promise<void> {
     const waitingGamePlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingGame');

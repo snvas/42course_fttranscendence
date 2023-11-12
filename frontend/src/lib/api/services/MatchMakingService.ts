@@ -16,12 +16,16 @@ export class MatchMakingService {
         return this.axiosInstance.post('/queue/join');
     }
 
-	public async createPrivateMatch(userId: number): Promise<AxiosResponse<MatchEventDto>> {
-		return this.axiosInstance.post(`/private/${userId}`);
-	}
-
     public async cancelMatchQueue(): Promise<AxiosResponse<void>> {
         return this.axiosInstance.post('/queue/leave');
+    }
+
+    public async createPrivateMatch(userId: number): Promise<AxiosResponse<MatchEventDto>> {
+        return this.axiosInstance.post(`/private/${userId}`);
+    }
+
+    public async acceptPrivateMatch(matchId: string): Promise<AxiosResponse<void>> {
+        return this.acceptMatch(matchId, 'p2');
     }
 
     public async acceptMatch(matchId: string, as: 'p1' | 'p2'): Promise<AxiosResponse<void>> {
@@ -32,7 +36,7 @@ export class MatchMakingService {
         return this.axiosInstance.post('/reject', {matchId, as} as MatchAnswerDto);
     }
 
-	/*public async acceptMatch(matchId: string, as: 'p1' | 'p2'): Promise<AxiosResponse<void>> {
+    /*public async acceptMatch(matchId: string, as: 'p1' | 'p2'): Promise<AxiosResponse<void>> {
         return this.axiosInstance.post('/accept', {matchId, as} as MatchAnswerDto, {
             'axios-retry': {
                 retries: 3,
