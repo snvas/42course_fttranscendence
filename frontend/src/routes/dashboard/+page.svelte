@@ -9,7 +9,10 @@
 		allUsers,
 		selectedGroup,
 		friendsList,
-		blockList
+		blockList,
+
+		match
+
 	} from '$lib/stores';
 	import {
 		authService,
@@ -21,7 +24,8 @@
 		deleteFriend,
 		blockUser,
 		unblockUser,
-		chatService
+		chatService,
+		matchMakingService,
 	} from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -124,7 +128,22 @@
 
 	// TODO: entrar ou convidar o usuário para jogar 
 	async function onGame() {
-		goto('/game');
+		try {
+			await matchMakingService.joinMatchQueue();
+			goto('/room');
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function privateGame(userId: number) {
+		try {
+			let privateMatch = await matchMakingService.createPrivateMatch(userId);
+			$match = privateMatch.data;
+			goto('/private-room');
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async function onChat(user: PlayerStatusDto | null) {
@@ -181,6 +200,10 @@
 		}
 	});
 
+	$socket.on('matchFound', (data) => {
+		console.log(data);
+	});
+
 	$: avatar = getUserAvatar(loadProfile);
 </script>
 
@@ -222,6 +245,7 @@
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}
 					loading={loadUsers}
+					on:play={(e) => privateGame(e.detail)}
 					on:chat={(e) => onChat(e.detail)}
 					on:friend={(e) => onFriend(e.detail)}
 					on:unfriend={(e) => onUnfriend(e.detail)}

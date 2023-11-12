@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { ProfileDTO } from '../models/profile.dto';
-import { PlayerStatusDto } from '../../chat/models/player/player-status.dto';
+import { PlayerStatusDto } from '../models/player-status.dto';
 import { ProfileService } from '../profile.service';
 import { SimpleProfileDto } from '../models/simple-profile.dto';
 import { BlockService } from './block.service';
@@ -25,15 +25,16 @@ export class PlayerStatusService {
       socket.request.user.id,
     );
 
-    const onlineUser: PlayerStatusSocket = {
+    const playerStatus: PlayerStatusSocket = {
       id: profile.id,
       nickname: profile.nickname,
       avatarId: profile.avatarId,
       status,
+      updatedAt: new Date(),
       socket,
     };
 
-    this.playerStatusSocket.set(profile.id, onlineUser);
+    this.playerStatusSocket.set(profile.id, playerStatus);
   }
 
   public async removePlayerStatus(socket: AuthenticatedSocket): Promise<void> {
@@ -44,29 +45,40 @@ export class PlayerStatusService {
     this.playerStatusSocket.delete(profile.id);
   }
 
-  public async getPlayersStatus(): Promise<PlayerStatusDto[]> {
-    const onlineUserSocket: PlayerStatusSocket[] = Array.from(
+  public async getPlayerFrontEndStatus(): Promise<PlayerStatusDto[]> {
+    const playersStatusSockets: PlayerStatusSocket[] = Array.from(
       this.playerStatusSocket.values(),
     );
 
-    const playerStatus: PlayerStatusDto[] = onlineUserSocket.map(
-      (onlineUser: PlayerStatusSocket): PlayerStatusDto => {
+    return playersStatusSockets.map(
+      (playersStatus: PlayerStatusSocket): PlayerStatusDto => {
         return {
-          id: onlineUser.id,
-          nickname: onlineUser.nickname,
-          status: onlineUser.status,
-          avatarId: onlineUser.avatarId,
+          id: playersStatus.id,
+          nickname: playersStatus.nickname,
+          status: playersStatus.status !== 'playing' ? 'online' : 'playing',
+          avatarId: playersStatus.avatarId,
+          updatedAt: playersStatus.updatedAt,
         } as PlayerStatusDto;
       },
     );
+  }
 
-    this.logger.debug(
-      `### Online users nicknames: [${playerStatus.map(
-        (u: PlayerStatusDto) => u.nickname,
-      )}]`,
+  public async getAllPlayersStatus(): Promise<PlayerStatusDto[]> {
+    const playersStatusSockets: PlayerStatusSocket[] = Array.from(
+      this.playerStatusSocket.values(),
     );
 
-    return playerStatus;
+    return playersStatusSockets.map(
+      (playersStatus: PlayerStatusSocket): PlayerStatusDto => {
+        return {
+          id: playersStatus.id,
+          nickname: playersStatus.nickname,
+          status: playersStatus.status,
+          avatarId: playersStatus.avatarId,
+          updatedAt: playersStatus.updatedAt,
+        } as PlayerStatusDto;
+      },
+    );
   }
 
   public async getPlayerSocket(
@@ -110,7 +122,7 @@ export class PlayerStatusService {
     const blockedUsers: SimpleProfileDto[] =
       await this.blockService.getBlockedBy(socket.request.user.id);
 
-    const players: PlayerStatusDto[] = await this.getPlayersStatus();
+    const players: PlayerStatusDto[] = await this.getPlayerFrontEndStatus();
 
     const blockedPlayersSockets: string[] = (
       await Promise.all(

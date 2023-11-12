@@ -1,6 +1,5 @@
-export interface PlayerStatus {
+export interface MatchPlayer {
   id: number;
   nickname: string;
   avatarId?: number;
-  status: string;
 }
