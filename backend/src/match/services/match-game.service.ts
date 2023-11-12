@@ -48,29 +48,13 @@ export class MatchGameService {
     return await this.matchRepository.save(match);
   }
 
-  public async abandonMatch(matchId: string): Promise<MatchEntity> {
+  public async abandonMatch(
+    matchId: string,
+    by: 'p1' | 'p2',
+  ): Promise<MatchEntity> {
     const match: MatchEntity = await this.getMatch(matchId);
 
-    const winner: 'p1' | 'p2' | 'draw' = this.getWinner(match);
-
-    if (winner === 'draw') {
-      await this.profileService.update(match.p1.id, {
-        draws: match.p1.draws + 1,
-        level: match.p1.level + 10,
-      });
-      await this.profileService.update(match.p2.id, {
-        draws: match.p2.draws + 1,
-        level: match.p2.level + 10,
-      });
-    } else if (winner === 'p1') {
-      await this.profileService.update(match.p1.id, {
-        level: match.p1.level + 20,
-        wins: match.p1.wins + 1,
-      });
-      await this.profileService.update(match.p2.id, {
-        wins: match.p2.losses + 1,
-      });
-    } else {
+    if (by === 'p1') {
       await this.profileService.update(match.p1.id, {
         wins: match.p1.losses + 1,
       });
@@ -78,10 +62,18 @@ export class MatchGameService {
         level: match.p2.level + 20,
         wins: match.p2.wins + 1,
       });
+    } else {
+      await this.profileService.update(match.p1.id, {
+        level: match.p1.level + 20,
+        wins: match.p1.wins + 1,
+      });
+      await this.profileService.update(match.p2.id, {
+        wins: match.p2.losses + 1,
+      });
     }
 
     match.status = 'abandoned';
-    match.winner = winner;
+    match.winner = by === 'p1' ? 'p2' : 'p1';
     return await this.matchRepository.save(match);
   }
 

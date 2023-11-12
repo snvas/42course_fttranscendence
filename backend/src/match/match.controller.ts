@@ -3,6 +3,8 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   Req,
 } from '@nestjs/common';
@@ -48,5 +50,14 @@ export class MatchController {
     @Body() matchAnswerDto: MatchAnswer,
   ): Promise<MatchUpdatedDto> {
     return await this.matchService.rejectMatch(matchAnswerDto.matchId);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('private/:profileId')
+  async createPrivateMatch(
+    @Param('profileId', ParseIntPipe) profileId: number,
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<void> {
+    return await this.matchService.joinPrivateMatch(user.id, profileId);
   }
 }

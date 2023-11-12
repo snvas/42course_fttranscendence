@@ -33,6 +33,41 @@ export class MatchService {
     private dataSource: DataSource,
   ) {}
 
+  public async joinPrivateMatch(
+    userId: number,
+    opponentProfileId: number,
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const opponentProfile: ProfileDTO =
+      await this.profileService.findByProfileId(opponentProfileId);
+
+    const matchEntity: MatchEntity = await this.createPrivateMatch(
+      profile,
+      opponentProfile,
+    );
+
+    const profileSocket: AuthenticatedSocket | undefined =
+      await this.playerStatusService.getPlayerSocket(profile.id);
+    const opponentSocket: AuthenticatedSocket | undefined =
+      await this.playerStatusService.getPlayerSocket(opponentProfile.id);
+
+    if (!profileSocket || !opponentSocket) {
+      throw new BadRequestException('Player not connected');
+    }
+
+    (await this.matchGateway.getServer())
+      .to(opponentSocket.id)
+      .emit(
+        socketEvent.MATCH_FOUND,
+        this.createMatchEvent(
+          matchEntity.id,
+          matchEntity.p1,
+          matchEntity.p2,
+          'p2',
+        ),
+      );
+  }
+
   public async handleMatchStatus(
     userId: number,
     status: 'waitingMatch' | 'online' | 'playing',
@@ -88,7 +123,6 @@ export class MatchService {
             'waitingGame',
           );
 
-          //Validar se retorna as relations
           const matchEntity: MatchEntity = await this.createMatch(p1, p2);
 
           this.logger.debug(
@@ -404,6 +438,18 @@ export class MatchService {
       id: UUID.v4(),
       p1: p1,
       p2: p2,
+    });
+  }
+
+  private async createPrivateMatch(
+    profile: ProfileDTO,
+    opponentProfile: ProfileDTO,
+  ): Promise<MatchEntity> {
+    return await this.matchRepository.save({
+      id: UUID.v4(),
+      p1: profile,
+      p2: opponentProfile,
+      p1Joined: true,
     });
   }
 
