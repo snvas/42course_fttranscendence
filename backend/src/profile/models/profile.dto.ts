@@ -16,9 +16,9 @@ import {
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
+  MatchEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
-import { MatchEntity } from '../../db/entities/match.entity';
 
 export class ProfileDTO implements Profile {
   @IsNotEmpty()
@@ -28,13 +28,11 @@ export class ProfileDTO implements Profile {
   @IsNotEmpty()
   nickname: string;
   @IsNumber()
-  level?: number;
+  level: number;
   @IsNumber()
-  wins?: number;
+  wins: number;
   @IsNumber()
-  losses?: number;
-  @IsNumber()
-  draws?: number;
+  losses: number;
   @IsNumber()
   avatarId?: number;
   @IsNotEmptyObject()
