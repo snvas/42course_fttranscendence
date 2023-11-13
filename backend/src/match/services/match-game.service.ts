@@ -12,6 +12,16 @@ export class MatchGameService {
     private readonly profileService: ProfileService,
   ) {}
 
+  public async getMatchPoints(
+    matchId: string,
+  ): Promise<{ p1Score: number; p2Score: number }> {
+    const match: MatchEntity = await this.getMatch(matchId);
+    return {
+      p1Score: match.p1Score,
+      p2Score: match.p2Score,
+    };
+  }
+
   public async savePoints(
     matchId: string,
     player: 'p1' | 'p2',
