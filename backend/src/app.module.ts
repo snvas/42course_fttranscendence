@@ -28,21 +28,21 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     PassportModule.register({ session: true }),
   ],
   providers: [
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: ClassSerializerInterceptor,
-    // },
-    // {
-    //   provide: 'APP_GUARD',
-    //   useFactory: async (
-    //     configService: ConfigService,
-    //     userAuthGuard: UserAuthenticatedGuard,
-    //   ): Promise<UserAuthenticatedGuard | null> =>
-    //     configService.get<string>('APP_OAUTH2_ENABLED') === 'true'
-    //       ? userAuthGuard
-    //       : null,
-    //   inject: [ConfigService, UserAuthenticatedGuard],
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: 'APP_GUARD',
+      useFactory: async (
+        configService: ConfigService,
+        userAuthGuard: UserAuthenticatedGuard,
+      ): Promise<UserAuthenticatedGuard | null> =>
+        configService.get<string>('APP_OAUTH2_ENABLED') === 'true'
+          ? userAuthGuard
+          : null,
+      inject: [ConfigService, UserAuthenticatedGuard],
+    },
   ],
 })
 export class AppModule {}

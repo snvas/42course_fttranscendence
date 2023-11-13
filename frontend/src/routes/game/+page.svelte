@@ -41,7 +41,6 @@
 
 	// player1 and 2 passade for paramther
 	async function sketch(p5: p5) {
-		let canStart:boolean;
 		let game: Game;
 		let hitSound: p5.SoundFile;
 		let ball1: Ball;
@@ -158,10 +157,6 @@
 			}
 
 			draw() {
-				// game_socket.on('ball-data', (data) => {
-				// 	this.positionX = data.ball.positionX
-				// 	this.positionY = data.ball.positionY
-				// })
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
