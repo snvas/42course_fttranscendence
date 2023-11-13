@@ -29,6 +29,7 @@ export class GameService {
             console.log("ball validated")
             return true;
         }
+        console.log("ball Invalida")
         return false;
     }
 
@@ -43,12 +44,20 @@ export class GameService {
         }
     }
 
+    playerDisconected(id:string) {
+        if (this.isReady.indexOf(id) == 1) {
+            this.isReady.reverse();
+        }
+        this.isReady.pop();
+        return 2;
+    }
+
     isPlayersReady(){
         console.log(this.isReady.length == 2)
         if (this.isReady.length == 2){
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
     }
 
     allData(): SocketGameMessage {
@@ -56,5 +65,10 @@ export class GameService {
         const player2 = this.player2;
         const ball = this.ball;
         return {player1, player2, ball}
+    }
+
+    ballData() {
+        const ball = this.ball;
+        return {ball}
     }
 }
