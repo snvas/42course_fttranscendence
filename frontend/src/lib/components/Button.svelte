@@ -24,10 +24,13 @@
 		play: 'bigButton play',
 		logout: 'smallButton logout'
 	};
+
+	let clicked = false;
+
 </script>
 
 <div class="w-full flex justify-around  flex-row gap-3">
-	<button class={`hover:scale-110 transition-all ${style[type]}`} title={title[type]} on:click>
+<button class={`hover:scale-110 transition-all ${style[type]} ${clicked ? 'bg-gray-300' : ''}`} title={title[type]} on:click={() => clicked = !clicked} on:click>
 		<span class={icons[type]} />
 	</button>
 </div>
