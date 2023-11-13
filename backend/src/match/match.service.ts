@@ -157,7 +157,7 @@ export class MatchService {
       `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
     );
 
-    if (status === 'playing') {
+    if (status === 'playing' || status === 'online') {
       await this.sendPlayerStatusEvent();
     }
   }
