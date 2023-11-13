@@ -1,1 +1,24 @@
-export * from "../../../../../backend/src/ws/ws-events"
+export const socketEvent = {
+    PLAYERS_STATUS: 'playersStatus',
+    MATCH_FOUND: 'matchFound',
+    MATCH_STARTED: 'matchStarted',
+    MATCH_REJECTED: 'matchRejected',
+    SEND_PRIVATE_MESSAGE: 'sendPrivateMessage',
+    RECEIVE_PRIVATE_MESSAGE: 'receivePrivateMessage',
+    SEND_GROUP_MESSAGE: 'sendGroupMessage',
+    RECEIVE_GROUP_MESSAGE: 'receiveGroupMessage',
+    GROUP_CHAT_CREATED: 'groupChatCreated',
+    GROUP_CHAT_DELETED: 'groupChatDeleted',
+    GROUP_CHAT_PASSWORD_UPDATED: 'groupChatPasswordUpdated',
+    GROUP_CHAT_PASSWORD_DELETED: 'groupChatPasswordDeleted',
+    JOINED_GROUP_CHAT_MEMBER: 'joinedGroupChatMember',
+    LEAVE_GROUP_CHAT_MEMBER: 'leaveGroupChatMember',
+    ADDED_GROUP_CHAT_MEMBER: 'addedGroupChatMember',
+    KICKED_GROUP_CHAT_MEMBER: 'kickedGroupChatMember',
+    GROUP_CHAT_MEMBER_ROLE_UPDATED: 'groupChatMemberRoleUpdated',
+    GROUP_CHAT_MEMBER_MUTED: 'groupChatMemberMuted',
+    GROUP_CHAT_MEMBER_UNMUTED: 'groupChatMemberUnmuted',
+    GROUP_CHAT_MEMBER_BANNED: 'groupChatMemberBanned',
+    GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned',
+  };
+  
