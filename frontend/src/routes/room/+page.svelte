@@ -54,23 +54,28 @@
 			console.log(e);
 		}
 	}
-
-
-	
 </script>
 
 <div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
 	<div class="flex-none">
 		<PongHeader />
 	</div>
-	{#if status == 'waiting-player'}
-		<div>Aguarde um jogador entrar na sala...</div>
-	{:else if status == 'confirm'}
-		<div>
-			<button on:click={confirmMatch}>Confirmar</button>
-			<button on:click={rejectMatch}>Rejeitar</button>
+	<div class="flex flex-col lg:w-3/4 w-full h-full mx-auto">
+		{#if status == 'waiting-player'}
+		<div class="flex flex-col mx-auto pt-18 items-center gap-10 mt-20 border-4 p-16 rounded-lg">
+			<h1 class="text-3xl text-center">Aguarde. Estamos procurando um adversário para iniciar a partida...</h1>
 		</div>
-	{:else if status == 'waiting-confirm'}
-		<div>Aguarde o outro jogador confirmar...</div>
-	{/if}
+		{:else if status == 'confirm'}
+			<div class="flex flex-col mx-auto pt-18 items-center gap-10 mt-20 border-4 p-16 rounded-lg w-full">
+				<h1 class="text-3xl text-center">Encontramos um adversário.<br/> Começar a partida?</h1>
+				<div class="flex flex-row gap-6 w-full">
+				<button class="btn-deleted" on:click={rejectMatch}>Agora não</button>
+				<button class="btn-primary" on:click={confirmMatch}>sim, Vamos Jogar</button>
+			</div>
+			</div>
+		{:else if status == 'waiting-confirm'}
+		<div class="flex flex-col mx-auto pt-18 items-center gap-10 mt-20 border-4 p-16 rounded-lg">
+			<h1 class="text-3xl text-center">Aguarde o adversário confirmar...</h1></div>
+		{/if}
+	</div>
 </div>
