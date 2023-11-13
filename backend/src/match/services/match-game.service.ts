@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MatchEntity } from '../../db/entities';
 import { Repository } from 'typeorm';
 import { ProfileService } from '../../profile/profile.service';
+import { MatchService } from '../match.service';
 
 @Injectable()
 export class MatchGameService {
@@ -10,7 +11,18 @@ export class MatchGameService {
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
     private readonly profileService: ProfileService,
+    private readonly matchService: MatchService,
   ) {}
+
+  public async getMatchPoints(
+    matchId: string,
+  ): Promise<{ p1Score: number; p2Score: number }> {
+    const match: MatchEntity = await this.getMatch(matchId);
+    return {
+      p1Score: match.p1Score,
+      p2Score: match.p2Score,
+    };
+  }
 
   public async savePoints(
     matchId: string,
@@ -43,6 +55,9 @@ export class MatchGameService {
       });
     }
 
+    await this.matchService.handleMatchStatus(match.p1.id, 'online');
+    await this.matchService.handleMatchStatus(match.p2.id, 'online');
+
     match.status = 'finished';
     match.winner = winner;
     return await this.matchRepository.save(match);
@@ -71,6 +86,9 @@ export class MatchGameService {
         wins: match.p2.losses + 1,
       });
     }
+
+    await this.matchService.handleMatchStatus(match.p1.id, 'online');
+    await this.matchService.handleMatchStatus(match.p2.id, 'online');
 
     match.status = 'abandoned';
     match.winner = by === 'p1' ? 'p2' : 'p1';

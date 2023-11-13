@@ -19,6 +19,7 @@ import { MatchEntity } from '../db/entities';
 import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
+import { MatchHistoryDto } from './models/match-history.dto';
 
 @Injectable()
 export class MatchService {
@@ -32,6 +33,61 @@ export class MatchService {
     private readonly matchRepository: Repository<MatchEntity>,
     private dataSource: DataSource,
   ) {}
+
+  public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const matchEntity: MatchEntity[] = await this.matchRepository.find({
+      where: [
+        {
+          p1: {
+            id: profile.id,
+          },
+        },
+        {
+          p2: {
+            id: profile.id,
+          },
+        },
+      ],
+      relations: ['p1', 'p2'],
+    });
+
+    return matchEntity.map((match: MatchEntity): MatchHistoryDto => {
+      let opponent: ProfileDTO;
+      let user: ProfileDTO;
+      let userScore: number;
+      let opponentScore: number;
+
+      if (match.p1.id === profile.id) {
+        userScore = match.p1Score;
+        user = match.p1;
+        opponent = match.p2;
+        opponentScore = match.p2Score;
+      } else {
+        userScore = match.p2Score;
+        user = match.p2;
+        opponent = match.p1;
+        opponentScore = match.p1Score;
+      }
+
+      return {
+        matchId: match.id,
+        opponent: {
+          id: opponent.id,
+          nickname: opponent.nickname,
+          avatarId: opponent.avatarId,
+        },
+        me: {
+          id: user.id,
+          nickname: user.nickname,
+          avatarId: user.avatarId,
+        },
+        myScore: userScore,
+        opponentScore: opponentScore,
+        matchStatus: match.status,
+      } as MatchHistoryDto;
+    });
+  }
 
   public async joinPrivateMatch(
     userId: number,
@@ -72,11 +128,21 @@ export class MatchService {
       );
   }
 
-  public async handleMatchStatus(
+  public async handleUserMatchStatus(
     userId: number,
     status: 'waitingMatch' | 'online' | 'playing',
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    await this.handleMatchStatus(profile.id, status);
+  }
+
+  public async handleMatchStatus(
+    profileId: number,
+    status: 'waitingMatch' | 'online' | 'playing',
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByProfileId(
+      profileId,
+    );
 
     const socket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(profile.id);
@@ -91,7 +157,7 @@ export class MatchService {
       `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
     );
 
-    if (status === 'playing') {
+    if (status === 'playing' || status === 'online') {
       await this.sendPlayerStatusEvent();
     }
   }
@@ -139,7 +205,7 @@ export class MatchService {
     }
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async gameWaitingTimeout(): Promise<void> {
     const waitingGamePlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingGame');
@@ -313,7 +379,7 @@ export class MatchService {
   }
 
   private async getMatchPlayerByStatus(
-    matchStatus: 'waitingMatch' | 'waitingGame',
+    matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
     const playerStatus: PlayerStatusDto[] =
       await this.playerStatusService.getAllPlayersStatus();
