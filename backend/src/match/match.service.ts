@@ -15,7 +15,7 @@ import { ProfileService } from '../profile/profile.service';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { MatchEventDto } from './models/match-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MatchEntity } from '../db/entities';
+import { MatchEntity, ProfileEntity } from '../db/entities';
 import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
@@ -73,21 +73,28 @@ export class MatchService {
     });
 
     return matchEntity.map((match: MatchEntity): MatchHistoryDto => {
-      let opponent: ProfileDTO;
-      let user: ProfileDTO;
+      let opponent: ProfileEntity;
+      let user: ProfileEntity;
       let userScore: number;
       let opponentScore: number;
+      let winner: 'me' | 'opponent';
+
+      if (!match.winner) {
+        throw new InternalServerErrorException('Match without winner');
+      }
 
       if (match.p1.id === profile.id) {
         userScore = match.p1Score;
         user = match.p1;
         opponent = match.p2;
         opponentScore = match.p2Score;
+        winner = match.winner === 'p1' ? 'me' : 'opponent';
       } else {
         userScore = match.p2Score;
         user = match.p2;
         opponent = match.p1;
         opponentScore = match.p1Score;
+        winner = match.winner === 'p2' ? 'me' : 'opponent';
       }
 
       return {
@@ -104,6 +111,7 @@ export class MatchService {
         },
         myScore: userScore,
         opponentScore: opponentScore,
+        winner: winner,
         matchStatus: match.status,
       } as MatchHistoryDto;
     });
@@ -545,8 +553,8 @@ export class MatchService {
 
   private createMatchEvent(
     matchId: string,
-    p1Profile: ProfileDTO,
-    p2Profile: ProfileDTO,
+    p1Profile: ProfileEntity,
+    p2Profile: ProfileEntity,
     as: 'p1' | 'p2',
   ): MatchEventDto {
     return {

@@ -1,7 +1,7 @@
-import { ProfileDTO } from '../models/profile.dto';
+import { ProfileEntity } from '../../db/entities';
 
 export class Friend {
   id: number;
-  profile: ProfileDTO;
-  friend: ProfileDTO;
+  profile: ProfileEntity;
+  friend: ProfileEntity;
 }

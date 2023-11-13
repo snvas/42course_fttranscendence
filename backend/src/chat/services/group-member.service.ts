@@ -366,7 +366,7 @@ export class GroupMemberService {
   private createGroupMemberDto(
     memberEntity: GroupMemberEntity,
     groupChat: GroupChatEntity,
-    newMemberProfile: ProfileDTO,
+    newMemberProfile: ProfileEntity,
   ): GroupMemberDto {
     return {
       id: memberEntity.id,

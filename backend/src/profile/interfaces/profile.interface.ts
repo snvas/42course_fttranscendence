@@ -13,6 +13,7 @@ export interface Profile {
   id: number;
   nickname?: string;
   level: number;
+  level_percentage: number;
   wins: number;
   losses: number;
   avatarId?: number;
