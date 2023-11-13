@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -18,8 +19,8 @@ import { MatchHistoryDto } from './models/match-history.dto';
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('history')
+  @HttpCode(HttpStatus.OK)
+  @Get('history')
   async getMatchHistory(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<MatchHistoryDto[]> {
