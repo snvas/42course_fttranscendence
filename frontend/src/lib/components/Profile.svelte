@@ -23,9 +23,6 @@
 				<p class="lg:text-2xl text-md text-green-700 flex flex-col">
 					Win: {profile?.data.wins}
 				</p>
-				<p class="lg:text-2xl text-md text-yellow-700 flex flex-col">
-					Draws: {profile?.data.draws}
-				</p>
 				<p class="lg:text-2xl text-md text-red-700 flex flex-col">
 					Lose: {profile?.data.losses}
 				</p>
