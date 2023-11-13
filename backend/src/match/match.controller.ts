@@ -12,6 +12,7 @@ import { MatchService } from './match.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchAnswer } from './interfaces/match-answer.interface';
+import { MatchHistoryDto } from './models/match-history.dto';
 
 @Controller('match')
 export class MatchController {
@@ -21,7 +22,7 @@ export class MatchController {
   @Post('history')
   async getMatchHistory(
     @Req() { user }: { user: FortyTwoUserDto },
-  ): Promise<any> {
+  ): Promise<MatchHistoryDto[]> {
     return await this.matchService.getMatchHistory(user.id);
   }
 
@@ -30,7 +31,7 @@ export class MatchController {
   async joinMatchQueue(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {
-    await this.matchService.handleMatchStatus(user.id, 'waitingMatch');
+    await this.matchService.handleUserMatchStatus(user.id, 'waitingMatch');
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -38,7 +39,7 @@ export class MatchController {
   async leaveMatchQueue(
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {
-    await this.matchService.handleMatchStatus(user.id, 'online');
+    await this.matchService.handleUserMatchStatus(user.id, 'online');
   }
 
   @HttpCode(HttpStatus.CREATED)

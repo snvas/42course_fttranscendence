@@ -128,11 +128,21 @@ export class MatchService {
       );
   }
 
-  public async handleMatchStatus(
+  public async handleUserMatchStatus(
     userId: number,
     status: 'waitingMatch' | 'online' | 'playing',
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    await this.handleMatchStatus(profile.id, status);
+  }
+
+  public async handleMatchStatus(
+    profileId: number,
+    status: 'waitingMatch' | 'online' | 'playing',
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByProfileId(
+      profileId,
+    );
 
     const socket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(profile.id);
@@ -195,7 +205,7 @@ export class MatchService {
     }
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async gameWaitingTimeout(): Promise<void> {
     const waitingGamePlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingGame');
@@ -369,7 +379,7 @@ export class MatchService {
   }
 
   private async getMatchPlayerByStatus(
-    matchStatus: 'waitingMatch' | 'waitingGame',
+    matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
     const playerStatus: PlayerStatusDto[] =
       await this.playerStatusService.getAllPlayersStatus();
