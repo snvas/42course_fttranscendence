@@ -41,7 +41,7 @@
 
 	// player1 and 2 passade for paramther
 	async function sketch(p5: p5) {
-		let canStart:boolean = false;
+		let canStart:boolean;
 		let game: Game;
 		let hitSound: p5.SoundFile;
 		let ball1: Ball;
@@ -51,10 +51,11 @@
 		//let sizeIncrease : SizeIncrease;
 
 		game_socket.on('is-ready', (data) => {
-			console.log("fora");
-			if (data == true){
-				console.log("dentro");
-				canStart = true;
+			if (data == 1){
+				game.start();
+			} else if (data == 2) {
+				//player disconected
+				game.stop();
 			}
 		})
 
@@ -127,12 +128,9 @@
 					}
 				}
 			}
-			if (canStart){
-				canStart = false;
-				game.start();
-			}
 		};
-
+		
+		
 		class Ball {
 			public positionX: number;
 			public positionY: number;
@@ -160,6 +158,10 @@
 			}
 
 			draw() {
+				// game_socket.on('ball-data', (data) => {
+				// 	this.positionX = data.ball.positionX
+				// 	this.positionY = data.ball.positionY
+				// })
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
@@ -177,6 +179,7 @@
 			}
 
 			checkWalls() {
+				// TODO send sokect here
 				if (this.positionX - this.diam / 2 <= 0) {
 					//pontuar jogador 2
 					this.game.pointing(2);

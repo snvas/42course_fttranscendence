@@ -38,11 +38,11 @@ async function bootstrap() {
     }).connect(app.get(DataSource).getRepository(SessionEntity)),
   });
   app.setGlobalPrefix('api');
-  app.use(sessionMiddleware);
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.useWebSocketAdapter(new WsEventsAdapter(sessionMiddleware, app));
+  // app.use(sessionMiddleware);
+  // app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  // app.use(passport.initialize());
+  // app.use(passport.session());
+  // app.useWebSocketAdapter(new WsEventsAdapter(sessionMiddleware, app));
 
   await app.listen(Number(configService.get<number>('APP_PORT')) || 3000);
 
