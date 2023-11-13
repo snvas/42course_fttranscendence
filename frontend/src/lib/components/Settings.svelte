@@ -36,8 +36,8 @@
 	<div class="h-12 text-green-500 text-2xl text-center pb-10">
 		{message}
 	</div>
-	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
 	<button class="btn-primary" on:click={onGameCustomize}>Customize your game</button>
+	<button class="btn-primary" on:click={onEditProfile}>Edit your profile</button>
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
