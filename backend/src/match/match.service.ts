@@ -49,7 +49,13 @@ export class MatchService {
           },
         },
       ],
-      relations: ['p1', 'p2'],
+      relations: {
+        p1: true,
+        p2: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return matchEntity.map((match: MatchEntity): MatchHistoryDto => {
