@@ -42,14 +42,34 @@ export class MatchService {
           p1: {
             id: profile.id,
           },
+          status: 'finished',
         },
         {
           p2: {
             id: profile.id,
           },
+          status: 'finished',
+        },
+        {
+          p1: {
+            id: profile.id,
+          },
+          status: 'abandoned',
+        },
+        {
+          p2: {
+            id: profile.id,
+          },
+          status: 'abandoned',
         },
       ],
-      relations: ['p1', 'p2'],
+      relations: {
+        p1: true,
+        p2: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return matchEntity.map((match: MatchEntity): MatchHistoryDto => {

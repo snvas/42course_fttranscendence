@@ -12,6 +12,10 @@ export class MatchMakingService {
         });
     }
 
+    public async getMatchHistory(): Promise<AxiosResponse<MatchEventDto[]>> {
+        return this.axiosInstance.get('/history');
+    }
+
     public async joinMatchQueue(): Promise<AxiosResponse<void>> {
         return this.axiosInstance.post('/queue/join');
     }
