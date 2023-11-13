@@ -18,6 +18,14 @@ export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('history')
+  async getMatchHistory(
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<any> {
+    return await this.matchService.getMatchHistory(user.id);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('queue/join')
   async joinMatchQueue(
     @Req() { user }: { user: FortyTwoUserDto },
