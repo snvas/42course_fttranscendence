@@ -69,11 +69,16 @@
 		<PongHeader />
 	</div>
 	{#if status == 'waiting-confirm'}
-		<div>Aguarde o outro jogador confirmar...</div>
+	<div class="flex flex-col mx-auto pt-18 items-center gap-10 mt-20 border-4 p-16 rounded-lg">
+		<h1 class="text-3xl text-center">Aguarde o outro jogador confirmar...</h1>
+	</div>
 	{:else if status == 'confirm'}
-		<div>
-			<button on:click={confirmMatch}>Confirmar</button>
-			<button on:click={rejectMatch}>Rejeitar</button>
+	<div class="flex flex-col mx-auto pt-18 items-center gap-10 mt-20 border-4 p-16 rounded-lg w-full">
+		<h1 class="text-3xl text-center">Começar a partida?</h1>
+		<div class="flex flex-row gap-6 w-full">
+			<button class="btn-deleted" on:click={rejectMatch}>Rejeitar</button>
+			<button class="btn-primary" on:click={confirmMatch}>Confirmar</button>
 		</div>
+	</div>
 	{/if}
 </div>
