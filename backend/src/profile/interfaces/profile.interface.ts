@@ -4,6 +4,7 @@ import {
   FriendEntity,
   GroupChatEntity,
   GroupMemberEntity,
+  MatchEntity,
   PrivateMessageEntity,
   UserEntity,
 } from '../../db/entities';
@@ -11,9 +12,9 @@ import {
 export interface Profile {
   id: number;
   nickname?: string;
-  wins?: number;
-  losses?: number;
-  draws?: number;
+  level: number;
+  wins: number;
+  losses: number;
   avatarId?: number;
   avatar?: AvatarEntity;
   userEntity: UserEntity;
@@ -25,6 +26,8 @@ export interface Profile {
   friendBy: FriendEntity[];
   blockedUsers: BlockEntity[];
   blockedBy: BlockEntity[];
+  matchsAsP1: MatchEntity[];
+  matchsAsP2: MatchEntity[];
   createdAt: Date;
   updatedAt: Date;
 }

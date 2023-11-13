@@ -4,7 +4,7 @@ import {Socket} from "socket.io-client";
 import {NavigateFunction, useNavigate} from "react-router-dom";
 import chatService from "../api/ChatService.ts";
 import useThrowAsyncError from "../utils/hooks/useThrowAsyncError.ts";
-import {PlayerStatusDto} from "../../../backend/src/chat/models/player/player-status.dto.ts";
+import {PlayerStatusDto} from "../../../backend/src/profile/models/player-status.dto.ts";
 import {MessageConversationDto} from "../../../backend/src/chat/models/message/message-conversation.dto.ts";
 import {AxiosResponse} from "axios";
 import {PrivateMessageHistoryDto} from "../../../backend/src/chat/models/private/private-message-history.dto.ts";

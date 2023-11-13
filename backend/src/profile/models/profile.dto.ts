@@ -16,6 +16,7 @@ import {
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
+  MatchEntity,
   PrivateMessageEntity,
 } from 'src/db/entities';
 
@@ -27,11 +28,11 @@ export class ProfileDTO implements Profile {
   @IsNotEmpty()
   nickname: string;
   @IsNumber()
-  wins?: number;
+  level: number;
   @IsNumber()
-  losses?: number;
+  wins: number;
   @IsNumber()
-  draws?: number;
+  losses: number;
   @IsNumber()
   avatarId?: number;
   @IsNotEmptyObject()
@@ -58,6 +59,10 @@ export class ProfileDTO implements Profile {
   friends: FriendEntity[];
   @ValidateNested()
   friendBy: FriendEntity[];
+  @ValidateNested()
+  matchsAsP1: MatchEntity[];
+  @ValidateNested()
+  matchsAsP2: MatchEntity[];
   @IsNotEmpty()
   @IsDate()
   createdAt: Date;

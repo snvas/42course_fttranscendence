@@ -17,6 +17,7 @@ import { GroupMessageEntity } from './group-message.entity';
 import { PrivateMessageEntity } from './private-message.entity';
 import { FriendEntity } from './friend.entity';
 import { BlockEntity } from './block.entity';
+import { MatchEntity } from './match.entity';
 
 @Entity({ name: 'profiles' })
 export class ProfileEntity implements Profile {
@@ -26,14 +27,14 @@ export class ProfileEntity implements Profile {
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ nullable: true, default: 0 })
-  wins?: number;
+  @Column({ default: 1 })
+  level: number;
 
-  @Column({ nullable: true, default: 0 })
-  losses?: number;
+  @Column({ default: 0 })
+  wins: number;
 
-  @Column({ nullable: true, default: 0 })
-  draws?: number;
+  @Column({ default: 0 })
+  losses: number;
 
   @OneToOne(() => AvatarEntity, {
     nullable: true,
@@ -78,6 +79,12 @@ export class ProfileEntity implements Profile {
 
   @OneToMany(() => BlockEntity, (block) => block.blockedUser)
   blockedBy: BlockEntity[];
+
+  @OneToMany(() => MatchEntity, (match) => match.p1)
+  matchsAsP1: MatchEntity[];
+
+  @OneToMany(() => MatchEntity, (match) => match.p2)
+  matchsAsP2: MatchEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

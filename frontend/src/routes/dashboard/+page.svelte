@@ -1,7 +1,32 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { selectedDirect, socket, useAuth, profile, playersStatus, allUsers, selectedGroup } from '$lib/stores';
-	import { authService, getProfile, getUserAvatar, getAvatarFromId, readAllUsers } from '$lib/api';
+	import {
+		selectedDirect,
+		socket,
+		useAuth,
+		profile,
+		playersStatus,
+		allUsers,
+		selectedGroup,
+		friendsList,
+		blockList,
+
+		match
+
+	} from '$lib/stores';
+	import {
+		authService,
+		getProfile,
+		getUserAvatar,
+		getAvatarFromId,
+		readAllUsers,
+		addFriend,
+		deleteFriend,
+		blockUser,
+		unblockUser,
+		chatService,
+		matchMakingService,
+	} from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import Profile from '$lib/components/Profile.svelte';
@@ -87,7 +112,7 @@
 		goto('/login');
 	}
 
-	$socket.connect();
+	chatService.connect();
 
 	let loadUsers = readAllUsers();
 
@@ -101,14 +126,66 @@
 		goto('/login');
 	}
 
-	async function onGame(){
-		goto('/game');
+	// TODO: entrar ou convidar o usuário para jogar 
+	async function onGame() {
+		try {
+			await matchMakingService.joinMatchQueue();
+			goto('/room');
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function privateGame(userId: number) {
+		try {
+			let privateMatch = await matchMakingService.createPrivateMatch(userId);
+			$match = privateMatch.data;
+			goto('/private-room');
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	async function onChat(user: PlayerStatusDto | null) {
 		$selectedDirect = user;
 		$selectedGroup = null;
 		goto('/chat/direct');
+	}
+
+	async function onFriend(userId: number) {
+		let res = await addFriend(userId);
+		if (typeof res !== 'number') {
+			if (!$friendsList.find((v) => v.id == userId)) {
+				$friendsList.push(res);
+				$friendsList = $friendsList;
+			}
+		}
+		console.log(res);
+	}
+
+	async function onUnfriend(userId: number) {
+		let res = await deleteFriend(userId);
+		if (res == true) {
+			$friendsList = $friendsList.filter((v) => v.id != userId);
+		}
+	}
+
+	async function onBlock(userId: number) {
+		let res = await blockUser(userId);
+		if (typeof res !== 'number') {
+			if (!$blockList.find((v) => v.id == userId)) {
+				$blockList.push(res);
+				$blockList = $blockList;
+			}
+		}
+		console.log(res);
+	}
+
+	async function onUnblock(userId: number) {
+		let res = await unblockUser(userId);
+		if (res == true) {
+			$blockList = $blockList.filter((v) => v.id != userId);
+		}
 	}
 
 	let loadProfile = getProfile();
@@ -123,6 +200,10 @@
 		}
 	});
 
+	$socket.on('matchFound', (data) => {
+		console.log(data);
+	});
+
 	$: avatar = getUserAvatar(loadProfile);
 </script>
 
@@ -130,7 +211,9 @@
 	<div class="flex-none">
 		<PongHeader />
 	</div>
-	<div class="flex-1 first-letter:w-full flex h-0 lg:flex-row flex-col gap-10 lg:p-10 p-2 min-w-3xl">
+	<div
+		class="flex-1 first-letter:w-full flex h-0 lg:flex-row flex-col gap-10 lg:p-10 p-2 min-w-3xl"
+	>
 		{#await loadProfile}
 			<div class="w-full h-full">Carregando</div>
 		{:then}
@@ -157,14 +240,19 @@
 					<Button type="play" on:click={() => onGame()} />
 				</div>
 			</div>
-		<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
-			<UsersList
-				users={$playersStatus}
-				getAvatar={getAvatarFromId}
-				on:chat={(e) => onChat(e.detail)}
-				loading={loadUsers}
-			/>
-		</div>
+			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
+				<UsersList
+					users={$playersStatus}
+					getAvatar={getAvatarFromId}
+					loading={loadUsers}
+					on:play={(e) => privateGame(e.detail)}
+					on:chat={(e) => onChat(e.detail)}
+					on:friend={(e) => onFriend(e.detail)}
+					on:unfriend={(e) => onUnfriend(e.detail)}
+					on:block={(e) => onBlock(e.detail)}
+					on:unblock={(e) => onUnblock(e.detail)}
+				/>
+			</div>
 		{/await}
 	</div>
 </div>

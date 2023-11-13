@@ -1,5 +1,6 @@
-import { PlayerStatus } from '../../interfaces/player/player.status.interface';
+import { PlayerStatus } from '../interfaces/player.status.interface';
 import {
+  IsDate,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -19,6 +20,9 @@ export class PlayerStatusDto implements PlayerStatus {
   avatarId?: number;
   @IsNotEmpty()
   @IsString()
-  @IsIn(['online', 'playing'])
+  @IsIn(['offline', 'online', 'waitingMatch', 'waitingGame', 'playing'])
   status: string;
+  @IsNotEmpty()
+  @IsDate()
+  updatedAt: Date;
 }

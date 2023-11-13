@@ -1,6 +1,6 @@
 import { Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ProfileEntity } from './profile.entity';
-import { Friend } from '../../profile/interfaces/friend';
+import { Friend } from '../../profile/interfaces/friend.interface';
 
 @Entity({ name: 'friends' })
 @Index(['profile', 'friend'], { unique: true })

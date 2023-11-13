@@ -7,7 +7,7 @@ import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type'
 import { socketEvent } from '../ws-events';
 import { PlayerStatusService } from '../../profile/services/player-status.service';
 import { GroupChatService } from '../../chat/services/group-chat.service';
-import { PlayerStatusDto } from '../../chat/models/player/player-status.dto';
+import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 
 export class WsEventsAdapter extends IoAdapter {
   private readonly session: express.RequestHandler;
@@ -52,7 +52,7 @@ export class WsEventsAdapter extends IoAdapter {
           })
           .then((rooms: string[]) => {
             socket.join(rooms);
-            return this.playerService.getPlayersStatus();
+            return this.playerService.getPlayerFrontEndStatus();
           })
           .then((playersStatus: PlayerStatusDto[]): void => {
             server.emit(socketEvent.PLAYERS_STATUS, playersStatus);
@@ -63,36 +63,37 @@ export class WsEventsAdapter extends IoAdapter {
             );
             throw error;
           });
-      },
-    );
 
-    server.on(
-      'disconnect',
-      async (socket: AuthenticatedSocket): Promise<void> => {
-        this.logger.log(`Client socket disconnected: ${socket.id}`);
-
-        if (!this.isAuthenticatedSocket) {
-          return;
-        }
-
-        this.playerService
-          .removePlayerStatus(socket)
-          .then(() => {
-            return this.playerService.getPlayersStatus();
-          })
-          .then((playersStatus: PlayerStatusDto[]): void => {
-            socket.broadcast.emit(socketEvent.PLAYERS_STATUS, playersStatus);
-          })
-          .catch((error): void => {
-            this.logger.error(
-              `On disconnect error occurred on socket adapter: ${error}`,
-            );
-            throw error;
-          });
+        socket.on('disconnect', this.handleDisconnect(socket));
       },
     );
 
     return server;
+  }
+
+  private handleDisconnect(socket: AuthenticatedSocket) {
+    return async (): Promise<void> => {
+      this.logger.log(`Client socket disconnected: ${socket.id}`);
+
+      if (!this.isAuthenticatedSocket(socket)) {
+        return;
+      }
+
+      this.playerService
+        .removePlayerStatus(socket)
+        .then(() => {
+          return this.playerService.getPlayerFrontEndStatus();
+        })
+        .then((playersStatus: PlayerStatusDto[]): void => {
+          socket.broadcast.emit(socketEvent.PLAYERS_STATUS, playersStatus);
+        })
+        .catch((error): void => {
+          this.logger.error(
+            `On disconnect error occurred on socket adapter: ${error}`,
+          );
+          throw error;
+        });
+    };
   }
 
   private isAuthenticatedSocket(socket: AuthenticatedSocket): boolean {

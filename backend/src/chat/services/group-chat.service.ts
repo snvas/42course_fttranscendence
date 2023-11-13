@@ -30,7 +30,7 @@ import { GroupChatHistoryDto } from '../models/group/group-chat-history.dto';
 import { MessageConversationDto } from '../models/message/message-conversation.dto';
 import { MessageProfile } from '../interfaces/message/message-profile.interface';
 import { GroupProfileDto } from '../models/group/group-profile.dto';
-import { ChatMessageDto } from '../models/tmp/chat-message.dto';
+import { MessageHttpDto } from '../models/message/message-http.dto';
 import { GroupCreationDto } from '../models/group/group-creation.dto';
 import { GroupChatDto } from '../models/group/group-chat.dto';
 import { comparePassword, hashPassword } from '../../utils/bcrypt';
@@ -42,6 +42,9 @@ import { GroupChatUpdatedResponseDto } from '../models/group/group-chat-updated-
 import { GroupChatDeletedResponseDto } from '../models/group/group-chat-deleted-response.dto';
 import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { BlockService } from '../../profile/services/block.service';
+import { socketEvent } from '../../ws/ws-events';
+import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { PlayerStatusService } from '../../profile/services/player-status.service';
 
 @Injectable()
 export class GroupChatService {
@@ -49,6 +52,7 @@ export class GroupChatService {
 
   constructor(
     private readonly profileService: ProfileService,
+    private readonly playerStatusService: PlayerStatusService,
     private readonly blockService: BlockService,
     private readonly groupMemberService: GroupMemberService,
     private readonly groupMessageService: GroupMessageService,
@@ -57,6 +61,43 @@ export class GroupChatService {
   ) {}
 
   public async handleGroupMessage(
+    @MessageBody() message: GroupMessageDto,
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ): Promise<GroupMessageDto | null> {
+    this.logger.verbose(
+      `### handleGroupMessage by [${socket.request.user.id}] | [${socket.id}]`,
+    );
+
+    try {
+      const blockedPlayersSockets: string[] =
+        await this.playerStatusService.getBlockedByPlayersSockets(socket);
+
+      const groupMessage: GroupMessageDto = await this.saveGroupMessage(
+        socket,
+        message,
+      );
+
+      if (groupMessage.groupChat.id) {
+        socket
+          .to(`${groupMessage.groupChat.id}`)
+          .except(blockedPlayersSockets)
+          .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
+      }
+
+      return groupMessage;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        this.logger.debug(
+          `Unauthorized group message from sender [${message.sender.id}]`,
+        );
+      } else {
+        this.logger.error(error);
+      }
+      return null;
+    }
+  }
+
+  public async saveGroupMessage(
     socket: AuthenticatedSocket,
     groupMessageDto: GroupMessageDto,
   ): Promise<GroupMessageDto> {
@@ -99,7 +140,7 @@ export class GroupChatService {
     } as GroupMessageDto;
   }
 
-  public async getUserGroupChatsHistory(
+  public async getMessageHistory(
     userId: number,
   ): Promise<GroupChatHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
@@ -181,7 +222,7 @@ export class GroupChatService {
     );
   }
 
-  public async createGroupChat(
+  public async create(
     groupCreationDto: GroupCreationDto,
     userId: number,
   ): Promise<GroupChatDto> {
@@ -232,9 +273,7 @@ export class GroupChatService {
     }
   }
 
-  public async deleteGroupChatById(
-    id: number,
-  ): Promise<GroupChatDeletedResponseDto> {
+  public async deleteById(id: number): Promise<GroupChatDeletedResponseDto> {
     this.logger.verbose(`### Deleting group chat by id: [${id}]`);
 
     const groupChatDeleteResult: DeleteResult =
@@ -255,7 +294,7 @@ export class GroupChatService {
     };
   }
 
-  public async joinGroupChat(
+  public async join(
     chatId: number,
     userId: number,
     requestPassword: Partial<GroupChatPasswordDto>,
@@ -305,7 +344,7 @@ export class GroupChatService {
     );
   }
 
-  public async leaveGroupChat(
+  public async leave(
     chatId: number,
     userId: number,
   ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
@@ -322,10 +361,7 @@ export class GroupChatService {
       );
     }
 
-    return await this.groupMemberService.removeMemberFromGroupChat(
-      groupChat,
-      profile,
-    );
+    return await this.groupMemberService.removeMember(groupChat, profile);
   }
 
   public async getGroupChatDtoById(id: number): Promise<GroupChatDto> {
@@ -334,7 +370,7 @@ export class GroupChatService {
     return this.createGroupChatDto(groupChat, groupChat.owner);
   }
 
-  public async addMemberToGroupChat(
+  public async addMember(
     chatId: number,
     profileId: number,
     chatRole: ChatRole,
@@ -352,21 +388,7 @@ export class GroupChatService {
     );
   }
 
-  public async removeMemberFromGroupChat(
-    chatId: number,
-    userId: number,
-  ): Promise<GroupMemberDeletedResponse & GroupMemberDto> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
-
-    const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
-
-    return await this.groupMemberService.removeMemberFromGroupChat(
-      groupChat,
-      profile,
-    );
-  }
-
-  public async changeGroupChatPassword(
+  public async changePassword(
     chatId: number,
     password: GroupChatPasswordDto,
   ): Promise<GroupChatUpdatedResponseDto> {
@@ -393,7 +415,7 @@ export class GroupChatService {
     };
   }
 
-  public async deleteGroupChatPassword(
+  public async deletePassword(
     chatId: number,
   ): Promise<GroupChatUpdatedResponseDto> {
     this.logger.verbose(`### Removing group chat [${chatId}] password`);
@@ -445,7 +467,7 @@ export class GroupChatService {
   public async getPlayerGroupChatNames(
     socket: AuthenticatedSocket,
   ): Promise<string[]> {
-    const rooms: string[] = await this.getUserGroupChatsHistory(
+    const rooms: string[] = await this.getMessageHistory(
       socket.request.user.id,
     ).then((groupChatHistory: GroupChatHistoryDto[]): string[] =>
       groupChatHistory.map(
@@ -460,11 +482,10 @@ export class GroupChatService {
     return rooms;
   }
 
-  //TODO:: Temporário
-  public async saveGroupMessage(
+  public async saveHttpMessage(
     chatId: number,
     userId: number,
-    message: ChatMessageDto,
+    message: MessageHttpDto,
   ): Promise<GroupMessageDto> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const groupChat: GroupChatEntity = await this.getGroupChatById(chatId);
