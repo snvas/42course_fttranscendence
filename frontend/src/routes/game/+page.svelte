@@ -41,7 +41,6 @@
 
 	// player1 and 2 passade for paramther
 	async function sketch(p5: p5) {
-		let canStart:boolean = false;
 		let game: Game;
 		let hitSound: p5.SoundFile;
 		let ball1: Ball;
@@ -51,10 +50,11 @@
 		//let sizeIncrease : SizeIncrease;
 
 		game_socket.on('is-ready', (data) => {
-			console.log("fora");
-			if (data == true){
-				console.log("dentro");
-				canStart = true;
+			if (data == 1){
+				game.start();
+			} else if (data == 2) {
+				//player disconected
+				game.stop();
 			}
 		})
 
@@ -73,13 +73,24 @@
 			//sizeIncrease = new SizeIncrease(Math.random() < 0.5 ? 1: 2); // Escolha aleatória entre os dois jogadores
 		};
 
+		const backgroundColors: { [key: string]: string } = {
+			"black": "#030712",
+			"red": "#f87171",
+			"blue": "#22d3ee",
+			"green": "#4ade80",
+			"pink": "#f472b6",
+			"yellow": "#facc15"
+		}
+
+		const backgroundColorSelected: string = localStorage.getItem("backgroundColor") || "black";
+
 		p5.draw = () => {
 			game_socket.on('game-data', (data) => {
 				player1.setPositions(data.player1);
 				player2.setPositions(data.player2);
 				ball1.setPositions(data.ball)
 			})
-			p5.background(0);
+			p5.background(backgroundColors[backgroundColorSelected]);
 			p5.rect(width / 2, 0, 5, height);
 			player1.drawPlayer();
 			player2.drawPlayer();
@@ -127,12 +138,9 @@
 					}
 				}
 			}
-			if (canStart){
-				canStart = false;
-				game.start();
-			}
 		};
-
+		
+		
 		class Ball {
 			public positionX: number;
 			public positionY: number;
@@ -177,6 +185,7 @@
 			}
 
 			checkWalls() {
+				// TODO send sokect here
 				if (this.positionX - this.diam / 2 <= 0) {
 					//pontuar jogador 2
 					this.game.pointing(2);
@@ -258,10 +267,23 @@
 				const direction = p5.random() < 0.5 ? -1 : 1;
 
 				// Calcule a velocidade com base no ângulo
-				this.velocityX = direction * 5 * p5.cos(angle);
+				this.velocityX = direction * 5 * p5.cos(angle);255
 				this.velocityY = p5.sin(angle) * (p5.random() < 0.5 ? -5 : 5); // Direção aleatória para cima ou para baixo
 			}
 		}
+
+		const boardColors: { [key: string]: number[] } = {
+			"white": [248, 250, 252],
+			"red": [239, 68, 68],
+			"orange": [249, 115, 22],
+			"yellow": [234, 179, 8],
+			"blue": [6, 182, 212],
+			"violet": [139, 92, 246],
+			"pink": [236, 72, 153],
+			"green": [34, 197, 94]
+		};
+
+		const boardColorSelected = localStorage.getItem("boardColor") || "white";
 
 		class Player {
 			private msg;
@@ -287,7 +309,11 @@
 			}
 
 			drawPlayer() {
+				p5.fill(boardColors[boardColorSelected][0],
+						boardColors[boardColorSelected][1],
+						boardColors[boardColorSelected][2]);
 				p5.rect(this.positionX, this.positionY, this.widthP, this.heightP);
+				p5.fill(255, 255, 255);
 			}
 
 			setPositions(data:Positions){
