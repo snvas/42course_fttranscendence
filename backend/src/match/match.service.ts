@@ -153,6 +153,18 @@ export class MatchService {
     );
 
     (await this.matchGateway.getServer())
+      .to(profileSocket.id)
+      .emit(
+        socketEvent.PRIVATE_MATCH_FOUND,
+        this.createMatchEvent(
+          matchEntity.id,
+          matchEntity.p1,
+          matchEntity.p2,
+          'p1',
+        ),
+      );
+
+    (await this.matchGateway.getServer())
       .to(opponentSocket.id)
       .emit(
         socketEvent.PRIVATE_MATCH_FOUND,
@@ -170,6 +182,7 @@ export class MatchService {
     status: 'waitingMatch' | 'online' | 'playing',
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
     await this.handleMatchStatus(profile.id, status);
   }
 
@@ -179,6 +192,10 @@ export class MatchService {
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByProfileId(
       profileId,
+    );
+
+    this.logger.verbose(
+      `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
     );
 
     const socket: AuthenticatedSocket | undefined =
@@ -341,6 +358,8 @@ export class MatchService {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    this.logger.verbose(`Match [${matchId}] rejected`);
 
     try {
       const matchEntity: MatchEntity | null = await this.getMatchTransactional(
