@@ -155,7 +155,7 @@ export class MatchService {
     (await this.matchGateway.getServer())
       .to(opponentSocket.id)
       .emit(
-        socketEvent.MATCH_FOUND,
+        socketEvent.PRIVATE_MATCH_FOUND,
         this.createMatchEvent(
           matchEntity.id,
           matchEntity.p1,
@@ -474,7 +474,8 @@ export class MatchService {
     if (
       event != socketEvent.MATCH_STARTED &&
       event != socketEvent.MATCH_REJECTED &&
-      event != socketEvent.MATCH_FOUND
+      event != socketEvent.MATCH_FOUND &&
+      event != socketEvent.PRIVATE_MATCH_FOUND
     ) {
       throw new InternalServerErrorException('Invalid event');
     }
