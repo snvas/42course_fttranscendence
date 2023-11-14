@@ -7,7 +7,7 @@
 	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
-	let percentage = 23;
+
 </script>
 
 <div class="flex flex-col w-full h-full gap-10">
@@ -33,7 +33,7 @@
 				</div>
 			{/if}
 		</div>
-		<LevelIndicator levelPercentage={percentage} />
+		<LevelIndicator level={profile?.data.level} levelPercentage={profile?.data.level_percentage} />
 
 		<div class="flex flex-row w-full min-w-fit">
 			<p class="mb-5">ACHIEVEMENTS</p>
