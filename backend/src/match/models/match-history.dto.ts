@@ -7,10 +7,6 @@ export class MatchHistoryDto implements MatchHistory {
   opponent: SimpleProfileDto;
   myScore: number;
   opponentScore: number;
-  matchStatus:
-    | 'rejected'
-    | 'waitingPlayers'
-    | 'started'
-    | 'finished'
-    | 'abandoned';
+  winner: 'me' | 'opponent';
+  matchStatus: 'finished' | 'abandoned';
 }

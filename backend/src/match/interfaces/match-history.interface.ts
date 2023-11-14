@@ -6,6 +6,7 @@ export interface MatchHistory {
   opponent: SimpleProfile;
   myScore: number;
   opponentScore: number;
+  winner: 'me' | 'opponent';
   matchStatus:
     | 'rejected'
     | 'waitingPlayers'
