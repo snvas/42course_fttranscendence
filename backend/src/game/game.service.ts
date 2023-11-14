@@ -1,74 +1,98 @@
 import { Injectable } from '@nestjs/common';
-import { Positions } from './types/positions.type';
+import { ConsultData, GameData, Player, Positions } from './types/positions.type';
 import { SocketGameMessage } from './types/socket-game-message.type';
+import { MatchGameService } from 'src/match/services/match-game.service';
 
 @Injectable()
 export class GameService {
-    private player1: Positions;
-    private player2:Positions;
-    private ball: Positions;
-    private isReady: Array<string>;
-    constructor(){
-        this.isReady = [];
+    private player1: Map<string, Player>;
+    private player2: Map<string, Player>;
+    private ball: Map<string, Positions>;
+    private isReady: Map<string, Array<string>>;
+
+    constructor(private readonly matchGameService:MatchGameService){
+        this.player1 = new Map();
+        this.player2 = new Map();
+        this.ball = new Map();
+        this.isReady = new Map([]);
+    }
+    //TODO make a DTO with this type
+    setPlayer1(p:GameData, soketId:string){
+        this.player1.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
     }
 
-    setPlayer1(data: Positions){
-        this.player1 = data;
+    setPlayer2(p:GameData, soketId:string){
+        this.player2.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
     }
 
-    setPlayer2(data: Positions){
-        this.player2 = data;
+    setBall(p:GameData){
+        this.ball.set(p.matchId, {positionX: p.pos.positionX, positionY: p.pos.positionY});
     }
 
-    setBall(data: Positions){
-        this.ball = data;
-    }
-
-    ballValidation(user: string) {
-        if (user == this.isReady[0]) {
-            console.log("ball validated")
+    ballValidation(data:ConsultData, socketId:string) {
+        const arr = this.isReady.get(data.matchId);
+        const value = arr ? arr[0]: "";
+        if (socketId == value) {
             return true;
         }
-        console.log("ball Invalida")
         return false;
     }
 
-    setReady(user: string){
-        if (this.isReady.length) {
-            if (this.isReady.indexOf(user) == -1) {
-                this.isReady.push(user);
-            }
+    setReady(data:ConsultData, socketId:string){
+        if (!this.isReady.get(data.matchId)) {
+            this.isReady.set(data.matchId, new Array(socketId))
         }
         else {
-            this.isReady.push(user);
+            const arr = this.isReady.get(data.matchId);
+            if (arr?.indexOf(socketId) != -1) {
+                arr?.push(socketId);
+            }
         }
     }
 
-    playerDisconected(id:string) {
-        if (this.isReady.indexOf(id) == 1) {
-            this.isReady.reverse();
+    reConnect(data:ConsultData, socketId:string) {
+        if(data.userId == this.player1.get(data.matchId)?.id
+        || data.userId == this.player2.get(data.matchId)?.id){
+            this.isReady.get(data.matchId)?.push(socketId)
         }
-        this.isReady.pop();
+    }
+
+    //get room name on consultData
+    playerDisconected(data:ConsultData, socketId:string) {
+        let arr =  this.isReady.get(data.matchId);
+        if (arr?.indexOf(socketId) == 0) {
+            arr?.reverse();
+        }
+        setTimeout(() => {
+            const value = arr ? arr[1]: "";
+            if (arr?.length != 2) {
+                if (value == this.player1.get(data.matchId)?.soketId){
+                    this.matchGameService.abandonMatch(data.matchId,'p1')
+                }
+                else {
+                    this.matchGameService.abandonMatch(data.matchId, 'p2')
+                }
+            }
+        }, 60000); // 60 seconds
+        this.isReady.get(data.matchId)?.pop();
         return 2;
     }
 
-    isPlayersReady(){
-        console.log(this.isReady.length == 2)
-        if (this.isReady.length == 2){
+    //finish room and delete Map
+    isPlayersReady(matchId:string){
+        if (this.isReady.get(matchId)?.length == 2){
             return 1;
         }
         return 0;
     }
 
-    allData(): SocketGameMessage {
-        const player1 = this.player1;
-        const player2 = this.player2;
-        const ball = this.ball;
-        return {player1, player2, ball}
-    }
-
-    ballData() {
-        const ball = this.ball;
-        return {ball}
+    allData(matchId:string): SocketGameMessage {
+        let obj = this.player1.get(matchId);
+        const player1 = obj ? obj.pos : {positionX:0, positionY:0};
+        obj = this.player2.get(matchId);
+        const player2 = obj ? obj.pos : {positionX:0, positionY:0};
+        let pos = this.ball.get(matchId);
+        const ball = pos ? pos : {positionX:0, positionY:0};
+        return {player1: player1, player2: player2, ball}
     }
 }
