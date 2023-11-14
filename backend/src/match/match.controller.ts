@@ -63,12 +63,35 @@ export class MatchController {
     return await this.matchService.rejectMatch(matchAnswerDto.matchId);
   }
 
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('private/:profileId')
   async createPrivateMatch(
     @Param('profileId', ParseIntPipe) profileId: number,
     @Req() { user }: { user: FortyTwoUserDto },
   ): Promise<void> {
     return await this.matchService.joinPrivateMatch(user.id, profileId);
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('private/accept')
+  async acceptPrivateMatch(
+    @Body() matchAnswerDto: MatchAnswer,
+  ): Promise<MatchUpdatedDto> {
+    return await this.matchService.acceptMatch(
+      matchAnswerDto.matchId,
+      matchAnswerDto.as,
+      'private',
+    );
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('private/reject')
+  async rejectPrivateMatch(
+    @Body() matchAnswerDto: MatchAnswerDto,
+  ): Promise<MatchUpdatedDto> {
+    return await this.matchService.rejectMatch(
+      matchAnswerDto.matchId,
+      'private',
+    );
   }
 }
