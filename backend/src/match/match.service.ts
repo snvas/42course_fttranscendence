@@ -15,11 +15,12 @@ import { ProfileService } from '../profile/profile.service';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { MatchEventDto } from './models/match-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MatchEntity } from '../db/entities';
+import { MatchEntity, ProfileEntity } from '../db/entities';
 import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
+import { BlockService } from '../profile/services/block.service';
 
 @Injectable()
 export class MatchService {
@@ -28,6 +29,7 @@ export class MatchService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly playerStatusService: PlayerStatusService,
+    private readonly blockService: BlockService,
     private readonly matchGateway: MatchGateway,
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
@@ -73,21 +75,28 @@ export class MatchService {
     });
 
     return matchEntity.map((match: MatchEntity): MatchHistoryDto => {
-      let opponent: ProfileDTO;
-      let user: ProfileDTO;
+      let opponent: ProfileEntity;
+      let user: ProfileEntity;
       let userScore: number;
       let opponentScore: number;
+      let winner: 'me' | 'opponent';
+
+      if (!match.winner) {
+        throw new InternalServerErrorException('Match without winner');
+      }
 
       if (match.p1.id === profile.id) {
         userScore = match.p1Score;
         user = match.p1;
         opponent = match.p2;
         opponentScore = match.p2Score;
+        winner = match.winner === 'p1' ? 'me' : 'opponent';
       } else {
         userScore = match.p2Score;
         user = match.p2;
         opponent = match.p1;
         opponentScore = match.p1Score;
+        winner = match.winner === 'p2' ? 'me' : 'opponent';
       }
 
       return {
@@ -104,6 +113,7 @@ export class MatchService {
         },
         myScore: userScore,
         opponentScore: opponentScore,
+        winner: winner,
         matchStatus: match.status,
       } as MatchHistoryDto;
     });
@@ -124,6 +134,13 @@ export class MatchService {
 
     if (!profileSocket || !opponentSocket) {
       throw new BadRequestException('Player not connected');
+    }
+
+    if (
+      (await this.blockService.isUserBlocked(profile.id, opponentProfile.id)) ||
+      (await this.blockService.isUserBlocked(opponentProfile.id, profile.id))
+    ) {
+      throw new BadRequestException('Player blocked');
     }
 
     const matchEntity: MatchEntity = await this.createPrivateMatch(
@@ -213,6 +230,13 @@ export class MatchService {
             'waitingGame',
           );
 
+          if (
+            (await this.blockService.isUserBlocked(p1.id, p2.id)) ||
+            (await this.blockService.isUserBlocked(p2.id, p1.id))
+          ) {
+            continue;
+          }
+
           const matchEntity: MatchEntity = await this.createMatch(p1, p2);
 
           this.logger.debug(
@@ -231,7 +255,7 @@ export class MatchService {
       await this.getMatchPlayerByStatus('waitingGame');
 
     for (const player of waitingGamePlayers) {
-      const timeout: number = player.updatedAt.getTime() + 15000;
+      const timeout: number = player.updatedAt.getTime() + 10000;
       const now: number = new Date().getTime();
 
       if (now < timeout) {
@@ -545,8 +569,8 @@ export class MatchService {
 
   private createMatchEvent(
     matchId: string,
-    p1Profile: ProfileDTO,
-    p2Profile: ProfileDTO,
+    p1Profile: ProfileEntity,
+    p2Profile: ProfileEntity,
     as: 'p1' | 'p2',
   ): MatchEventDto {
     return {

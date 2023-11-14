@@ -20,14 +20,14 @@ import { BlockEntity } from './block.entity';
 import { MatchEntity } from './match.entity';
 
 @Entity({ name: 'profiles' })
-export class ProfileEntity implements Profile {
+export class ProfileEntity implements Omit<Profile, 'level_percentage'> {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ default: 1 })
+  @Column({ default: 0 })
   level: number;
 
   @Column({ default: 0 })

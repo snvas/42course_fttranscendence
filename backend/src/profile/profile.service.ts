@@ -20,7 +20,7 @@ import { Profile } from './interfaces/profile.interface';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
 import { ProfileUpdatedResponseDto } from './models/profile-updated-response.dto';
 import { AvatarService } from '../avatar/avatar.service';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { ProfileDTO } from './models/profile.dto';
 import { AvatarDTO } from '../avatar/models/avatar.dto';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
@@ -56,7 +56,8 @@ export class ProfileService {
     }
 
     this.logger.log(`Profile found for user [${userId}]`);
-    return plainToClass(ProfileDTO, profileEntity);
+
+    return this.createProfileDto(profileEntity);
   }
 
   async findByProfileId(profileId: number): Promise<ProfileDTO> {
@@ -79,7 +80,7 @@ export class ProfileService {
     }
 
     this.logger.log(`Public profile found for user [${profileId}]`);
-    return plainToClass(ProfileDTO, profileEntity);
+    return this.createProfileDto(profileEntity);
   }
 
   async findAllProfiles(): Promise<ProfileDTO[]> {
@@ -97,7 +98,9 @@ export class ProfileService {
       throw new NotFoundException(`Group chats not found`);
     }
 
-    return plainToInstance(ProfileDTO, profileEntity);
+    return profileEntity.map((profile: ProfileEntity) =>
+      this.createProfileDto(profile),
+    );
   }
 
   async isNicknameExist(nickname: string): Promise<boolean> {
@@ -300,5 +303,38 @@ export class ProfileService {
       }
     }
     return false;
+  }
+
+  public calculateLevel(score: number): { level: number; percentage: number } {
+    let previousLevelScore = 0;
+    let nextLevelScore = 120;
+    let level = 1;
+
+    while (score >= nextLevelScore) {
+      level++;
+
+      previousLevelScore = nextLevelScore;
+      nextLevelScore += Math.round(nextLevelScore / 2);
+    }
+
+    const percentage: number = parseFloat(
+      (
+        ((score - previousLevelScore) / (nextLevelScore - previousLevelScore)) *
+        100
+      ).toFixed(2),
+    );
+
+    return { level, percentage };
+  }
+
+  private createProfileDto(profileEntity: ProfileEntity) {
+    const profileDto: ProfileDTO = plainToClass(ProfileDTO, profileEntity);
+
+    const calculatedLevel: { level: number; percentage: number } =
+      this.calculateLevel(profileEntity.level);
+
+    profileDto.level = calculatedLevel.level;
+    profileDto.level_percentage = calculatedLevel.percentage;
+    return profileDto;
   }
 }
