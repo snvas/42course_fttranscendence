@@ -301,6 +301,7 @@ export class MatchService {
   public async acceptMatch(
     matchId: string,
     as: 'p1' | 'p2',
+    type: 'public' | 'private' = 'public',
   ): Promise<MatchUpdatedDto> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -324,14 +325,16 @@ export class MatchService {
           : ({ p2Joined: true } as Partial<MatchEntity>),
       );
 
-      this.logger.verbose(`Match [${matchEntity.id}] accepted by [${as}]`);
+      this.logger.verbose(
+        `Match [${type}] [${matchEntity.id}] accepted by [${as}]`,
+      );
 
       if (!updateResult.affected) {
         throw new InternalServerErrorException('Match join not updated');
       }
 
       const matchUpdateResult: UpdateResult | null =
-        await this.handleMatchStart(as, matchEntity, queryRunner);
+        await this.handleMatchStart(as, matchEntity, queryRunner, type);
 
       await queryRunner.commitTransaction();
       return {
@@ -354,7 +357,10 @@ export class MatchService {
     }
   }
 
-  public async rejectMatch(matchId: string): Promise<MatchUpdatedDto> {
+  public async rejectMatch(
+    matchId: string,
+    type: 'public' | 'private' = 'public',
+  ): Promise<MatchUpdatedDto> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -371,7 +377,12 @@ export class MatchService {
         throw new BadRequestException('Match already started');
       }
 
-      await this.handleMatchEvent(matchEntity, socketEvent.MATCH_REJECTED);
+      await this.handleMatchEvent(
+        matchEntity,
+        type === 'public'
+          ? socketEvent.MATCH_REJECTED
+          : socketEvent.PRIVATE_MATCH_REJECTED,
+      );
 
       const updateResult: UpdateResult = await this.updateMatchTransactional(
         queryRunner,
@@ -411,6 +422,7 @@ export class MatchService {
     as: 'p1' | 'p2',
     matchEntity: MatchEntity,
     queryRunner: QueryRunner,
+    type: 'public' | 'private' = 'public',
   ): Promise<UpdateResult | null> {
     if (
       (as === 'p1' && !matchEntity.p2Joined) ||
@@ -429,10 +441,15 @@ export class MatchService {
     }
 
     this.logger.verbose(
-      `Match [${matchEntity.id}] started with players [${matchEntity.p1.id}] and [${matchEntity.p2.id}]`,
+      `Match [${type}] [${matchEntity.id}] started with players [${matchEntity.p1.id}] and [${matchEntity.p2.id}]`,
     );
 
-    await this.handleMatchEvent(matchEntity, socketEvent.MATCH_STARTED);
+    await this.handleMatchEvent(
+      matchEntity,
+      type === 'public'
+        ? socketEvent.MATCH_STARTED
+        : socketEvent.PRIVATE_MATCH_STARTED,
+    );
     await this.handleMatchStatus(matchEntity.p1.id, 'playing');
     await this.handleMatchStatus(matchEntity.p2.id, 'playing');
 
@@ -494,10 +511,14 @@ export class MatchService {
       event != socketEvent.MATCH_STARTED &&
       event != socketEvent.MATCH_REJECTED &&
       event != socketEvent.MATCH_FOUND &&
-      event != socketEvent.PRIVATE_MATCH_FOUND
+      event != socketEvent.PRIVATE_MATCH_FOUND &&
+      event != socketEvent.PRIVATE_MATCH_STARTED &&
+      event != socketEvent.PRIVATE_MATCH_REJECTED
     ) {
       throw new InternalServerErrorException('Invalid event');
     }
+
+    this.logger.verbose(`Handling match [${matchEntity.id}] event [${event}]`);
 
     const p1Socket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(matchEntity.p1.id);
