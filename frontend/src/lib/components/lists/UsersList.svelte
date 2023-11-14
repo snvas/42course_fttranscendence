@@ -11,6 +11,7 @@
 	export let getAvatar: (avatarId: number | null) => Promise<AxiosResponse<Blob> | null> | null;
 	export let loading: Promise<any>;
 	const dispatch = createEventDispatcher();
+	export let playDisabled = false;
 
 	function onSelectUser(id: number) {
 		goto(`public/${id}`);
@@ -40,7 +41,9 @@
 							{#if !user.isBlocked}
 								<ListButton on:click={() => dispatch('chat', user)} type="chat" />
 								<ListButton on:click={() => dispatch('block', user.id)} type="block" />
-								<ListButton on:click={() => dispatch('play', user.id)} type="play" />
+									{#if user.status == 'online'}
+								<ListButton on:click={() => dispatch('play', user.id)} type="play" disabled={playDisabled} />
+									{/if}
 								{#if user.isFriend}
 									<ListButton on:click={() => dispatch('unfriend', user.id)} type="unfriend" />
 								{:else}

@@ -1,16 +1,10 @@
 <script lang="ts">
 	import type { AxiosResponse } from 'axios';
 	import AvatarImage from './AvatarImage.svelte';
-
-	type Match = {
-		//oponentID: string;
-		openentNick: string;
-		oponentAvatar: string | null;
-		mineScore: number;
-		oponentScore: number;
-	};
+	import type { MatchHistoryDto } from '$lib/dtos';
+	import { getAvatarFromId } from '$lib/api';
 	
-	export let matchs: Match[];
+	export let matchs: MatchHistoryDto[];
 	export let avatar: Promise<AxiosResponse<Blob> | null> | null;
 </script>
 
@@ -22,21 +16,16 @@
 	<div class="flex flex-col gap-2 overflow-auto">
 		{#each matchs as match, i}
 			<div class="border-4 flex rounded-xl m-2 p-2
-			{match.mineScore > match.oponentScore ? 'green' : 
-			match.mineScore === match.oponentScore ? 'yellow' : 'red'}">
+			{match.winner == 'me' ? 'green' :  'red'}">
 				<div class="w-full flex flex-row gap-2 items-center justify-center min-w-fit">
-					<p>{match.openentNick}</p>
-					<img
-						class="avatar max-w-sm aspect-square xl:w-20 w-12"
-						src={match.oponentAvatar}
-						alt={match.openentNick}
-						title={match.openentNick}
-					/>
-					<p class="xl:text-5xl lg:text-3xl text-2xl p-4">{match.oponentScore} - {match.mineScore}</p>
+					<p>{match.opponent.nickname}</p>
+					<div class="xl:w-20 w-12">
+					<AvatarImage avatar={getAvatarFromId(match.opponent.avatarId ?? null)} /></div>
+					<p class="xl:text-5xl lg:text-3xl text-2xl p-4">{match.opponentScore} - {match.myScore}</p>
 					<div class="xl:w-20 w-12">
 						<AvatarImage {avatar} />
 					</div>
-					<p>{match.openentNick}</p>
+					<p>{match.opponent.nickname}</p>
 				</div>
 			</div>
 		{/each}
