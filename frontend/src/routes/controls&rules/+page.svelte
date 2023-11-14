@@ -31,10 +31,10 @@
 		</a>
 	</div>
 	<div class="grid md:grid-cols-2 grid-cols-1 gap-10 m-10">
-		<div class="border-4 p-10 rounded-lg flex flex-col items-center gap-4 h-fit">
+		<div class="border-4 p-10 rounded-lg flex flex-col items-center h-fit">
 			<p class="md:text-4xl text-2xl">Controls:</p>
-			<img src={keyboardControl} alt="You can use the A, W, S and D keys in your keyboard" class="w-58 h-68 m-4">
-			<img src={arrowControl} alt="You can also use the Left, Up, Down and Right arrow keys" class="w-58 h-68 m-4">
+			<img src={keyboardControl} alt="You can use the A, W, S and D keys in your keyboard" class="w-58 h-68 mt-10">
+			<img src={arrowControl} alt="You can also use the Left, Up, Down and Right arrow keys" class="w-58 h-68 mt-5">
 		</div>
 
 		<div class="border-4 p-10 rounded-lg flex flex-col items-center gap-10">
