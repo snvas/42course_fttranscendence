@@ -14,6 +14,7 @@ import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchAnswer } from './interfaces/match-answer.interface';
 import { MatchHistoryDto } from './models/match-history.dto';
+import { MatchAnswerDto } from './models/match-answer.dto';
 
 @Controller('match')
 export class MatchController {
@@ -57,7 +58,7 @@ export class MatchController {
   @HttpCode(HttpStatus.CREATED)
   @Post('reject')
   async rejectMatch(
-    @Body() matchAnswerDto: MatchAnswer,
+    @Body() matchAnswerDto: MatchAnswerDto,
   ): Promise<MatchUpdatedDto> {
     return await this.matchService.rejectMatch(matchAnswerDto.matchId);
   }
