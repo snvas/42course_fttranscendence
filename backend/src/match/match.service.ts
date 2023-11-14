@@ -20,6 +20,7 @@ import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
+import { BlockService } from '../profile/services/block.service';
 
 @Injectable()
 export class MatchService {
@@ -28,6 +29,7 @@ export class MatchService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly playerStatusService: PlayerStatusService,
+    private readonly blockService: BlockService,
     private readonly matchGateway: MatchGateway,
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
@@ -134,6 +136,13 @@ export class MatchService {
       throw new BadRequestException('Player not connected');
     }
 
+    if (
+      (await this.blockService.isUserBlocked(profile.id, opponentProfile.id)) ||
+      (await this.blockService.isUserBlocked(opponentProfile.id, profile.id))
+    ) {
+      throw new BadRequestException('Player blocked');
+    }
+
     const matchEntity: MatchEntity = await this.createPrivateMatch(
       profile,
       opponentProfile,
@@ -221,6 +230,13 @@ export class MatchService {
             'waitingGame',
           );
 
+          if (
+            (await this.blockService.isUserBlocked(p1.id, p2.id)) ||
+            (await this.blockService.isUserBlocked(p2.id, p1.id))
+          ) {
+            continue;
+          }
+
           const matchEntity: MatchEntity = await this.createMatch(p1, p2);
 
           this.logger.debug(
@@ -239,7 +255,7 @@ export class MatchService {
       await this.getMatchPlayerByStatus('waitingGame');
 
     for (const player of waitingGamePlayers) {
-      const timeout: number = player.updatedAt.getTime() + 15000;
+      const timeout: number = player.updatedAt.getTime() + 10000;
       const now: number = new Date().getTime();
 
       if (now < timeout) {
