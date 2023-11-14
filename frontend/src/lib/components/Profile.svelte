@@ -49,16 +49,12 @@
 			>
 				<p class="">{profile?.data.losses} Lose</p>
 			</div>
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.draws} Draws</p>
-			</div>
+			
 			<div
 				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
 			>
 				<p class="">
-					{(profile?.data.draws ?? 0) + (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
+					{(profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
 				</p>
 			</div>
 		</div>

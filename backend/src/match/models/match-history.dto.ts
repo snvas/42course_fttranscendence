@@ -8,5 +8,10 @@ export class MatchHistoryDto implements MatchHistory {
   myScore: number;
   opponentScore: number;
   winner: 'me' | 'opponent';
-  matchStatus: 'finished' | 'abandoned';
+  matchStatus:
+    | 'rejected'
+    | 'waitingPlayers'
+    | 'started'
+    | 'finished'
+    | 'abandoned';
 }

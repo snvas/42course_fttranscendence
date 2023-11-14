@@ -25,6 +25,7 @@ export * from '../../../../backend/src/chat/models/group/group-member-updated-re
 export * from '../../../../backend/src/profile/models/simple-profile.dto';
 export * from "../../../../backend/src/match/models/match-answer.dto";
 export * from '../../../../backend/src/match/models/match-event.dto';
+export * from '../../../../backend/src/match/models/match-history.dto';
 
 export type ComponentMessage = {
     message: string;
