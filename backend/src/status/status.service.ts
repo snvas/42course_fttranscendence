@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
-import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { ProfileDTO } from '../../profile/models/profile.dto';
-import { PlayerStatusDto } from '../../profile/models/player-status.dto';
-import { ProfileService } from '../../profile/profile.service';
+import { PlayerStatusSocket } from '../chat/types/player-status.socket';
+import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
+import { ProfileDTO } from '../profile/models/profile.dto';
+import { PlayerStatusDto } from '../profile/models/player-status.dto';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
-export class PlayerStatusService {
-  private readonly logger: Logger = new Logger(PlayerStatusService.name);
+export class StatusService {
+  private readonly logger: Logger = new Logger(StatusService.name);
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(private readonly profileService: ProfileService) {}

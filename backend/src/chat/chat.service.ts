@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProfileService } from '../profile/profile.service';
-import { PlayerStatusService } from '../social/services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
 import { GroupMemberService } from './services/group-member.service';
@@ -29,7 +29,7 @@ export class ChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     private readonly privateChatService: PrivateChatService,
     private readonly groupChatService: GroupChatService,
     private readonly groupMemberService: GroupMemberService,

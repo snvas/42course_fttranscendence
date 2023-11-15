@@ -14,7 +14,7 @@ import { FriendService } from './services/friend.service';
 import { BlockService } from './services/block.service';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
 import { socketEvent } from '../ws/ws-events';
-import { PlayerStatusService } from './services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { SocialGateway } from './social.gateway';
 
 @Controller('social')
@@ -22,7 +22,7 @@ export class SocialController {
   constructor(
     private readonly friendService: FriendService,
     private readonly blockService: BlockService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     private readonly socialGateway: SocialGateway,
   ) {}
 

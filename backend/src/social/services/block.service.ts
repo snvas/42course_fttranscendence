@@ -15,7 +15,7 @@ import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-response.dto';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
-import { PlayerStatusService } from './player-status.service';
+import { StatusService } from '../../status/status.service';
 
 @Injectable()
 export class BlockService {
@@ -23,7 +23,7 @@ export class BlockService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     @InjectRepository(BlockEntity)
     private readonly blockRepository: Repository<BlockEntity>,
   ) {}
@@ -52,13 +52,11 @@ export class BlockService {
         blockEntity,
       );
 
-      const blockedUser: SimpleProfileDto = {
+      return {
         id: blockUsersDb.blockedUser.id,
         nickname: blockUsersDb.blockedUser.nickname,
         avatarId: blockUsersDb.blockedUser.avatarId,
       } as SimpleProfileDto;
-
-      return blockedUser;
     } catch (Error) {
       if (Error instanceof QueryFailedError) {
         this.logger.error(Error.message);

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MatchController } from './match.controller';
-import { PlayerStatusService } from '../social/services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { ProfileService } from '../profile/profile.service';
 import { AvatarService } from '../avatar/avatar.service';
 import { UserService } from '../user/user.service';
@@ -21,7 +21,7 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
     MatchGameService,
     MatchGateway,
     MatchAnswerGuard,
-    PlayerStatusService,
+    StatusService,
     BlockService,
     ProfileService,
     UserService,
@@ -29,7 +29,7 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
   ],
   imports: [TypeOrmModule.forFeature(entities)],
   exports: [
-    PlayerStatusService,
+    StatusService,
     ProfileService,
     UserService,
     AvatarService,

@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PlayerStatusService } from '../social/services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
@@ -28,7 +28,7 @@ export class MatchService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     private readonly blockService: BlockService,
     private readonly matchGateway: MatchGateway,
     @InjectRepository(MatchEntity)

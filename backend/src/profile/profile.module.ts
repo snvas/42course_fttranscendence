@@ -5,7 +5,7 @@ import entities from '../db/entities';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { AvatarService } from '../avatar/avatar.service';
-import { PlayerStatusService } from '../social/services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { FriendService } from '../social/services/friend.service';
 import { BlockService } from '../social/services/block.service';
 
@@ -16,10 +16,10 @@ import { BlockService } from '../social/services/block.service';
     ProfileService,
     AvatarService,
     BlockService,
-    PlayerStatusService,
+    StatusService,
     FriendService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserService, AvatarService, PlayerStatusService, BlockService],
+  exports: [UserService, AvatarService, StatusService, BlockService],
 })
 export class ProfileModule {}
