@@ -83,11 +83,11 @@ export class BlockService {
     });
   }
 
-  public async isUserBlocked(profileId: number, receiverId: number) {
+  public async isUserBlocked(profileId: number, anotherProfileId: number) {
     const block: BlockEntity | null = await this.blockRepository.findOne({
       where: {
         profile: { id: profileId },
-        blockedUser: { id: receiverId },
+        blockedUser: { id: anotherProfileId },
       },
     });
 

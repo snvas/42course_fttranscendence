@@ -30,6 +30,8 @@ export class ProfileDTO implements Profile {
   @IsNumber()
   level: number;
   @IsNumber()
+  level_percentage: number;
+  @IsNumber()
   wins: number;
   @IsNumber()
   losses: number;

@@ -13,6 +13,7 @@ import {
   GroupChatEntity,
   GroupMemberEntity,
   GroupMessageEntity,
+  ProfileEntity,
 } from '../../db/entities';
 import { MessageProfileDto } from '../models/message/message-profile.dto';
 import { MessageGroupChatDto } from '../models/message/message-group-chat.dto';
@@ -553,7 +554,7 @@ export class GroupChatService {
 
   private createGroupChatDto(
     groupChatEntity: GroupChatEntity,
-    profile: ProfileDTO,
+    profile: ProfileEntity,
   ): GroupChatDto {
     return {
       id: groupChatEntity.id,

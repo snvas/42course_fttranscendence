@@ -7,7 +7,7 @@
 	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
-	let percentage = 23;
+
 </script>
 
 <div class="flex flex-col w-full h-full gap-10">
@@ -23,9 +23,6 @@
 				<p class="lg:text-2xl text-md text-green-700 flex flex-col">
 					Win: {profile?.data.wins}
 				</p>
-				<p class="lg:text-2xl text-md text-yellow-700 flex flex-col">
-					Draws: {profile?.data.draws}
-				</p>
 				<p class="lg:text-2xl text-md text-red-700 flex flex-col">
 					Lose: {profile?.data.losses}
 				</p>
@@ -36,7 +33,7 @@
 				</div>
 			{/if}
 		</div>
-		<LevelIndicator levelPercentage={percentage} />
+		<LevelIndicator level={profile?.data.level} levelPercentage={profile?.data.level_percentage} />
 
 		<div class="flex flex-row w-full min-w-fit">
 			<p class="mb-5">ACHIEVEMENTS</p>
@@ -52,16 +49,12 @@
 			>
 				<p class="">{profile?.data.losses} Lose</p>
 			</div>
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.draws} Draws</p>
-			</div>
+			
 			<div
 				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
 			>
 				<p class="">
-					{(profile?.data.draws ?? 0) + (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
+					{(profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
 				</p>
 			</div>
 		</div>

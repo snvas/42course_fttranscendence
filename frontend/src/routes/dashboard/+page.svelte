@@ -10,9 +10,7 @@
 		selectedGroup,
 		friendsList,
 		blockList,
-
 		match
-
 	} from '$lib/stores';
 	import {
 		authService,
@@ -25,7 +23,7 @@
 		blockUser,
 		unblockUser,
 		chatService,
-		matchMakingService,
+		matchMakingService
 	} from '$lib/api';
 	import Button from '$lib/components/Button.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
@@ -33,77 +31,11 @@
 	import Settings from '$lib/components/Settings.svelte';
 	import History from '$lib/components/History.svelte';
 	import UsersList from '$lib/components/lists/UsersList.svelte';
-	import type { PlayerStatusDto } from '$lib/dtos';
+	import type { MatchEventDto, MatchHistoryDto, PlayerStatusDto } from '$lib/dtos';
+	import { socketEvent } from '$lib/api/services/SocketsEvents';
+	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
-	type Match = {
-		//oponentID: string;
-		openentNick: string;
-		oponentAvatar: string | null;
-		mineScore: number;
-		oponentScore: number;
-	};
-	const matchs: Match[] = [
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 2
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 2
-		},
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 6,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 4
-		},
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste2',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 3,
-			mineScore: 5
-		},
-		{
-			openentNick: 'Teste3',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 4
-		},
-		{
-			openentNick: 'Teste',
-			oponentAvatar: '../../hackathon.png',
-			oponentScore: 2,
-			mineScore: 1
-		}
-	];
+	let matchHistory: Promise<MatchHistoryDto[]> = onHistory();
 
 	const auth = useAuth();
 
@@ -126,21 +58,39 @@
 		goto('/login');
 	}
 
-	// TODO: entrar ou convidar o usuário para jogar 
+	// TODO: entrar ou convidar o usuário para jogar
 	async function onGame() {
 		try {
 			await matchMakingService.joinMatchQueue();
-			goto('/room');
+			status = 'waiting-player';
+			//goto('/room');
 		} catch (error) {
 			console.log(error);
 		}
 	}
 
+	async function onCancelQueue() {
+		try {
+			await matchMakingService.cancelMatchQueue();
+			status = 'none';
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function onHistory(): Promise<MatchHistoryDto[]> {
+		try {
+			let history = await matchMakingService.getMatchHistory();
+			return history.data;
+		} catch (error) {
+			console.log(error);
+			return [];
+		}
+	}
+
 	async function privateGame(userId: number) {
 		try {
-			let privateMatch = await matchMakingService.createPrivateMatch(userId);
-			$match = privateMatch.data;
-			goto('/private-room');
+			await matchMakingService.createPrivateMatch(userId);
 		} catch (error) {
 			console.log(error);
 		}
@@ -189,7 +139,7 @@
 	}
 
 	let loadProfile = getProfile();
-	let showing: 'chat' | 'history' | 'settings' = 'history';
+	let showing: 'play' | 'history' | 'settings' = 'settings';
 
 	loadProfile.then((v) => {
 		if (!v) {
@@ -205,6 +155,59 @@
 	});
 
 	$: avatar = getUserAvatar(loadProfile);
+
+	$socket.on(socketEvent.MATCH_FOUND, (data: MatchEventDto) => {
+		console.log(`Match found: ${data.matchId}`);
+		match.set(data);
+		status = 'confirm';
+	});
+
+	// $socket.on(socketEvent.PRIVATE_MATCH_FOUND, (data: MatchEventDto) => {
+	// 	console.log(`Private match found: ${data.matchId}`);
+	// 	match.set(data);
+	// 	status = 'confirm';
+	// });
+
+	$socket.on(socketEvent.MATCH_STARTED, (data: MatchEventDto) => {
+		match.set(data);
+		console.log(`Match started: ${data.matchId}`);
+		// if private leave queue
+		goto('/game');
+	});
+
+	$socket.on(socketEvent.MATCH_REJECTED, (data: MatchEventDto) => {
+		match.set(null);
+		console.log(`Match rejected: ${data.matchId}`);
+		// if private exit private invite modal
+		status = 'waiting-player';
+	});
+
+	$: console.log($match);
+
+	let status: 'waiting-player' | 'waiting-confirm' | 'confirm' | 'none' =
+		'none';
+
+	async function confirmMatch() {
+		if (!$match) return;
+		try {
+			await matchMakingService.acceptMatch($match.matchId, $match.as);
+			status = 'waiting-confirm';
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	async function rejectMatch() {
+		if (!$match) return;
+		try {
+			await matchMakingService.rejectMatch($match.matchId, $match.as);
+			await matchMakingService.cancelMatchQueue();
+			status = 'none';
+			// goto('/dashboard');
+		} catch (e) {
+			console.log(e);
+		}
+	}
 </script>
 
 <div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
@@ -219,13 +222,41 @@
 		{:then}
 			<div class="flex lg:w-1/3 w-full h-full lg:order-first order-last">
 				{#if showing == 'history'}
-					<History {matchs} {avatar} />
+					{#await matchHistory then matchs}
+						<History {matchs} {avatar} />
+					{/await}
 				{:else if showing == 'settings'}
 					<Settings />
 				{/if}
 			</div>
 			<div class="flex flex-col lg:w-1/3 w-full h-full lg:order-1 order-first gap-10">
 				<Profile bind:profile={loadProfile} {onLogout} {avatar} />
+
+				<div class="flex flex-col w-full h-full mx-auto">
+					{#if status == 'waiting-player'}
+						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg">
+							<h1 class="text-xl text-center">
+								Aguarde. Estamos procurando um adversário para iniciar a partida...
+							</h1>
+						</div>
+					{:else if status == 'confirm'}
+						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg w-full">
+							<h1 class="text-xl text-center">
+								Encontramos um adversário <span class="text-yellow-500">
+									{$match?.as == 'p1' ? $match.p2.nickname : $match?.p1.nickname}</span
+								><br /> Começar a partida?
+							</h1>
+							<div class="flex flex-row gap-6 w-full">
+								<button class="btn-deleted" on:click={rejectMatch}>Agora não</button>
+								<button class="btn-primary" on:click={confirmMatch}>sim, Vamos Jogar</button>
+							</div>
+						</div>
+					{:else if status == 'waiting-confirm'}
+						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg">
+							<h1 class="text-xl text-center">Aguarde o adversário confirmar...</h1>
+						</div>
+					{/if}
+				</div>
 
 				<div class="flex flex-row items-center h-full">
 					<Button type="chat" on:click={() => onChat(null)} />
@@ -235,9 +266,18 @@
 						on:click={() => {
 							showing = 'history';
 						}}
+						clicked={showing == 'history'}
 					/>
-					<Button type="settings" on:click={() => (showing = 'settings')} />
-					<Button type="play" on:click={() => onGame()} />
+					<Button
+						type="settings"
+						on:click={() => (showing = 'settings')}
+						clicked={showing == 'settings'}
+					/>
+					{#if status == 'none'}
+						<Button type="play" on:click={onGame} />
+					{:else}
+						<Button type="cancelQueue" on:click={onCancelQueue} />
+					{/if}
 				</div>
 			</div>
 			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
@@ -245,6 +285,7 @@
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}
 					loading={loadUsers}
+					playDisabled={status != 'none'}
 					on:play={(e) => privateGame(e.detail)}
 					on:chat={(e) => onChat(e.detail)}
 					on:friend={(e) => onFriend(e.detail)}

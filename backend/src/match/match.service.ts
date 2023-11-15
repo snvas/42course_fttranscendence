@@ -15,10 +15,12 @@ import { ProfileService } from '../profile/profile.service';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { MatchEventDto } from './models/match-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MatchEntity } from '../db/entities';
+import { MatchEntity, ProfileEntity } from '../db/entities';
 import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
+import { MatchHistoryDto } from './models/match-history.dto';
+import { BlockService } from '../profile/services/block.service';
 
 @Injectable()
 export class MatchService {
@@ -27,11 +29,95 @@ export class MatchService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly playerStatusService: PlayerStatusService,
+    private readonly blockService: BlockService,
     private readonly matchGateway: MatchGateway,
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
     private dataSource: DataSource,
   ) {}
+
+  public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    const matchEntity: MatchEntity[] = await this.matchRepository.find({
+      where: [
+        {
+          p1: {
+            id: profile.id,
+          },
+          status: 'finished',
+        },
+        {
+          p2: {
+            id: profile.id,
+          },
+          status: 'finished',
+        },
+        {
+          p1: {
+            id: profile.id,
+          },
+          status: 'abandoned',
+        },
+        {
+          p2: {
+            id: profile.id,
+          },
+          status: 'abandoned',
+        },
+      ],
+      relations: {
+        p1: true,
+        p2: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return matchEntity.map((match: MatchEntity): MatchHistoryDto => {
+      let opponent: ProfileEntity;
+      let user: ProfileEntity;
+      let userScore: number;
+      let opponentScore: number;
+      let winner: 'me' | 'opponent';
+
+      if (!match.winner) {
+        throw new InternalServerErrorException('Match without winner');
+      }
+
+      if (match.p1.id === profile.id) {
+        userScore = match.p1Score;
+        user = match.p1;
+        opponent = match.p2;
+        opponentScore = match.p2Score;
+        winner = match.winner === 'p1' ? 'me' : 'opponent';
+      } else {
+        userScore = match.p2Score;
+        user = match.p2;
+        opponent = match.p1;
+        opponentScore = match.p1Score;
+        winner = match.winner === 'p2' ? 'me' : 'opponent';
+      }
+
+      return {
+        matchId: match.id,
+        opponent: {
+          id: opponent.id,
+          nickname: opponent.nickname,
+          avatarId: opponent.avatarId,
+        },
+        me: {
+          id: user.id,
+          nickname: user.nickname,
+          avatarId: user.avatarId,
+        },
+        myScore: userScore,
+        opponentScore: opponentScore,
+        winner: winner,
+        matchStatus: match.status,
+      } as MatchHistoryDto;
+    });
+  }
 
   public async joinPrivateMatch(
     userId: number,
@@ -50,6 +136,13 @@ export class MatchService {
       throw new BadRequestException('Player not connected');
     }
 
+    if (
+      (await this.blockService.isUserBlocked(profile.id, opponentProfile.id)) ||
+      (await this.blockService.isUserBlocked(opponentProfile.id, profile.id))
+    ) {
+      throw new BadRequestException('Player blocked');
+    }
+
     const matchEntity: MatchEntity = await this.createPrivateMatch(
       profile,
       opponentProfile,
@@ -60,9 +153,21 @@ export class MatchService {
     );
 
     (await this.matchGateway.getServer())
+      .to(profileSocket.id)
+      .emit(
+        socketEvent.PRIVATE_MATCH_FOUND,
+        this.createMatchEvent(
+          matchEntity.id,
+          matchEntity.p1,
+          matchEntity.p2,
+          'p1',
+        ),
+      );
+
+    (await this.matchGateway.getServer())
       .to(opponentSocket.id)
       .emit(
-        socketEvent.MATCH_FOUND,
+        socketEvent.PRIVATE_MATCH_FOUND,
         this.createMatchEvent(
           matchEntity.id,
           matchEntity.p1,
@@ -72,11 +177,26 @@ export class MatchService {
       );
   }
 
-  public async handleMatchStatus(
+  public async handleUserMatchStatus(
     userId: number,
     status: 'waitingMatch' | 'online' | 'playing',
   ): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+
+    await this.handleMatchStatus(profile.id, status);
+  }
+
+  public async handleMatchStatus(
+    profileId: number,
+    status: 'waitingMatch' | 'online' | 'playing',
+  ): Promise<void> {
+    const profile: ProfileDTO = await this.profileService.findByProfileId(
+      profileId,
+    );
+
+    this.logger.verbose(
+      `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
+    );
 
     const socket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(profile.id);
@@ -91,7 +211,7 @@ export class MatchService {
       `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
     );
 
-    if (status === 'playing') {
+    if (status === 'playing' || status === 'online') {
       await this.sendPlayerStatusEvent();
     }
   }
@@ -127,6 +247,13 @@ export class MatchService {
             'waitingGame',
           );
 
+          if (
+            (await this.blockService.isUserBlocked(p1.id, p2.id)) ||
+            (await this.blockService.isUserBlocked(p2.id, p1.id))
+          ) {
+            continue;
+          }
+
           const matchEntity: MatchEntity = await this.createMatch(p1, p2);
 
           this.logger.debug(
@@ -139,13 +266,13 @@ export class MatchService {
     }
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async gameWaitingTimeout(): Promise<void> {
     const waitingGamePlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingGame');
 
     for (const player of waitingGamePlayers) {
-      const timeout: number = player.updatedAt.getTime() + 15000;
+      const timeout: number = player.updatedAt.getTime() + 10000;
       const now: number = new Date().getTime();
 
       if (now < timeout) {
@@ -174,6 +301,7 @@ export class MatchService {
   public async acceptMatch(
     matchId: string,
     as: 'p1' | 'p2',
+    type: 'public' | 'private' = 'public',
   ): Promise<MatchUpdatedDto> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -197,14 +325,16 @@ export class MatchService {
           : ({ p2Joined: true } as Partial<MatchEntity>),
       );
 
-      this.logger.verbose(`Match [${matchEntity.id}] accepted by [${as}]`);
+      this.logger.verbose(
+        `Match [${type}] [${matchEntity.id}] accepted by [${as}]`,
+      );
 
       if (!updateResult.affected) {
         throw new InternalServerErrorException('Match join not updated');
       }
 
       const matchUpdateResult: UpdateResult | null =
-        await this.handleMatchStart(as, matchEntity, queryRunner);
+        await this.handleMatchStart(as, matchEntity, queryRunner, type);
 
       await queryRunner.commitTransaction();
       return {
@@ -227,10 +357,15 @@ export class MatchService {
     }
   }
 
-  public async rejectMatch(matchId: string): Promise<MatchUpdatedDto> {
+  public async rejectMatch(
+    matchId: string,
+    type: 'public' | 'private' = 'public',
+  ): Promise<MatchUpdatedDto> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    this.logger.verbose(`Match [${matchId}] rejected`);
 
     try {
       const matchEntity: MatchEntity | null = await this.getMatchTransactional(
@@ -242,7 +377,12 @@ export class MatchService {
         throw new BadRequestException('Match already started');
       }
 
-      await this.handleMatchEvent(matchEntity, socketEvent.MATCH_REJECTED);
+      await this.handleMatchEvent(
+        matchEntity,
+        type === 'public'
+          ? socketEvent.MATCH_REJECTED
+          : socketEvent.PRIVATE_MATCH_REJECTED,
+      );
 
       const updateResult: UpdateResult = await this.updateMatchTransactional(
         queryRunner,
@@ -282,6 +422,7 @@ export class MatchService {
     as: 'p1' | 'p2',
     matchEntity: MatchEntity,
     queryRunner: QueryRunner,
+    type: 'public' | 'private' = 'public',
   ): Promise<UpdateResult | null> {
     if (
       (as === 'p1' && !matchEntity.p2Joined) ||
@@ -300,10 +441,15 @@ export class MatchService {
     }
 
     this.logger.verbose(
-      `Match [${matchEntity.id}] started with players [${matchEntity.p1.id}] and [${matchEntity.p2.id}]`,
+      `Match [${type}] [${matchEntity.id}] started with players [${matchEntity.p1.id}] and [${matchEntity.p2.id}]`,
     );
 
-    await this.handleMatchEvent(matchEntity, socketEvent.MATCH_STARTED);
+    await this.handleMatchEvent(
+      matchEntity,
+      type === 'public'
+        ? socketEvent.MATCH_STARTED
+        : socketEvent.PRIVATE_MATCH_STARTED,
+    );
     await this.handleMatchStatus(matchEntity.p1.id, 'playing');
     await this.handleMatchStatus(matchEntity.p2.id, 'playing');
 
@@ -313,7 +459,7 @@ export class MatchService {
   }
 
   private async getMatchPlayerByStatus(
-    matchStatus: 'waitingMatch' | 'waitingGame',
+    matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
     const playerStatus: PlayerStatusDto[] =
       await this.playerStatusService.getAllPlayersStatus();
@@ -364,10 +510,15 @@ export class MatchService {
     if (
       event != socketEvent.MATCH_STARTED &&
       event != socketEvent.MATCH_REJECTED &&
-      event != socketEvent.MATCH_FOUND
+      event != socketEvent.MATCH_FOUND &&
+      event != socketEvent.PRIVATE_MATCH_FOUND &&
+      event != socketEvent.PRIVATE_MATCH_STARTED &&
+      event != socketEvent.PRIVATE_MATCH_REJECTED
     ) {
       throw new InternalServerErrorException('Invalid event');
     }
+
+    this.logger.verbose(`Handling match [${matchEntity.id}] event [${event}]`);
 
     const p1Socket: AuthenticatedSocket | undefined =
       await this.playerStatusService.getPlayerSocket(matchEntity.p1.id);
@@ -459,8 +610,8 @@ export class MatchService {
 
   private createMatchEvent(
     matchId: string,
-    p1Profile: ProfileDTO,
-    p2Profile: ProfileDTO,
+    p1Profile: ProfileEntity,
+    p2Profile: ProfileEntity,
     as: 'p1' | 'p2',
   ): MatchEventDto {
     return {

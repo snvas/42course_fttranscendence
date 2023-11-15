@@ -1,13 +1,13 @@
 <script>
 	export let levelPercentage = 0;
+	export let level = 0;
 </script>
-
 
 <style>
 	.container {
-	  position: relative;
+		position: relative;
 	}
-  
+
 	.filler {
 	  position: absolute;
 	  top: 0;
@@ -21,5 +21,5 @@
 		>
 		<div class="filler bg-green-700" style="width: {levelPercentage}%"></div>
 			<!-- TODO: level? -->
-			<p class="text-white  z-10">LEVEL 2 - {levelPercentage}%</p>
+			<p class="text-white">LEVEL {level} - {levelPercentage}%</p>
 		</div>
