@@ -23,6 +23,8 @@
 		<div class="flex items-center gap-2">
 			{#if user.isBlocked}
 				<div class="text-red-800 text-xs">Blocked</div>
+			{:else if user.isBlockedBy}
+				<div class="text-red-800 text-xs">Blocked-By</div>
 			{:else}
 				<p class="{statusColor[user.status]} text-xs">{user.status}</p>
 				{#if user.isFriend}
