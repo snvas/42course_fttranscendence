@@ -2,7 +2,7 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import p5 from 'p5';
 	import { onMount } from 'svelte';
-	import { socket } from '$lib/stores';
+	import { socket, match } from '$lib/stores';
 	import { io } from 'socket.io-client';
 	import axios from 'axios';
 	import { waitFor } from '@testing-library/svelte';
@@ -26,20 +26,10 @@
 	const game_socket = io("http://localhost:3000");
 
 	const is_ok = game_socket.connect();
-	function sendMessage(msg: string, data: Positions) {
+	function sendMessage(msg: string, data: any) {
 		game_socket.emit(msg, data)
   	}
 
-	async function getPlay() {
-        const response = await axios.get('http://localhost:3000/api/game');
-        return response.data;
-    }
-	// function waitingList(){
-	// 	if (player1 && player2)
-	// 		//contruct sketch
-	// }
-
-	// player1 and 2 passade for paramther
 	async function sketch(p5: p5) {
 		let game: Game;
 		let hitSound: p5.SoundFile;
@@ -134,7 +124,10 @@
 			} else {
 				if (!game.running && !game.winner) {
 					if (p5.keyIsDown(p5.ENTER)) {
-						game_socket.emit("ready");
+						game_socket.emit("ready", {
+							matchId: $match?.matchId,
+							userId: $match?.as
+						});
 					}
 				}
 			}
@@ -181,7 +174,11 @@
 				this.positionY += this.velocityY;
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage('ball', {positionX, positionY})
+				sendMessage('ball', {
+					matchId: $match?.matchId,
+					pos:{positionX, positionY},
+					userId: $match?.as
+				})
 			}
 
 			checkWalls() {
@@ -353,7 +350,11 @@
 				}
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage(String(this.msg), {positionX, positionY})
+				sendMessage(String(this.msg), {
+					matchId: $match?.matchId,
+					pos:{positionX, positionY},
+					userId: $match?.as
+				})
 				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
 					socket.emit('player-move', {
 						playerId: this.id,

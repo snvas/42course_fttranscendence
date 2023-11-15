@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { GameData, Positions } from './types/positions.type';
+import { ConsultData, GameData, Positions } from './types/positions.type';
 import { GameService } from './game.service';
 import { AuthenticatedSocket } from 'src/chat/types/authenticated-socket.type';
 import { Socket } from 'socket.io';
@@ -61,7 +61,7 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
 
   @SubscribeMessage('ready')
   setReady(
-    @MessageBody() data: GameData,
+    @MessageBody() data: ConsultData,
     @ConnectedSocket() socket: Socket) {
     this.gameService.setReady(data, socket.id);
     this.server
