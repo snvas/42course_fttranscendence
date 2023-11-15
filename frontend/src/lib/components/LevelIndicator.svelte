@@ -21,5 +21,5 @@
 		>
 		<div class="filler bg-green-700" style="width: {levelPercentage}%"></div>
 			<!-- TODO: level? -->
-			<p class="text-white  z-10">LEVEL {level} - {levelPercentage}%</p>
+			<p class="text-white">LEVEL {level} - {levelPercentage}%</p>
 		</div>

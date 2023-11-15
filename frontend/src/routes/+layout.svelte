@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DashboardUsersList, PlayerStatusDto, ProfileDTO, SimpleProfileDto } from '$lib/dtos';
-	import { onlineUsers, playersStatus, socket, allUsers, friendsList, blockList } from '$lib/stores';
+	import type { DashboardUsersList, MatchEventDto, PlayerStatusDto, ProfileDTO, SimpleProfileDto } from '$lib/dtos';
+	import { onlineUsers, playersStatus, socket, allUsers, friendsList, blockList, match } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
-	import { readAllUsers, readBlockeds, readFriends } from '$lib/api';
+	import { matchMakingService, readAllUsers, readBlockeds, readFriends } from '$lib/api';
 	import { page } from '$app/stores';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
+	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
 	async function fetchAllPlayersStatus() {
 		if ($page.url.pathname == '/login') {
@@ -74,6 +75,51 @@
 	$socket.on('unauthorized', onUnauthorized);
 	$socket.on(socketEvent.PLAYERS_STATUS, onPlayersStatus);
 
+	$socket.on(socketEvent.PRIVATE_MATCH_FOUND, (data: MatchEventDto) => {
+		console.log(`Private match found: ${data.matchId}`);
+		privateMatch = data;
+		if (privateMatch.as == "p1") {
+			status = 'waiting-confirm';
+		} else {
+			status = 'confirm';
+		}
+	});
+
+	$socket.on(socketEvent.PRIVATE_MATCH_STARTED, (data: MatchEventDto) => {
+		match.set(data);
+		privateMatch = null;
+		console.log(`Private Match started: ${data.matchId}`);
+		// [ ]  if private leave queue
+		goto('/game');
+	});
+
+	$socket.on(socketEvent.PRIVATE_MATCH_REJECTED, (data: MatchEventDto) => {
+		privateMatch = null;
+		console.log(`Private Match rejected: ${data.matchId}`);
+		// [ ]  if private exit private invite modal
+		status = 'none';
+	});
+
+	async function confirmMatch() {
+		if (!privateMatch) return
+		try {
+			await matchMakingService.acceptPrivateMatch(privateMatch.matchId);
+			status = 'waiting-confirm';
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	async function rejectMatch() {
+		if (!privateMatch) return
+		try {
+			await matchMakingService.rejectPrivateMatch(privateMatch.matchId, privateMatch.as);
+			status = 'none';
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
 	onDestroy(() => {
 		$socket.off('connect');
 		$socket.off('exception');
@@ -83,9 +129,15 @@
 
 	fetchAllPlayersStatus()
 
+	let status: 'waiting-confirm' | 'confirm' | "none" = "none";
+	let privateMatch: MatchEventDto | null = null;
+
 	// TODO: socket para receber quando um usuário novo é criado
 	$: $onlineUsers, fetchAllPlayersStatus();
 	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
 </script>
 
+{#if status != "none" && privateMatch}
+	<ConfirmModal {status} match={privateMatch} {confirmMatch} {rejectMatch}/>
+{/if}
 <slot />
