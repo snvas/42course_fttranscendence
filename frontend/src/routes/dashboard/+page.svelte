@@ -58,7 +58,6 @@
 		goto('/login');
 	}
 
-	// TODO: entrar ou convidar o usuário para jogar
 	async function onGame() {
 		try {
 			await matchMakingService.joinMatchQueue();
@@ -184,8 +183,7 @@
 
 	$: console.log($match);
 
-	let status: 'waiting-player' | 'waiting-confirm' | 'confirm' | 'none' =
-		'none';
+	let status: 'waiting-player' | 'waiting-confirm' | 'confirm' | 'none' = 'none';
 
 	async function confirmMatch() {
 		if (!$match) return;

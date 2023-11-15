@@ -14,11 +14,18 @@
 		allUsers,
 		friendsList,
 		blockList,
+		blockedByList,
 		match
 	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
-	import { matchMakingService, readAllUsers, readBlockeds, readFriends } from '$lib/api';
+	import {
+		matchMakingService,
+		readAllUsers,
+		readBlockedBy,
+		readBlockeds,
+		readFriends
+	} from '$lib/api';
 	import { page } from '$app/stores';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
@@ -30,15 +37,15 @@
 		$allUsers = await readAllUsers();
 		$friendsList = await readFriends();
 		$blockList = await readBlockeds();
-
-		updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
+		$blockedByList = await readBlockedBy();
 	}
 
 	async function updatePlayersStatus(
 		onlineUsers: PlayerStatusDto[],
 		allUsers: ProfileDTO[],
 		friendsList: SimpleProfileDto[],
-		blockList: SimpleProfileDto[]
+		blockList: SimpleProfileDto[],
+		blockedByList: SimpleProfileDto[]
 	) {
 		console.log('updatePlayerStatus');
 		let online: DashboardUsersList[] = [];
@@ -49,19 +56,22 @@
 			temp = onlineUsers.find((v) => v.id == user.id) ?? null;
 			let isFriend = friendsList.find((v) => v.id == user.id) ? true : false;
 			let isBlocked = blockList.find((v) => v.id == user.id) ? true : false;
+			let isBlockedBy = blockedByList.find((v) => v.id == user.id) ? true : false;
 			if (temp) {
 				online.push({
 					...user,
 					status: temp.status,
 					isFriend,
-					isBlocked
+					isBlocked,
+					isBlockedBy
 				});
 			} else {
 				offline.push({
 					...user,
 					status: 'offline',
 					isFriend,
-					isBlocked
+					isBlocked,
+					isBlockedBy
 				});
 			}
 		}
@@ -118,6 +128,11 @@
 		status = 'none';
 	});
 
+	// TODO: receber  eventos de ser bloqueao para atualizar a lista
+	// $socket.on(socketEvent.BLOCKED_BY, (data) => {
+	// 	console.log(`Recieved block by: ${data}`);
+	// })
+
 	async function confirmMatch() {
 		if (!privateMatch) return;
 		try {
@@ -158,9 +173,8 @@
 	let status: 'waiting-confirm' | 'confirm' | 'none' = 'none';
 	let privateMatch: MatchEventDto | null = null;
 
-	// TODO: socket para receber quando um usuário novo é criado
 	$: $onlineUsers, fetchAllPlayersStatus();
-	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
+	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList, $blockedByList);
 </script>
 
 {#if status != 'none' && privateMatch}
