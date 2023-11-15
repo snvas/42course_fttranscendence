@@ -418,6 +418,21 @@ export class MatchService {
     }
   }
 
+  public async getMatchById(matchId: string): Promise<MatchEntity> {
+    const matchEntity: MatchEntity | null = await this.matchRepository.findOne({
+      where: { id: matchId },
+      relations: {
+        p1: true,
+        p2: true,
+      },
+    });
+
+    if (!matchEntity) {
+      throw new NotFoundException('Match not found');
+    }
+    return matchEntity;
+  }
+
   private async handleMatchStart(
     as: 'p1' | 'p2',
     matchEntity: MatchEntity,
