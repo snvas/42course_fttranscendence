@@ -85,7 +85,7 @@
 				{#each backgroundColors as color, i}
 					{#if backgroundColorSelected == color}
 						<button id="{color}BackgroundOption" on:click={() => {saveBackgroundColor(color)}}>
-							<img src={backgroundColorsSrc[i]} alt="Game {color} background color" class="w-48 h-38 m-4 border-4 border-8 border-green-600">
+							<img src={backgroundColorsSrc[i]} alt="Game {color} background color" class="w-48 h-38 m-4 border-4 border-green-600">
 						</button>
 					{:else}
 						<button id="{color}BackgroundOption" on:click={() => {saveBackgroundColor(color)}}>
