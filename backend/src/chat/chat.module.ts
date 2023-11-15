@@ -17,14 +17,12 @@ import { GroupMemberService } from './services/group-member.service';
 import { PlayerStatusService } from '../profile/services/player-status.service';
 import { GroupMessageService } from './services/group-message.service';
 import { BlockService } from '../profile/services/block.service';
-import { ProfileGateway } from '../profile/profile.gateway';
 
 @Module({
   controllers: [ChatController],
   providers: [
     ChatService,
     ChatGateway,
-    ProfileGateway,
     PlayerStatusService,
     PrivateChatService,
     BlockService,

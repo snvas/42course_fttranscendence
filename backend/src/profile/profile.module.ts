@@ -8,26 +8,18 @@ import { AvatarService } from '../avatar/avatar.service';
 import { PlayerStatusService } from './services/player-status.service';
 import { FriendService } from './services/friend.service';
 import { BlockService } from './services/block.service';
-import { ProfileGateway } from './profile.gateway';
 
 @Module({
   controllers: [ProfileController],
   providers: [
     UserService,
     ProfileService,
-    ProfileGateway,
     AvatarService,
     BlockService,
     PlayerStatusService,
     FriendService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [
-    UserService,
-    AvatarService,
-    PlayerStatusService,
-    ProfileGateway,
-    BlockService,
-  ],
+  exports: [UserService, AvatarService, PlayerStatusService, BlockService],
 })
 export class ProfileModule {}
