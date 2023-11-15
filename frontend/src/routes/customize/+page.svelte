@@ -26,7 +26,6 @@
 	}
 
 	const boardColors = ["white", "red", "orange", "yellow", "blue", "violet", "pink", "green"];
-	const boardColorsSrc = ["#f8fafc", "#ef4444", "#f97316", "#eab308", "#06b6d4", "#8b5cf6", "#ec4899", "#22c55e"]
 	const backgroundColors = ["black", "red", "blue", "green", "pink", "yellow"];
 	const backgroundColorsSrc = [blackTable, redTable, blueTable, greenTable, pinkTable, yellowTable];
 	let backgroundColorSelected = localStorage.getItem("backgroundColor") || "black";
@@ -36,6 +35,38 @@
 <style>
 	#whiteBoardOption {
 		color: black;
+	}
+
+	#whiteBoardOption {
+		background-color: #f8fafc;
+	}
+
+	#redBoardOption {
+		background-color: #ef4444;
+	}
+
+	#orangeBoardOption {
+		background-color: #f97316;
+	}
+
+	#yellowBoardOption {
+		background-color: #eab308;
+	}
+
+	#blueBoardOption {
+		background-color: #06b6d4;
+	}
+
+	#violetBoardOption {
+		background-color: #8b5cf6;
+	}
+
+	#pinkBoardOption {
+		background-color: #ec4899;
+	}
+
+	#greenBoardOption {
+		background-color: #22c55e;
 	}
 </style>
 
@@ -68,13 +99,13 @@
 		<div class="border-4 p-10 rounded-lg flex flex-col items-center gap-10">
 			<p class="md:text-3xl text-2xl">Pick your board's color</p>
 			<div class="grid grid-cols-2 gap-6 h-full justify-center">
-				{#each boardColors as color, i}
+				{#each boardColors as color}
 					{#if boardColorSelected == color}
-						<button id="{color}BoardOption" class="btn-op bg-[{boardColorsSrc[i]}] w-40 border-8 border-green-600" on:click={() => {saveBoardColor(color)}}>
+						<button id="{color}BoardOption" class="btn-op w-40 border-8 border-green-600" on:click={() => {saveBoardColor(color)}}>
 							{color}
-						</button>
+						</button>	
 					{:else}
-						<button id="{color}BoardOption" class="btn-op bg-[{boardColorsSrc[i]}] w-40" on:click={() => {saveBoardColor(color)}}>
+						<button id="{color}BoardOption" class="btn-op w-40" on:click={() => {saveBoardColor(color)}}>
 							{color}
 						</button>
 					{/if}
