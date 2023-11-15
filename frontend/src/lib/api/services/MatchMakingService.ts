@@ -1,6 +1,6 @@
 import type {AxiosInstance, AxiosResponse} from 'axios';
 import axios from 'axios';
-import type {MatchAnswerDto, MatchEventDto} from '$lib/dtos';
+import type {MatchAnswerDto, MatchEventDto, MatchHistoryDto} from '$lib/dtos';
 
 export class MatchMakingService {
     private axiosInstance: AxiosInstance;
@@ -12,7 +12,7 @@ export class MatchMakingService {
         });
     }
 
-    public async getMatchHistory(): Promise<AxiosResponse<MatchEventDto[]>> {
+    public async getMatchHistory(): Promise<AxiosResponse<MatchHistoryDto[]>> {
         return this.axiosInstance.get('/history');
     }
 
