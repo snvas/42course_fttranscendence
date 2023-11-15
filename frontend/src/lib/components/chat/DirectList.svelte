@@ -27,7 +27,9 @@
 				<ListButton on:click={() => dispatch('profile', history.id)} type="profile" />
 				{#if !history.isBlocked}
 					<ListButton on:click={() => dispatch('block', history.id)} type="block" />
-					<ListButton on:click={() => dispatch('play', history.id)} type="play" />
+					{#if history.status == 'online' && !history.isBlockedBy}
+						<ListButton on:click={() => dispatch('play', history.id)} type="play" />
+					{/if}
 					{#if history.isFriend}
 						<ListButton on:click={() => dispatch('unfriend', history.id)} type="unfriend" />
 					{:else}
