@@ -1,7 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { DashboardUsersList, MatchEventDto, PlayerStatusDto, ProfileDTO, SimpleProfileDto } from '$lib/dtos';
-	import { onlineUsers, playersStatus, socket, allUsers, friendsList, blockList, match } from '$lib/stores';
+	import type {
+		DashboardUsersList,
+		MatchEventDto,
+		PlayerStatusDto,
+		ProfileDTO,
+		SimpleProfileDto
+	} from '$lib/dtos';
+	import {
+		onlineUsers,
+		playersStatus,
+		socket,
+		allUsers,
+		friendsList,
+		blockList,
+		match
+	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
 	import { matchMakingService, readAllUsers, readBlockeds, readFriends } from '$lib/api';
@@ -20,8 +34,13 @@
 		updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
 	}
 
-	async function updatePlayersStatus(onlineUsers: PlayerStatusDto[], allUsers: ProfileDTO[], friendsList: SimpleProfileDto[], blockList: SimpleProfileDto[]) {
-		console.log("updatePlayerStatus")
+	async function updatePlayersStatus(
+		onlineUsers: PlayerStatusDto[],
+		allUsers: ProfileDTO[],
+		friendsList: SimpleProfileDto[],
+		blockList: SimpleProfileDto[]
+	) {
+		console.log('updatePlayerStatus');
 		let online: DashboardUsersList[] = [];
 		let offline: DashboardUsersList[] = [];
 
@@ -29,7 +48,7 @@
 		for (let user of allUsers) {
 			temp = onlineUsers.find((v) => v.id == user.id) ?? null;
 			let isFriend = friendsList.find((v) => v.id == user.id) ? true : false;
-			let isBlocked = blockList.find((v) => v.id == user.id) ? true : false;;
+			let isBlocked = blockList.find((v) => v.id == user.id) ? true : false;
 			if (temp) {
 				online.push({
 					...user,
@@ -78,7 +97,7 @@
 	$socket.on(socketEvent.PRIVATE_MATCH_FOUND, (data: MatchEventDto) => {
 		console.log(`Private match found: ${data.matchId}`);
 		privateMatch = data;
-		if (privateMatch.as == "p1") {
+		if (privateMatch.as == 'p1') {
 			status = 'waiting-confirm';
 		} else {
 			status = 'confirm';
@@ -89,19 +108,18 @@
 		match.set(data);
 		privateMatch = null;
 		console.log(`Private Match started: ${data.matchId}`);
-		// [ ]  if private leave queue
+		leaveMatchQueue();
 		goto('/game');
 	});
 
 	$socket.on(socketEvent.PRIVATE_MATCH_REJECTED, (data: MatchEventDto) => {
 		privateMatch = null;
 		console.log(`Private Match rejected: ${data.matchId}`);
-		// [ ]  if private exit private invite modal
 		status = 'none';
 	});
 
 	async function confirmMatch() {
-		if (!privateMatch) return
+		if (!privateMatch) return;
 		try {
 			await matchMakingService.acceptPrivateMatch(privateMatch.matchId);
 			status = 'waiting-confirm';
@@ -111,10 +129,18 @@
 	}
 
 	async function rejectMatch() {
-		if (!privateMatch) return
+		if (!privateMatch) return;
 		try {
 			await matchMakingService.rejectPrivateMatch(privateMatch.matchId, privateMatch.as);
 			status = 'none';
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	async function leaveMatchQueue() {
+		try {
+			await matchMakingService.cancelMatchQueue();
 		} catch (e) {
 			console.log(e);
 		}
@@ -127,9 +153,9 @@
 		$socket.off('playersStatus');
 	});
 
-	fetchAllPlayersStatus()
+	fetchAllPlayersStatus();
 
-	let status: 'waiting-confirm' | 'confirm' | "none" = "none";
+	let status: 'waiting-confirm' | 'confirm' | 'none' = 'none';
 	let privateMatch: MatchEventDto | null = null;
 
 	// TODO: socket para receber quando um usuário novo é criado
@@ -137,7 +163,7 @@
 	$: updatePlayersStatus($onlineUsers, $allUsers, $friendsList, $blockList);
 </script>
 
-{#if status != "none" && privateMatch}
-	<ConfirmModal {status} match={privateMatch} {confirmMatch} {rejectMatch}/>
+{#if status != 'none' && privateMatch}
+	<ConfirmModal {status} match={privateMatch} {confirmMatch} {rejectMatch} />
 {/if}
 <slot />
