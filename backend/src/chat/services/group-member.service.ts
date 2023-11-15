@@ -55,10 +55,7 @@ export class GroupMemberService {
       const memberEntity: GroupMemberEntity =
         await this.groupMemberRepository.save(groupMember);
 
-      await this.playerStatusService.addPlayerRoom(
-        profile.id,
-        `${groupChat.id}`,
-      );
+      await this.playerStatusService.addRoom(profile.id, `${groupChat.id}`);
 
       return this.createGroupMemberDto(memberEntity, groupChat, profile);
     } catch (Exception) {
@@ -154,7 +151,7 @@ export class GroupMemberService {
       `### Removing member [${profile.id}] from Group chat [${chat.id}]`,
     );
 
-    await this.playerStatusService.removePlayerRoom(profile.id, `${chat.id}`);
+    await this.playerStatusService.removeRoom(profile.id, `${chat.id}`);
 
     return {
       deleted: memberDeleteResult.affected > 0,

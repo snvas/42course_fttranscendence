@@ -128,9 +128,9 @@ export class MatchService {
       await this.profileService.findByProfileId(opponentProfileId);
 
     const profileSocket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(profile.id);
+      await this.playerStatusService.getSocket(profile.id);
     const opponentSocket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(opponentProfile.id);
+      await this.playerStatusService.getSocket(opponentProfile.id);
 
     if (!profileSocket || !opponentSocket) {
       throw new BadRequestException('Player not connected');
@@ -199,13 +199,13 @@ export class MatchService {
     );
 
     const socket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(profile.id);
+      await this.playerStatusService.getSocket(profile.id);
 
     if (!socket) {
       throw new BadRequestException('Player not connected');
     }
 
-    await this.playerStatusService.setPlayerStatus(socket, status);
+    await this.playerStatusService.setStatus(socket, status);
 
     this.logger.verbose(
       `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
@@ -233,19 +233,13 @@ export class MatchService {
         const p1: ProfileDTO = waitingMatchProfiles[i];
         const p2: ProfileDTO = waitingMatchProfiles[j];
         const p1Socket: AuthenticatedSocket | undefined =
-          await this.playerStatusService.getPlayerSocket(p1.id);
+          await this.playerStatusService.getSocket(p1.id);
         const p2Socket: AuthenticatedSocket | undefined =
-          await this.playerStatusService.getPlayerSocket(p2.id);
+          await this.playerStatusService.getSocket(p2.id);
 
         if (p1Socket && p2Socket) {
-          await this.playerStatusService.setPlayerStatus(
-            p1Socket,
-            'waitingGame',
-          );
-          await this.playerStatusService.setPlayerStatus(
-            p2Socket,
-            'waitingGame',
-          );
+          await this.playerStatusService.setStatus(p1Socket, 'waitingGame');
+          await this.playerStatusService.setStatus(p2Socket, 'waitingGame');
 
           if (
             (await this.blockService.isUserBlocked(p1.id, p2.id)) ||
@@ -280,7 +274,7 @@ export class MatchService {
       }
 
       const playerSocket: AuthenticatedSocket | undefined =
-        await this.playerStatusService.getPlayerSocket(player.id);
+        await this.playerStatusService.getSocket(player.id);
 
       if (!playerSocket) {
         continue;
@@ -291,10 +285,7 @@ export class MatchService {
       );
       this.logger.verbose(`Timeout {${timeout}} now {${now}}`);
 
-      await this.playerStatusService.setPlayerStatus(
-        playerSocket,
-        'waitingMatch',
-      );
+      await this.playerStatusService.setStatus(playerSocket, 'waitingMatch');
     }
   }
 
@@ -447,9 +438,9 @@ export class MatchService {
     }
 
     const p1Socket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(matchEntity.p1.id);
+      await this.playerStatusService.getSocket(matchEntity.p1.id);
     const p2Socket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(matchEntity.p2.id);
+      await this.playerStatusService.getSocket(matchEntity.p2.id);
 
     if (!p1Socket || !p2Socket) {
       return null;
@@ -477,7 +468,7 @@ export class MatchService {
     matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
     const playerStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getAllPlayersStatus();
+      await this.playerStatusService.getAllStatus();
 
     return playerStatus.filter(
       (player: PlayerStatusDto): boolean => player.status === matchStatus,
@@ -510,7 +501,7 @@ export class MatchService {
 
   private async sendPlayerStatusEvent(): Promise<void> {
     const playersStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getPlayerFrontEndStatus();
+      await this.playerStatusService.getFrontEndStatus();
 
     (await this.matchGateway.getServer()).emit(
       socketEvent.PLAYERS_STATUS,
@@ -536,9 +527,9 @@ export class MatchService {
     this.logger.verbose(`Handling match [${matchEntity.id}] event [${event}]`);
 
     const p1Socket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(matchEntity.p1.id);
+      await this.playerStatusService.getSocket(matchEntity.p1.id);
     const p2Socket: AuthenticatedSocket | undefined =
-      await this.playerStatusService.getPlayerSocket(matchEntity.p2.id);
+      await this.playerStatusService.getSocket(matchEntity.p2.id);
 
     if (p1Socket && p2Socket) {
       (await this.matchGateway.getServer())

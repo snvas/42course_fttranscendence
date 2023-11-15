@@ -12,6 +12,7 @@ import { MatchService } from './match.service';
 import { MatchGateway } from './match.gateway';
 import { MatchGameService } from './services/match-game.service';
 import { MatchAnswerGuard } from './guards/match-answer.guard';
+import { ProfileGateway } from '../profile/profile.gateway';
 
 @Module({
   controllers: [MatchController],
@@ -20,6 +21,7 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
     MatchService,
     MatchGameService,
     MatchGateway,
+    ProfileGateway,
     MatchAnswerGuard,
     PlayerStatusService,
     BlockService,
