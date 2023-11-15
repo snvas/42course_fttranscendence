@@ -71,7 +71,7 @@ export class GroupChatService {
 
     try {
       const blockedPlayersSockets: string[] =
-        await this.playerStatusService.getBlockedByPlayersSockets(socket);
+        await this.blockService.getBlockedByPlayersSockets(socket);
 
       const groupMessage: GroupMessageDto = await this.saveGroupMessage(
         socket,

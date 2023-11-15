@@ -45,7 +45,6 @@ export class ProfileController {
     public readonly blockService: BlockService,
   ) {}
 
-  //TODO: LEVEL
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -64,7 +63,6 @@ export class ProfileController {
     return await this.profileService.findByProfileId(id);
   }
 
-  //TODO: LEVEL
   @Get('profiles')
   @HttpCode(HttpStatus.OK)
   async getAllProfiles(): Promise<ProfileDTO[]> {

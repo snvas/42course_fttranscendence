@@ -48,7 +48,7 @@ export class PrivateChatService {
       }
 
       const receiverSocket: AuthenticatedSocket | undefined =
-        await this.playerStatusService.getPlayerSocket(message.receiver.id);
+        await this.playerStatusService.getSocket(message.receiver.id);
 
       const privateMessage: PrivateMessageDto = await this.savePrivateMessage(
         message,

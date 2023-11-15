@@ -13,6 +13,11 @@ import { ProfileDTO } from '../models/profile.dto';
 import { SimpleProfile } from '../interfaces/simples-profile.interface';
 import { SimpleProfileDto } from '../models/simple-profile.dto';
 import { ProfileDeletedResponseDto } from '../models/profile-delete-response.dto';
+import { ProfileGateway } from '../profile.gateway';
+import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
+import { PlayerStatusDto } from '../models/player-status.dto';
+import { PlayerStatusService } from './player-status.service';
+import { socketEvent } from '../../ws/ws-events';
 
 @Injectable()
 export class BlockService {
@@ -20,6 +25,8 @@ export class BlockService {
 
   constructor(
     private readonly profileService: ProfileService,
+    private readonly profileGateway: ProfileGateway,
+    private readonly playerStatusService: PlayerStatusService,
     @InjectRepository(BlockEntity)
     private readonly blockRepository: Repository<BlockEntity>,
   ) {}
@@ -48,11 +55,26 @@ export class BlockService {
         blockEntity,
       );
 
-      return {
+      const blockedUser: SimpleProfileDto = {
         id: blockUsersDb.blockedUser.id,
         nickname: blockUsersDb.blockedUser.nickname,
         avatarId: blockUsersDb.blockedUser.avatarId,
       } as SimpleProfileDto;
+
+      const blockedSocket: AuthenticatedSocket | undefined =
+        await this.playerStatusService.getSocket(blockedUser.id);
+
+      if (blockedSocket) {
+        (await this.profileGateway.getServer())
+          .to(blockedSocket.id)
+          .emit(socketEvent.BLOCKED_BY, {
+            id: userProfile.id,
+            nickname: userProfile.nickname,
+            avatarId: userProfile.avatarId,
+          } as SimpleProfileDto);
+      }
+
+      return blockedUser;
     } catch (Error) {
       if (Error instanceof QueryFailedError) {
         this.logger.error(Error.message);
@@ -151,5 +173,50 @@ export class BlockService {
       deleted: deleteResult.affected > 0,
       affected: deleteResult.affected,
     };
+  }
+
+  public async getBlockedByPlayersSockets(
+    socket: AuthenticatedSocket,
+  ): Promise<string[]> {
+    const blockedUsers: SimpleProfileDto[] = await this.getBlockedBy(
+      socket.request.user.id,
+    );
+
+    const players: PlayerStatusDto[] =
+      await this.playerStatusService.getFrontEndStatus();
+
+    const blockedPlayersSockets: string[] = (
+      await Promise.all(
+        players.map(
+          async (
+            player: PlayerStatusDto,
+          ): Promise<AuthenticatedSocket | undefined> => {
+            const socket: AuthenticatedSocket | undefined =
+              await this.playerStatusService.getSocket(player.id);
+            if (
+              socket !== undefined &&
+              blockedUsers.some(
+                (blocked: SimpleProfileDto): boolean =>
+                  blocked.id === player.id,
+              )
+            ) {
+              return socket;
+            }
+            return undefined;
+          },
+        ),
+      )
+    )
+      .filter(
+        (socket: AuthenticatedSocket | undefined): boolean =>
+          socket !== undefined,
+      )
+      .map((socket: AuthenticatedSocket) => socket.id as string);
+
+    this.logger.verbose(
+      `### Blocked players sockets: [${blockedPlayersSockets}]`,
+    );
+
+    return blockedPlayersSockets;
   }
 }

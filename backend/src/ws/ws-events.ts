@@ -23,4 +23,5 @@ export const socketEvent = {
   GROUP_CHAT_MEMBER_UNMUTED: 'groupChatMemberUnmuted',
   GROUP_CHAT_MEMBER_BANNED: 'groupChatMemberBanned',
   GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned',
+  BLOCKED_BY: 'blockedBy',
 };
