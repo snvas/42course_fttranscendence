@@ -15,7 +15,7 @@ import { AuthenticatedSocket } from 'src/chat/types/authenticated-socket.type';
 import { Socket } from 'socket.io';
 import { MatchGameService } from 'src/match/services/match-game.service';
 
-// create rooms, this room name is player id
+// TODO make pontuation logic
 @WebSocketGateway()
 export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   private readonly logger: Logger = new Logger(GameGateway.name);
@@ -33,7 +33,9 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   @ConnectedSocket() socket: AuthenticatedSocket)
   {
     this.gameService.setPlayer1(data, socket.id);
-    this.server.emit('game-data', this.gameService.allData(data.matchId));
+    this.server
+      .to(`${data.matchId}`)
+      .emit('game-data', this.gameService.allData(data.matchId));
   }
 
   @SubscribeMessage('player2')
@@ -42,7 +44,9 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   @ConnectedSocket() socket: AuthenticatedSocket)
   {
     this.gameService.setPlayer2(data, socket.id);
-    this.server.emit('game-data', this.gameService.allData(data.matchId));
+    this.server
+      .to(`${data.matchId}`)
+      .emit('game-data', this.gameService.allData(data.matchId));
   }
 
   @SubscribeMessage('p2')
@@ -60,7 +64,9 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
     @MessageBody() data: GameData,
     @ConnectedSocket() socket: Socket) {
     this.gameService.setReady(data, socket.id);
-    this.server.emit('is-ready', this.gameService.isPlayersReady(data.matchId));
+    this.server
+      .to(`${data.matchId}`)
+      .emit('is-ready', this.gameService.isPlayersReady(data.matchId));
   }
 
   async handleDisconnect(
@@ -68,13 +74,14 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   ): Promise<void> {
 
     this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
-    this.server.emit('is-ready', this.gameService.playerDisconected(socket.id));
+    this.server.emit('is-ready', this.gameService.playerDisconected(String(socket.rooms),socket.id));
   }
 
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    this.logger.verbose(`### Client connected to chat socket: [${socket.id}]`);
+    console.log(socket.rooms);
+    this.gameService.reConnect(String(socket.rooms), socket.id);
   }
 
   @SubscribeMessage('ball')
@@ -84,7 +91,9 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   {
     if (this.gameService.ballValidation(data, socket.id)) {
       this.gameService.setBall(data);
-      this.server.emit('game-data', this.gameService.allData(data.matchId));
+      this.server
+        .to(`${data.matchId}`)
+        .emit('game-data', this.gameService.allData(data.matchId));
     }
   }
 }

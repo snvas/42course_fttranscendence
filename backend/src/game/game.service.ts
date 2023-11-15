@@ -50,31 +50,32 @@ export class GameService {
         }
     }
 
-    reConnect(data:ConsultData, socketId:string) {
-        if(data.userId == this.player1.get(data.matchId)?.id
-        || data.userId == this.player2.get(data.matchId)?.id){
-            this.isReady.get(data.matchId)?.push(socketId)
+    reConnect(matchId:string, socketId:string) {
+        if(socketId == this.player1.get(matchId)?.soketId
+        || socketId == this.player2.get(matchId)?.soketId) {
+            console.log("socket of reconnect is the same of connect")
+            this.isReady.get(matchId)?.push(socketId)
         }
     }
 
     //get room name on consultData
-    playerDisconected(data:ConsultData, socketId:string) {
-        let arr =  this.isReady.get(data.matchId);
+    playerDisconected(matchId:string, socketId:string) {
+        let arr =  this.isReady.get(matchId);
         if (arr?.indexOf(socketId) == 0) {
             arr?.reverse();
         }
         setTimeout(() => {
             const value = arr ? arr[1]: "";
             if (arr?.length != 2) {
-                if (value == this.player1.get(data.matchId)?.soketId){
-                    this.matchGameService.abandonMatch(data.matchId,'p1')
+                if (value == this.player1.get(matchId)?.soketId){
+                    this.matchGameService.abandonMatch(matchId,'p1')
                 }
                 else {
-                    this.matchGameService.abandonMatch(data.matchId, 'p2')
+                    this.matchGameService.abandonMatch(matchId, 'p2')
                 }
             }
         }, 60000); // 60 seconds
-        this.isReady.get(data.matchId)?.pop();
+        this.isReady.get(matchId)?.pop();
         return 2;
     }
 
