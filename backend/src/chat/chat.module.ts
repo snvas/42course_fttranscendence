@@ -14,9 +14,9 @@ import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { GroupChatService } from './services/group-chat.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupMemberService } from './services/group-member.service';
-import { PlayerStatusService } from '../profile/services/player-status.service';
+import { PlayerStatusService } from '../social/services/player-status.service';
 import { GroupMessageService } from './services/group-message.service';
-import { BlockService } from '../profile/services/block.service';
+import { BlockService } from '../social/services/block.service';
 
 @Module({
   controllers: [ChatController],

@@ -8,13 +8,13 @@ import {
 import { BlockEntity } from '../../db/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
-import { ProfileService } from '../profile.service';
-import { ProfileDTO } from '../models/profile.dto';
-import { SimpleProfile } from '../interfaces/simples-profile.interface';
-import { SimpleProfileDto } from '../models/simple-profile.dto';
-import { ProfileDeletedResponseDto } from '../models/profile-delete-response.dto';
+import { ProfileService } from '../../profile/profile.service';
+import { ProfileDTO } from '../../profile/models/profile.dto';
+import { SimpleProfile } from '../../profile/interfaces/simples-profile.interface';
+import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
+import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-response.dto';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { PlayerStatusDto } from '../models/player-status.dto';
+import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 import { PlayerStatusService } from './player-status.service';
 
 @Injectable()
@@ -57,19 +57,6 @@ export class BlockService {
         nickname: blockUsersDb.blockedUser.nickname,
         avatarId: blockUsersDb.blockedUser.avatarId,
       } as SimpleProfileDto;
-
-      // const blockedSocket: AuthenticatedSocket | undefined =
-      //   await this.playerStatusService.getSocket(blockedUser.id);
-      //
-      // if (blockedSocket) {
-      //   (await this.matchGateway.getServer())
-      //     .to(blockedSocket.id)
-      //     .emit(socketEvent.BLOCKED_BY, {
-      //       id: userProfile.id,
-      //       nickname: userProfile.nickname,
-      //       avatarId: userProfile.avatarId,
-      //     } as SimpleProfileDto);
-      // }
 
       return blockedUser;
     } catch (Error) {

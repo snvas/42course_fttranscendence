@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { ProfileDTO } from '../models/profile.dto';
-import { PlayerStatusDto } from '../models/player-status.dto';
-import { ProfileService } from '../profile.service';
+import { ProfileDTO } from '../../profile/models/profile.dto';
+import { PlayerStatusDto } from '../../profile/models/player-status.dto';
+import { ProfileService } from '../../profile/profile.service';
 
 @Injectable()
 export class PlayerStatusService {

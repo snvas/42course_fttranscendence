@@ -233,14 +233,6 @@ export class ProfileService {
     };
   }
 
-  async findByUserIds(userIds: number[]): Promise<ProfileEntity[]> {
-    return await this.profileRepository
-      .createQueryBuilder('profile')
-      .leftJoinAndSelect('profile.userEntity', 'user')
-      .andWhere('user.id IN (:...userIds)', { userIds })
-      .getMany();
-  }
-
   async uploadAvatar(
     userId: number,
     imageBuffer: Buffer,
@@ -327,7 +319,7 @@ export class ProfileService {
     return { level, percentage };
   }
 
-  private createProfileDto(profileEntity: ProfileEntity) {
+  private createProfileDto(profileEntity: ProfileEntity): ProfileDTO {
     const profileDto: ProfileDTO = plainToClass(ProfileDTO, profileEntity);
 
     const calculatedLevel: { level: number; percentage: number } =

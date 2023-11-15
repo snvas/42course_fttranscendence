@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PlayerStatusService } from '../profile/services/player-status.service';
+import { PlayerStatusService } from '../social/services/player-status.service';
 import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
@@ -20,7 +20,7 @@ import { DataSource, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
-import { BlockService } from '../profile/services/block.service';
+import { BlockService } from '../social/services/block.service';
 
 @Injectable()
 export class MatchService {

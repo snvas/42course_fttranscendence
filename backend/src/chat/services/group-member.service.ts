@@ -22,7 +22,7 @@ import { ChatRole } from '../types/chat-role.type';
 import { GroupMemberDto } from '../models/group/group-member.dto';
 import { MessageProfileDto } from '../models/message/message-profile.dto';
 import { GroupChatDto } from '../models/group/group-chat.dto';
-import { PlayerStatusService } from '../../profile/services/player-status.service';
+import { PlayerStatusService } from '../../social/services/player-status.service';
 import { GroupMemberDeletedResponse } from '../interfaces/group/group-member-deleted-response.interface';
 import { GroupMemberUpdatedResponseDto } from '../models/group/group-member-updated-response.dto';
 import { GroupMemberRoleUpdateDto } from '../models/group/group-member-role-update.dto';
