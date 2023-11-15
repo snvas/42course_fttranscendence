@@ -19,7 +19,13 @@
 	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import '../tailwind.css';
-	import { matchMakingService, readAllUsers, readBlockedBy, readBlockeds, readFriends } from '$lib/api';
+	import {
+		matchMakingService,
+		readAllUsers,
+		readBlockedBy,
+		readBlockeds,
+		readFriends
+	} from '$lib/api';
 	import { page } from '$app/stores';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
@@ -34,7 +40,6 @@
 		$blockedByList = await readBlockedBy();
 	}
 
-	// [ ] lidar com blocked by
 	async function updatePlayersStatus(
 		onlineUsers: PlayerStatusDto[],
 		allUsers: ProfileDTO[],

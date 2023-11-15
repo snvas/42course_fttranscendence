@@ -36,7 +36,6 @@
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import { goto } from '$app/navigation';
 
-	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
 
 	let messages: ComponentMessage[] | null = null;
@@ -267,11 +266,6 @@
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
 	});
-
-	// TODO: entrar ou convidar o usuário para jogar
-	async function onGame() {
-		goto('/game');
-	}
 
 	async function onFriend(userId: number) {
 		let res = await addFriend(userId);
