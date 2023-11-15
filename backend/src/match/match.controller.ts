@@ -12,7 +12,6 @@ import {
 import { MatchService } from './match.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
-import { MatchAnswer } from './interfaces/match-answer.interface';
 import { MatchHistoryDto } from './models/match-history.dto';
 import { MatchAnswerDto } from './models/match-answer.dto';
 
@@ -47,7 +46,7 @@ export class MatchController {
   @HttpCode(HttpStatus.CREATED)
   @Post('accept')
   async acceptMatch(
-    @Body() matchAnswerDto: MatchAnswer,
+    @Body() matchAnswerDto: MatchAnswerDto,
   ): Promise<MatchUpdatedDto> {
     return await this.matchService.acceptMatch(
       matchAnswerDto.matchId,
@@ -64,7 +63,7 @@ export class MatchController {
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('private/:profileId')
+  @Post('private/create/:profileId')
   async createPrivateMatch(
     @Param('profileId', ParseIntPipe) profileId: number,
     @Req() { user }: { user: FortyTwoUserDto },
@@ -75,7 +74,7 @@ export class MatchController {
   @HttpCode(HttpStatus.CREATED)
   @Post('private/accept')
   async acceptPrivateMatch(
-    @Body() matchAnswerDto: MatchAnswer,
+    @Body() matchAnswerDto: MatchAnswerDto,
   ): Promise<MatchUpdatedDto> {
     return await this.matchService.acceptMatch(
       matchAnswerDto.matchId,

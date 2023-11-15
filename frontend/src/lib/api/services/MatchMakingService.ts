@@ -25,7 +25,7 @@ export class MatchMakingService {
     }
 
     public async createPrivateMatch(userId: number): Promise<AxiosResponse<MatchEventDto>> {
-        return this.axiosInstance.post(`/private/${userId}`);
+        return this.axiosInstance.post(`/private/create/${userId}`);
     }
 
     public async acceptPrivateMatch(matchId: string): Promise<AxiosResponse<void>> {
