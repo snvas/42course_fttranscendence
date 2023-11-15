@@ -31,7 +31,7 @@
 <div class="w-screen h-full min-h-screen">
 	<PongHeader />
 	<div class="flex flex-col items-center m-14">
-		<div class="border-4 p-10 rounded-lg flex flex-col items-center gap-4 h-fit md:p-14 p-12">
+		<div class="border-4 rounded-lg flex flex-col items-center gap-4 h-fit md:p-14 p-12">
 			<p class="md:text-8xl text-6xl lose-color">YOU LOSE</p>
 			<div class="flex flex-row m-5">
 				<div class="flex flex-col items-center">
