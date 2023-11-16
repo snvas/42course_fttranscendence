@@ -47,7 +47,7 @@ export class GameService {
         }
         else {
             const arr = this.isReady.get(data.matchId);
-            if (arr?.indexOf(socketId) != -1) {
+            if (arr?.indexOf(socketId) == -1) {
                 arr?.push(socketId);
             }
         }
