@@ -33,7 +33,6 @@
 	import UsersList from '$lib/components/lists/UsersList.svelte';
 	import type { MatchEventDto, MatchHistoryDto, PlayerStatusDto } from '$lib/dtos';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
-	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
 	let matchHistory: Promise<MatchHistoryDto[]> = onHistory();
 
@@ -161,12 +160,6 @@
 		status = 'confirm';
 	});
 
-	// $socket.on(socketEvent.PRIVATE_MATCH_FOUND, (data: MatchEventDto) => {
-	// 	console.log(`Private match found: ${data.matchId}`);
-	// 	match.set(data);
-	// 	status = 'confirm';
-	// });
-
 	$socket.on(socketEvent.MATCH_STARTED, (data: MatchEventDto) => {
 		match.set(data);
 		console.log(`Match started: ${data.matchId}`);
@@ -234,24 +227,24 @@
 					{#if status == 'waiting-player'}
 						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg">
 							<h1 class="text-xl text-center">
-								Aguarde. Estamos procurando um adversário para iniciar a partida...
+								Wait a moment. We are looking for an opponent to start gaming..
 							</h1>
 						</div>
 					{:else if status == 'confirm'}
 						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg w-full">
 							<h1 class="text-xl text-center">
-								Encontramos um adversário <span class="text-yellow-500">
+								We found the opponent <span class="text-yellow-500">
 									{$match?.as == 'p1' ? $match.p2.nickname : $match?.p1.nickname}</span
-								><br /> Começar a partida?
+								><br /> Start the game?
 							</h1>
 							<div class="flex flex-row gap-6 w-full">
-								<button class="btn-deleted" on:click={rejectMatch}>Agora não</button>
-								<button class="btn-primary" on:click={confirmMatch}>sim, Vamos Jogar</button>
+								<button class="btn-deleted" on:click={rejectMatch}>Not Now</button>
+								<button class="btn-primary" on:click={confirmMatch}>Yes, Let's Play</button>
 							</div>
 						</div>
 					{:else if status == 'waiting-confirm'}
 						<div class="flex flex-col mx-auto items-center gap-10 border-4 p-10 rounded-lg">
-							<h1 class="text-xl text-center">Aguarde o adversário confirmar...</h1>
+							<h1 class="text-xl text-center">Waiting for the opponent's confirmation...</h1>
 						</div>
 					{/if}
 				</div>
