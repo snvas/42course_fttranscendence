@@ -63,6 +63,22 @@ class GameService {
         });
     }
 
+    public p1(matchId: string): Promise<string> {
+        return new Promise<string>((resolve): void => {
+            this.socket?.emit(socketEvent.GAME_POINT_PLAYER_1, matchId, (ack: string): void => {
+                resolve(ack);
+            });
+        });
+    }
+
+    public p2(matchId: string): Promise<string> {
+        return new Promise<string>((resolve): void => {
+            this.socket?.emit(socketEvent.GAME_POINT_PLAYER_2, matchId, (ack: string): void => {
+                resolve(ack);
+            });
+        });
+    }
+
     public emitReady(message: ConsultDataDto): Promise<ConsultDataDto> {
         return new Promise<ConsultDataDto>((resolve): void => {
             this.socket?.emit(

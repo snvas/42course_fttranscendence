@@ -39,10 +39,15 @@
 		gameService.getSocket().on('is-ready', (data) => {
 			if (data == 1){
 				game.start();
-			} else if (data == 2) {
+			} else if (data == 2 || data == 0) {
 				//player disconected
 				game.stop();
 			}
+		})
+
+		gameService.getSocket().on('scoreboard', (data) => {
+			game.pointP1 = data.p1Score;
+			game.pointP2 = data.p2Score;
 		})
 
 		p5.setup = async () => {
@@ -179,14 +184,13 @@
 			}
 
 			checkWalls() {
-				// TODO send sokect here
 				if (this.positionX - this.diam / 2 <= 0) {
-					//pontuar jogador 2
+					gameService.p2(String($match?.matchId))
 					this.game.pointing(2);
 					this.game.stop();
 				}
 				if (this.positionX - this.diam / 2 >= width) {
-					//pontuarjogador1
+					gameService.p1(String($match?.matchId))
 					this.game.pointing(1);
 					this.game.stop();
 				}
@@ -481,13 +485,11 @@
 
 			pointing(p: number) {
 				if (p == 1) {
-					this.pointP1++;
 					if (this.pointP1 == 5) {
 						this.gameOver(1);
 						return;
 					}
 				} else if (p == 2) {
-					this.pointP2++;
 					if (this.pointP2 == 5) {
 						this.gameOver(2);
 						return;
