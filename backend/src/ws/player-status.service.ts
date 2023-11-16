@@ -1,16 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
-import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { ProfileDTO } from '../models/profile.dto';
-import { PlayerStatusDto } from '../models/player-status.dto';
-import { ProfileService } from '../profile.service';
+import { PlayerStatusSocket } from '../chat/types/player-status.socket';
+import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
+import { ProfileDTO } from '../profile/models/profile.dto';
+import { PlayerStatusDto } from '../profile/models/player-status.dto';
+import { ProfileService } from '../profile/profile.service';
+import { SimpleProfileDto } from '../profile/models/simple-profile.dto';
+import { BlockService } from '../social/services/block.service';
 
 @Injectable()
 export class PlayerStatusService {
   private readonly logger: Logger = new Logger(PlayerStatusService.name);
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly blockService: BlockService,
+  ) {}
+
+  public async getPlayerStatusSocket(): Promise<
+    Map<number, PlayerStatusSocket>
+  > {
+    return this.playerStatusSocket;
+  }
 
   public async setStatus(
     socket: AuthenticatedSocket,
@@ -106,5 +117,48 @@ export class PlayerStatusService {
     }
 
     socket.leave(room);
+  }
+
+  public async getBlockedByPlayersSockets(
+    socket: AuthenticatedSocket,
+  ): Promise<string[]> {
+    const blockedUsers: SimpleProfileDto[] =
+      await this.blockService.getBlockedBy(socket.request.user.id);
+
+    const players: PlayerStatusDto[] = await this.getFrontEndStatus();
+
+    const blockedPlayersSockets: string[] = (
+      await Promise.all(
+        players.map(
+          async (
+            player: PlayerStatusDto,
+          ): Promise<AuthenticatedSocket | undefined> => {
+            const socket: AuthenticatedSocket | undefined =
+              await this.getSocket(player.id);
+            if (
+              socket !== undefined &&
+              blockedUsers.some(
+                (blocked: SimpleProfileDto): boolean =>
+                  blocked.id === player.id,
+              )
+            ) {
+              return socket;
+            }
+            return undefined;
+          },
+        ),
+      )
+    )
+      .filter(
+        (socket: AuthenticatedSocket | undefined): boolean =>
+          socket !== undefined,
+      )
+      .map((socket: AuthenticatedSocket) => socket.id as string);
+
+    this.logger.verbose(
+      `### Blocked players sockets: [${blockedPlayersSockets}]`,
+    );
+
+    return blockedPlayersSockets;
   }
 }

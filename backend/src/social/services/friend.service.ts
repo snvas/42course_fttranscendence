@@ -8,11 +8,11 @@ import {
 import { FriendEntity } from '../../db/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
-import { ProfileService } from '../profile.service';
-import { ProfileDTO } from '../models/profile.dto';
-import { SimpleProfile } from '../interfaces/simples-profile.interface';
-import { SimpleProfileDto } from '../models/simple-profile.dto';
-import { ProfileDeletedResponseDto } from '../models/profile-delete-response.dto';
+import { ProfileService } from '../../profile/profile.service';
+import { ProfileDTO } from '../../profile/models/profile.dto';
+import { SimpleProfile } from '../../profile/interfaces/simples-profile.interface';
+import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
+import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-response.dto';
 
 @Injectable()
 export class FriendService {

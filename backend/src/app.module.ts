@@ -13,6 +13,7 @@ import { GameModule } from './game/game.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MatchModule } from './match/match.module';
+import { SocialModule } from './social/social.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MatchModule } from './match/match.module';
     ChatModule,
     GameModule,
     MatchModule,
+    SocialModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
