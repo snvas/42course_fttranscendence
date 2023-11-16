@@ -8,5 +8,6 @@ import { MatchModule } from '../match/match.module';
   imports: [MatchModule],
   providers: [GameGateway, GameService],
   controllers: [GameController],
+  exports: [GameGateway, GameService]
 })
 export class GameModule {}
