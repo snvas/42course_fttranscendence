@@ -26,10 +26,7 @@ import { ConsultDataDto } from './dto/consult.data.dto';
 export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   private readonly logger: Logger = new Logger(GameGateway.name);
 
-  constructor(
-    private readonly gameService:GameService,
-    private readonly matchGameService:MatchGameService
-  ){}
+  constructor(private readonly gameService:GameService){}
   @WebSocketServer()
   server: Server;
   
@@ -66,13 +63,23 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   }
 
   @SubscribeMessage('p2')
-  pointPlayer2(@MessageBody() matchId: string) {
-    this.matchGameService.savePoints(matchId, 'p2');
+  async p2(@MessageBody() matchId: string) {
+    this.server
+      .to(`${matchId}`)
+      .emit('scoreboard', await this.gameService.p1(matchId));
+    this.server
+      .to(`${matchId}`)
+      .emit('is-ready', this.gameService.isPlayersReady(matchId));
   }
 
   @SubscribeMessage('p1')
-  pointPlayer1(@MessageBody() matchId: string) {
-    this.matchGameService.savePoints(matchId, 'p1');
+  async p1(@MessageBody() matchId: string) {
+    this.server
+      .to(`${matchId}`)
+      .emit('scoreboard', await this.gameService.p1(matchId));
+    this.server
+      .to(`${matchId}`)
+      .emit('is-ready', this.gameService.isPlayersReady(matchId));
   }
 
   @SubscribeMessage('ready')
