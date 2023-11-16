@@ -1,11 +1,9 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
+	import { gameService } from '$lib/api';
 	import p5 from 'p5';
 	import { onMount } from 'svelte';
-	import { socket, match } from '$lib/stores';
-	import { io } from 'socket.io-client';
-	import axios from 'axios';
-	import { waitFor } from '@testing-library/svelte';
+	import { match, socket } from '$lib/stores';
 
 	type Positions = {
 		positionX: number,
@@ -23,13 +21,12 @@
 		window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	$: console.log(heightFull);
 
-	const game_socket = io("http://localhost:3000");
+	const userId = $match?.as == 'p1'? String($match?.p1.id) : String($match?.p2.id);
 
-	const is_ok = game_socket.connect();
-	function sendMessage(msg: string, data: any) {
-		game_socket.emit(msg, data)
-  	}
-
+	gameService.connect();
+	gameService.joinPlayerRoom(String($match?.matchId))
+	
+	console.log($match?.matchId)
 	async function sketch(p5: p5) {
 		let game: Game;
 		let hitSound: p5.SoundFile;
@@ -39,7 +36,7 @@
 		let speedBoost: SpeedBoost;
 		//let sizeIncrease : SizeIncrease;
 
-		game_socket.on('is-ready', (data) => {
+		gameService.getSocket().on('is-ready', (data) => {
 			if (data == 1){
 				game.start();
 			} else if (data == 2) {
@@ -75,7 +72,7 @@
 		const backgroundColorSelected: string = localStorage.getItem("backgroundColor") || "black";
 
 		p5.draw = () => {
-			game_socket.on('game-data', (data) => {
+			gameService.getSocket().on('game-data', (data) => {
 				player1.setPositions(data.player1);
 				player2.setPositions(data.player2);
 				ball1.setPositions(data.ball)
@@ -124,9 +121,9 @@
 			} else {
 				if (!game.running && !game.winner) {
 					if (p5.keyIsDown(p5.ENTER)) {
-						game_socket.emit("ready", {
-							matchId: $match?.matchId,
-							userId: $match?.as
+						gameService.emitReady({
+							matchId: String($match?.matchId),
+							userId
 						});
 					}
 				}
@@ -174,10 +171,10 @@
 				this.positionY += this.velocityY;
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage('ball', {
-					matchId: $match?.matchId,
+				gameService.emitBall({
+					matchId: String($match?.matchId),
 					pos:{positionX, positionY},
-					userId: $match?.as
+					userId
 				})
 			}
 
@@ -350,10 +347,10 @@
 				}
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage(String(this.msg), {
-					matchId: $match?.matchId,
+				gameService.emitPlayer(String(this.msg), {
+					matchId: String($match?.matchId),
 					pos:{positionX, positionY},
-					userId: $match?.as
+					userId
 				})
 				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
 					socket.emit('player-move', {
