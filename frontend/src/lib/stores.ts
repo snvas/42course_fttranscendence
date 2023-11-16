@@ -65,7 +65,7 @@ export const playersStatus = writable<DashboardUsersList[]>([]);
 export const selectedGroup = writable<GroupChatDto | null>();
 
 export const friendsList = writable<SimpleProfileDto[]>([]);
-
 export const blockList = writable<SimpleProfileDto[]>([]);
+export const blockedByList = writable<SimpleProfileDto[]>([]);
 
 export const match = writable<MatchEventDto | null>(null);

@@ -20,6 +20,6 @@ import { BlockService } from './services/block.service';
     FriendService,
   ],
   imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserService, AvatarService, PlayerStatusService],
+  exports: [UserService, AvatarService, PlayerStatusService, BlockService],
 })
 export class ProfileModule {}

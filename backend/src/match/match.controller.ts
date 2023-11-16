@@ -8,12 +8,14 @@ import {
   ParseIntPipe,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
 import { MatchAnswerDto } from './models/match-answer.dto';
+import { MatchAnswerGuard } from './guards/match-answer.guard';
 
 @Controller('match')
 export class MatchController {
@@ -43,6 +45,16 @@ export class MatchController {
     await this.matchService.handleUserMatchStatus(user.id, 'online');
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('private/create/:profileId')
+  async createPrivateMatch(
+    @Param('profileId', ParseIntPipe) profileId: number,
+    @Req() { user }: { user: FortyTwoUserDto },
+  ): Promise<void> {
+    return await this.matchService.joinPrivateMatch(user.id, profileId);
+  }
+
+  @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('accept')
   async acceptMatch(
@@ -54,6 +66,7 @@ export class MatchController {
     );
   }
 
+  @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('reject')
   async rejectMatch(
@@ -62,15 +75,7 @@ export class MatchController {
     return await this.matchService.rejectMatch(matchAnswerDto.matchId);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Post('private/create/:profileId')
-  async createPrivateMatch(
-    @Param('profileId', ParseIntPipe) profileId: number,
-    @Req() { user }: { user: FortyTwoUserDto },
-  ): Promise<void> {
-    return await this.matchService.joinPrivateMatch(user.id, profileId);
-  }
-
+  @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('private/accept')
   async acceptPrivateMatch(
@@ -83,6 +88,7 @@ export class MatchController {
     );
   }
 
+  @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('private/reject')
   async rejectPrivateMatch(

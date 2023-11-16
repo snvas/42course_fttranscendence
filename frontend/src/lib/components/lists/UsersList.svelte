@@ -39,11 +39,17 @@
 							class="flex flex-row items-center gap-1 text-center text-xs justify-end flex-initial"
 						>
 							{#if !user.isBlocked}
-								<ListButton on:click={() => dispatch('chat', user)} type="chat" />
-								<ListButton on:click={() => dispatch('block', user.id)} type="block" />
+								{#if !user.isBlockedBy}
+									<ListButton on:click={() => dispatch('chat', user)} type="chat" />
 									{#if user.status == 'online'}
-								<ListButton on:click={() => dispatch('play', user.id)} type="play" disabled={playDisabled} />
+										<ListButton
+											on:click={() => dispatch('play', user.id)}
+											type="play"
+											disabled={playDisabled}
+										/>
 									{/if}
+								{/if}
+								<ListButton on:click={() => dispatch('block', user.id)} type="block" />
 								{#if user.isFriend}
 									<ListButton on:click={() => dispatch('unfriend', user.id)} type="unfriend" />
 								{:else}

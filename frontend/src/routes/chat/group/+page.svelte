@@ -39,7 +39,6 @@
 	import GroupMembers from '$lib/components/chat/GroupMembers.svelte';
 	import GroupConfig from '$lib/components/chat/GroupConfig.svelte';
 
-	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
 
 	let messages: ComponentMessage[] | null = null;
@@ -74,7 +73,8 @@
 					message: message.message,
 					createdAt: new Date(message.createdAt).toISOString(),
 					nickname: message.sender.nickname == $profile.nickname ? 'me' : message.sender.nickname,
-					sync: true
+					sync: true,
+					blocked: false
 				};
 			}) ?? null;
 
@@ -90,7 +90,8 @@
 			message: message,
 			createdAt: new Date().toISOString(),
 			nickname: 'me',
-			sync: false
+			sync: false,
+			blocked: false
 		};
 
 		if (!profile) {
@@ -533,11 +534,6 @@
 
 	$: $selectedGroup, setSelectedMessagesMembers();
 
-	//$: console.log('member.id', groupChatHistory);
-	// $: console.log('groupChatHistory', groupChatHistory);
-	// $: console.log('selectedGroup', $selectedGroup);
-	// $: console.log('messages', messages);
-	// $: console.log(confirmJoin)
 	function resetViews(keepSelected?: true) {
 		addMember = null;
 		confirmJoin = null;

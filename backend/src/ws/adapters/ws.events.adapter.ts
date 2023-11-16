@@ -46,13 +46,13 @@ export class WsEventsAdapter extends IoAdapter {
         );
 
         this.playerService
-          .setPlayerStatus(socket, 'online')
+          .setStatus(socket, 'online')
           .then(() => {
             return this.groupChatService.getPlayerGroupChatNames(socket);
           })
           .then((rooms: string[]) => {
             socket.join(rooms);
-            return this.playerService.getPlayerFrontEndStatus();
+            return this.playerService.getFrontEndStatus();
           })
           .then((playersStatus: PlayerStatusDto[]): void => {
             server.emit(socketEvent.PLAYERS_STATUS, playersStatus);
@@ -80,9 +80,9 @@ export class WsEventsAdapter extends IoAdapter {
       }
 
       this.playerService
-        .removePlayerStatus(socket)
+        .removeStatus(socket)
         .then(() => {
-          return this.playerService.getPlayerFrontEndStatus();
+          return this.playerService.getFrontEndStatus();
         })
         .then((playersStatus: PlayerStatusDto[]): void => {
           socket.broadcast.emit(socketEvent.PLAYERS_STATUS, playersStatus);

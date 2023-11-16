@@ -11,6 +11,7 @@ import entities from '../db/entities';
 import { MatchService } from './match.service';
 import { MatchGateway } from './match.gateway';
 import { MatchGameService } from './services/match-game.service';
+import { MatchAnswerGuard } from './guards/match-answer.guard';
 
 @Module({
   controllers: [MatchController],
@@ -19,6 +20,7 @@ import { MatchGameService } from './services/match-game.service';
     MatchService,
     MatchGameService,
     MatchGateway,
+    MatchAnswerGuard,
     PlayerStatusService,
     BlockService,
     ProfileService,

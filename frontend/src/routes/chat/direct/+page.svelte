@@ -7,10 +7,7 @@
 		profile,
 		playersStatus,
 		friendsList,
-		blockList,
-
-		match
-
+		blockList
 	} from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import DirectList from '$lib/components/chat/DirectList.svelte';
@@ -22,7 +19,8 @@
 		MessageProfileDto,
 		PlayerStatusDto,
 		PrivateMessageDto,
-		PrivateMessageHistoryDto
+		PrivateMessageHistoryDto,
+		SimpleProfileDto
 	} from '$lib/dtos';
 	import {
 		getPrivateMessageHistory,
@@ -32,15 +30,12 @@
 		unblockUser,
 		chatService,
 		blockedBy,
-
 		matchMakingService
-
 	} from '$lib/api';
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import { goto } from '$app/navigation';
 
-	//  [ ]: verificar se socket está conectado antes de conectar de novo
 	$socket.connect();
 
 	let messages: ComponentMessage[] | null = null;
@@ -171,7 +166,7 @@
 			blocked: false
 		};
 
-		let receiver: PlayerStatusDto | undefined = $onlineUsers.find(
+		let receiver: SimpleProfileDto | undefined = $onlineUsers.find(
 			(playerStatus: PlayerStatusDto): boolean => {
 				return playerStatus.nickname === $selectedDirect!.nickname;
 			}
@@ -189,8 +184,7 @@
 			}
 			receiver = {
 				id: receiverHistory.id,
-				nickname: receiverHistory.nickname,
-				status: 'offline'
+				nickname: receiverHistory.nickname
 			};
 		}
 
@@ -273,11 +267,6 @@
 		$socket.off('receivePrivateMessage');
 	});
 
-	// TODO: entrar ou convidar o usuário para jogar
-	async function onGame() {
-		goto('/game');
-	}
-
 	async function onFriend(userId: number) {
 		let res = await addFriend(userId);
 		if (typeof res !== 'number') {
@@ -322,12 +311,9 @@
 		return blocked;
 	}
 
-	
 	async function privateGame(userId: number) {
 		try {
-			let privateMatch = await matchMakingService.createPrivateMatch(userId);
-			$match = privateMatch.data;
-			goto('/private-room');
+			await matchMakingService.createPrivateMatch(userId);
 		} catch (error) {
 			console.log(error);
 		}

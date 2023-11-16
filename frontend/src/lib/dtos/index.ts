@@ -40,4 +40,5 @@ export type ComponentMessage = {
 export type DashboardUsersList = PlayerStatusDto & {
     isFriend: boolean;
     isBlocked: boolean;
+    isBlockedBy: boolean
 };

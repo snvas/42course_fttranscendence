@@ -1,9 +1,5 @@
 import { AxiosError, isAxiosError, type AxiosResponse } from 'axios';
-import type {
-	ProfileDTO,
-	ProfileDeletedResponseDto,
-	SimpleProfileDto
-} from '$lib/dtos';
+import type { ProfileDTO, ProfileDeletedResponseDto, SimpleProfileDto } from '$lib/dtos';
 import { goto } from '$app/navigation';
 import { profileService } from '$lib/api';
 
@@ -144,4 +140,13 @@ export async function blockedBy(userId: number): Promise<boolean> {
 	console.log('blockedByList', blockedByList);
 
 	return blockedByList.data.find((v) => v.id == userId) ? true : false;
+}
+
+export async function readBlockedBy(): Promise<SimpleProfileDto[]> {
+	try {
+		let blockedByList = await profileService.getBlockedBy();
+		return blockedByList.data;
+	} catch (error) {
+		return [];
+	}
 }

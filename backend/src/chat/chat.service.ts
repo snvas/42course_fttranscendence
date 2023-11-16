@@ -186,7 +186,7 @@ export class ChatService {
       .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, groupMemberDto);
 
     server
-      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, groupMemberDto);
 
     return {
@@ -274,7 +274,7 @@ export class ChatService {
       .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
     (await this.messageGateway.getServer())
-      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
     return groupMemberDto;
@@ -294,7 +294,7 @@ export class ChatService {
       .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
 
     (await this.messageGateway.getServer())
-      .to(`${(await this.playerStatusService.getPlayerSocket(profileId))?.id}`)
+      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
 
     return groupMemberDto;
