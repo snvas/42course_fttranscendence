@@ -13,7 +13,9 @@ export class GameService {
     private ball: Map<string, Positions>;
     private isReady: Map<string, Array<string>>;
 
-    constructor(private readonly matchGameService:MatchGameService){
+    constructor(
+        private readonly matchGameService:MatchGameService
+    ){
         this.player1 = new Map();
         this.player2 = new Map();
         this.ball = new Map();
@@ -61,6 +63,17 @@ export class GameService {
         }
     }
 
+    async p1(matchId:string) {
+        this.isReady.set(matchId, []);
+        await this.matchGameService.savePoints(matchId, 'p1');
+        return this.matchGameService.getMatchPoints(matchId);
+    }
+
+    async p2(matchId:string) {
+        this.isReady.set(matchId, []);
+        await this.matchGameService.savePoints(matchId, 'p2');
+        return await this.matchGameService.getMatchPoints(matchId);
+    }
     //get room name on consultDataDto
     playerDisconected(matchId:string, socketId:string) {
         let arr =  this.isReady.get(matchId);
