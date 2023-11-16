@@ -27,5 +27,7 @@ export const socketEvent = {
 	GAME_PLAYER_2: 'player2',
 	GAMR_BALL: 'ball',
 	GAME_PLAYER_IS_READY: 'ready',
-	GAME_JOIN_ON_ROOM: 'join'
+	GAME_JOIN_ON_ROOM: 'join',
+	GAME_POINT_PLAYER_1: 'p1',
+	GAME_POINT_PLAYER_2: 'p2'
 };
