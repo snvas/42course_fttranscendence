@@ -13,6 +13,9 @@ import { GameModule } from './game/game.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MatchModule } from './match/match.module';
+import { SocketModule } from '@nestjs/websockets/socket-module';
+import { StatusModule } from './status/status.module';
+import { SocialModule } from './social/social.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { MatchModule } from './match/match.module';
     ChatModule,
     GameModule,
     MatchModule,
+    SocketModule,
+    StatusModule,
+    SocialModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
