@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ConsultData, GameData, Player, Positions } from './types/positions.type';
+import { Positions } from './types/positions.type';
 import { SocketGameMessage } from './types/socket-game-message.type';
 import { MatchGameService } from 'src/match/services/match-game.service';
+import { GameDataDto } from './dto/game.data.dto';
+import { ConsultDataDto } from './dto/consult.data.dto';
+import { Player } from './types/player.type';
 
 @Injectable()
 export class GameService {
@@ -17,19 +20,19 @@ export class GameService {
         this.isReady = new Map([]);
     }
     //TODO make a DTO with this type
-    setPlayer1(p:GameData, soketId:string){
+    setPlayer1(p:GameDataDto, soketId:string){
         this.player1.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
     }
 
-    setPlayer2(p:GameData, soketId:string){
+    setPlayer2(p:GameDataDto, soketId:string){
         this.player2.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
     }
 
-    setBall(p:GameData){
+    setBall(p:GameDataDto){
         this.ball.set(p.matchId, {positionX: p.pos.positionX, positionY: p.pos.positionY});
     }
 
-    ballValidation(data:ConsultData, socketId:string) {
+    ballValidation(data:ConsultDataDto, socketId:string) {
         const arr = this.isReady.get(data.matchId);
         const value = arr ? arr[0]: "";
         if (socketId == value) {
@@ -38,7 +41,7 @@ export class GameService {
         return false;
     }
 
-    setReady(data:ConsultData, socketId:string){
+    setReady(data:ConsultDataDto, socketId:string){
         if (!this.isReady.get(data.matchId)) {
             this.isReady.set(data.matchId, new Array(socketId))
         }
@@ -58,7 +61,7 @@ export class GameService {
         }
     }
 
-    //get room name on consultData
+    //get room name on consultDataDto
     playerDisconected(matchId:string, socketId:string) {
         let arr =  this.isReady.get(matchId);
         if (arr?.indexOf(socketId) == 0) {
