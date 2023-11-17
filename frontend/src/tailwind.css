@@ -42,6 +42,16 @@
 		@apply transition-all;
 	}
 
+	.btn-primary-red {
+		@apply bg-[#ef4444] border-4 hover:bg-[#f87171];
+		@apply rounded-lg;
+		@apply w-full;
+		@apply text-2xl uppercase;
+		@apply py-2 px-4;
+		@apply disabled:bg-slate-400;
+		@apply transition-all;
+	}
+
 	.key-style {
 		@apply flex;
 		@apply items-center;
