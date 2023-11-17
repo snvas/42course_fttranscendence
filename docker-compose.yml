@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - pong_network
+       - pong_network
     restart: unless-stopped
 
   pgadmin:
@@ -61,8 +61,24 @@ services:
     ports:
       - "3000:3000"
     networks:
-        - pong_network
+         - pong_network
     restart: unless-stopped
+
+  nestjs-migrate:
+      depends_on:
+        - nestjs
+      image: nestjs
+      container_name: nestjs_migrate_container
+      command: npm run migration:run
+      environment:
+        DB_HOST: ${DB_HOST}
+        DB_PORT: ${DB_PORT}
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_NAME: ${DB_NAME}
+      networks:
+        - pong_network
+      restart: "no"
 
   svelte:
     depends_on:
