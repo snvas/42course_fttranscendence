@@ -32,24 +32,28 @@
 		@apply transition-all;
 	}
 
-	.btn-primary-yellow {
-		@apply bg-[#f59e0b] border-4 hover:bg-[#fbbf24];
+	.key-style {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply bg-white;
 		@apply rounded-lg;
-		@apply w-full;
-		@apply text-2xl uppercase;
-		@apply py-2 px-4;
-		@apply disabled:bg-slate-400;
-		@apply transition-all;
+		@apply h-20;
+		@apply w-20;
+		@apply m-2;
+		@apply text-4xl uppercase;
 	}
 
-	.btn-primary-red {
-		@apply bg-[#ef4444] border-4 hover:bg-[#f87171];
+	.key-style-disabled {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply bg-gray-800;
 		@apply rounded-lg;
-		@apply w-full;
-		@apply text-2xl uppercase;
-		@apply py-2 px-4;
-		@apply disabled:bg-slate-400;
-		@apply transition-all;
+		@apply h-20;
+		@apply w-20;
+		@apply m-2;
+		@apply text-4xl uppercase;
 	}
 
 	.btn-op {
