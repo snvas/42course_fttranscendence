@@ -42,7 +42,7 @@ class GameService {
     public emitPlayer(p:string,message: GameDataDto): Promise<GameDataDto> {
         let event: string;
         
-        if (p == 'p1') {
+        if (p == 'player1') {
             event = socketEvent.GAME_PLAYER_1
         }
         else {
