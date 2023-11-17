@@ -97,14 +97,14 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   ): Promise<void> {
 
     this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
-    this.server.emit('is-ready', this.gameService.playerDisconected(String(socket.rooms),socket.id));
+    //this.server.emit('is-ready', this.gameService.playerDisconected(String(socket.rooms),socket.id));
   }
 
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
     console.log(socket.rooms);
-    this.gameService.reConnect(String(socket.rooms), socket.id);
+    //this.gameService.reConnect(String(socket.rooms), socket.id);
   }
 
   @SubscribeMessage('ball')
