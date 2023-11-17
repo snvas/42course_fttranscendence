@@ -45,7 +45,7 @@ import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { BlockService } from '../../social/services/block.service';
 import { socketEvent } from '../../ws/ws-events';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { StatusService } from '../../ws/status.service';
+import { StatusService } from '../../social/services/status.service';
 
 @Injectable()
 export class GroupChatService {

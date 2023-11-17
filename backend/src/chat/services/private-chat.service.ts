@@ -15,7 +15,7 @@ import { MessageProfile } from '../interfaces/message/message-profile.interface'
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../types/authenticated-socket.type';
 import { socketEvent } from '../../ws/ws-events';
-import { StatusService } from '../../ws/status.service';
+import { StatusService } from '../../social/services/status.service';
 import { BlockService } from '../../social/services/block.service';
 
 @Injectable()

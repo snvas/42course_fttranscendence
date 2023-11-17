@@ -14,7 +14,7 @@ import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { GroupChatService } from './services/group-chat.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupMemberService } from './services/group-member.service';
-import { StatusService } from '../ws/status.service';
+import { StatusService } from '../social/services/status.service';
 import { GroupMessageService } from './services/group-message.service';
 import { BlockService } from '../social/services/block.service';
 
@@ -41,7 +41,6 @@ import { BlockService } from '../social/services/block.service';
   exports: [
     ChatService,
     ChatGateway,
-    StatusService,
     PrivateChatService,
     BlockService,
     GroupChatService,

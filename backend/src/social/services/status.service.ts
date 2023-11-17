@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlayerStatusSocket } from '../chat/types/player-status.socket';
-import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
-import { ProfileDTO } from '../profile/models/profile.dto';
-import { PlayerStatusDto } from '../profile/models/player-status.dto';
-import { ProfileService } from '../profile/profile.service';
-import { SimpleProfileDto } from '../profile/models/simple-profile.dto';
-import { BlockService } from '../social/services/block.service';
+import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
+import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
+import { ProfileDTO } from '../../profile/models/profile.dto';
+import { PlayerStatusDto } from '../../profile/models/player-status.dto';
+import { ProfileService } from '../../profile/profile.service';
+import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
+import { BlockService } from './block.service';
 
 @Injectable()
 export class StatusService {
@@ -16,6 +16,12 @@ export class StatusService {
     private readonly profileService: ProfileService,
     private readonly blockService: BlockService,
   ) {}
+
+  public async getPlayerStatusSocket(): Promise<
+    Map<number, PlayerStatusSocket>
+  > {
+    return this.playerStatusSocket;
+  }
 
   public async set(socket: AuthenticatedSocket, status: string): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
@@ -81,7 +87,17 @@ export class StatusService {
   public async getSocket(
     profileId: number,
   ): Promise<AuthenticatedSocket | undefined> {
-    return this.playerStatusSocket.get(profileId)?.socket;
+    this.logger.verbose(`### Player [${profileId}] get socket`);
+    const playerStatus: PlayerStatusSocket | undefined =
+      this.playerStatusSocket.get(profileId);
+
+    this.logger.verbose(`### Sockets: ${this.playerStatusSocket.size}`);
+
+    if (!playerStatus) {
+      return undefined;
+    }
+
+    return playerStatus.socket;
   }
 
   public async addRoom(profileId: number, room: string): Promise<void> {

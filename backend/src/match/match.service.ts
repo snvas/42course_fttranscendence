@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { StatusService } from '../ws/status.service';
+import { StatusService } from '../social/services/status.service';
 import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
@@ -35,6 +35,18 @@ export class MatchService {
     private readonly matchRepository: Repository<MatchEntity>,
     private dataSource: DataSource,
   ) {}
+
+  @Cron(CronExpression.EVERY_SECOND)
+  async onlineUsersInfoJob(): Promise<void> {
+    const playersStatus =
+      await this.playerStatusService.getPlayerStatusSocket();
+
+    this.logger.verbose(`### Online users ${playersStatus.size}}`);
+
+    playersStatus.forEach((a) => {
+      this.logger.verbose(`### Player [${a.id}] is ${a.status}`);
+    });
+  }
 
   public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);

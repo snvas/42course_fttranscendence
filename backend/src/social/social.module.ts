@@ -7,6 +7,7 @@ import { FriendService } from './services/friend.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { SocialController } from './social.controller';
+import { StatusService } from './services/status.service';
 
 @Module({
   controllers: [SocialController],
@@ -16,7 +17,9 @@ import { SocialController } from './social.controller';
     ProfileService,
     AvatarService,
     FriendService,
+    StatusService,
   ],
+  exports: [UserService, AvatarService, FriendService, StatusService],
   imports: [TypeOrmModule.forFeature(entities)],
 })
 export class SocialModule {}

@@ -5,7 +5,7 @@ import express from 'express';
 import { INestApplication, Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { socketEvent } from '../ws-events';
-import { StatusService } from '../status.service';
+import { StatusService } from '../../social/services/status.service';
 import { GroupChatService } from '../../chat/services/group-chat.service';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 
