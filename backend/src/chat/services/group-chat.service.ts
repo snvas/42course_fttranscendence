@@ -45,7 +45,6 @@ import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { BlockService } from '../../social/services/block.service';
 import { socketEvent } from '../../ws/ws-events';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { StatusService } from '../../social/services/status.service';
 
 @Injectable()
 export class GroupChatService {
@@ -53,7 +52,6 @@ export class GroupChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: StatusService,
     private readonly blockService: BlockService,
     private readonly groupMemberService: GroupMemberService,
     private readonly groupMessageService: GroupMessageService,
@@ -71,7 +69,7 @@ export class GroupChatService {
 
     try {
       const blockedPlayersSockets: string[] =
-        await this.playerStatusService.getBlockedByPlayersSockets(socket);
+        await this.blockService.getBlockedByPlayersSockets(socket);
 
       const groupMessage: GroupMessageDto = await this.saveGroupMessage(
         socket,

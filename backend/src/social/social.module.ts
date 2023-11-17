@@ -19,7 +19,7 @@ import { StatusService } from './services/status.service';
     FriendService,
     StatusService,
   ],
-  exports: [UserService, AvatarService, FriendService, StatusService],
+  exports: [UserService, AvatarService, FriendService],
   imports: [TypeOrmModule.forFeature(entities)],
 })
 export class SocialModule {}

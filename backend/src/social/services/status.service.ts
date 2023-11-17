@@ -4,18 +4,13 @@ import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type'
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 import { ProfileService } from '../../profile/profile.service';
-import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
-import { BlockService } from './block.service';
 
 @Injectable()
 export class StatusService {
   private readonly logger: Logger = new Logger(StatusService.name);
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
-  constructor(
-    private readonly profileService: ProfileService,
-    private readonly blockService: BlockService,
-  ) {}
+  constructor(private readonly profileService: ProfileService) {}
 
   public async getPlayerStatusSocket(): Promise<
     Map<number, PlayerStatusSocket>
@@ -124,48 +119,5 @@ export class StatusService {
     }
 
     socket.leave(room);
-  }
-
-  public async getBlockedByPlayersSockets(
-    socket: AuthenticatedSocket,
-  ): Promise<string[]> {
-    const blockedUsers: SimpleProfileDto[] =
-      await this.blockService.getBlockedBy(socket.request.user.id);
-
-    const players: PlayerStatusDto[] = await this.getFrontEndStatus();
-
-    const blockedPlayersSockets: string[] = (
-      await Promise.all(
-        players.map(
-          async (
-            player: PlayerStatusDto,
-          ): Promise<AuthenticatedSocket | undefined> => {
-            const socket: AuthenticatedSocket | undefined =
-              await this.getSocket(player.id);
-            if (
-              socket !== undefined &&
-              blockedUsers.some(
-                (blocked: SimpleProfileDto): boolean =>
-                  blocked.id === player.id,
-              )
-            ) {
-              return socket;
-            }
-            return undefined;
-          },
-        ),
-      )
-    )
-      .filter(
-        (socket: AuthenticatedSocket | undefined): boolean =>
-          socket !== undefined,
-      )
-      .map((socket: AuthenticatedSocket) => socket.id as string);
-
-    this.logger.verbose(
-      `### Blocked players sockets: [${blockedPlayersSockets}]`,
-    );
-
-    return blockedPlayersSockets;
   }
 }
