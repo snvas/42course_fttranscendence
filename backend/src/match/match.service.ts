@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PlayerStatusService } from '../ws/player-status.service';
+import { StatusService } from '../ws/status.service';
 import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
@@ -28,25 +28,13 @@ export class MatchService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     private readonly blockService: BlockService,
     private readonly matchGateway: MatchGateway,
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
     private dataSource: DataSource,
   ) {}
-
-  @Cron(CronExpression.EVERY_SECOND)
-  async onlineUsersInfoJob(): Promise<void> {
-    const playersStatus =
-      await this.playerStatusService.getPlayerStatusSocket();
-
-    this.logger.verbose(`### Online users ${playersStatus.size}}`);
-
-    playersStatus.forEach((a) => {
-      this.logger.verbose(`### Player [${a.id}] is ${a.status}`);
-    });
-  }
 
   public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
@@ -217,7 +205,7 @@ export class MatchService {
       throw new BadRequestException('Player not connected');
     }
 
-    await this.playerStatusService.setStatus(socket, status);
+    await this.playerStatusService.set(socket, status);
 
     this.logger.verbose(
       `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
@@ -250,8 +238,8 @@ export class MatchService {
           await this.playerStatusService.getSocket(p2.id);
 
         if (p1Socket && p2Socket) {
-          await this.playerStatusService.setStatus(p1Socket, 'waitingGame');
-          await this.playerStatusService.setStatus(p2Socket, 'waitingGame');
+          await this.playerStatusService.set(p1Socket, 'waitingGame');
+          await this.playerStatusService.set(p2Socket, 'waitingGame');
 
           if (
             (await this.blockService.isUserBlocked(p1.id, p2.id)) ||
@@ -297,7 +285,7 @@ export class MatchService {
       );
       this.logger.verbose(`Timeout {${timeout}} now {${now}}`);
 
-      await this.playerStatusService.setStatus(playerSocket, 'waitingMatch');
+      await this.playerStatusService.set(playerSocket, 'waitingMatch');
     }
   }
 
@@ -480,7 +468,7 @@ export class MatchService {
     matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
     const playerStatus: PlayerStatusDto[] =
-      await this.playerStatusService.getAllStatus();
+      await this.playerStatusService.getAll();
 
     return playerStatus.filter(
       (player: PlayerStatusDto): boolean => player.status === matchStatus,

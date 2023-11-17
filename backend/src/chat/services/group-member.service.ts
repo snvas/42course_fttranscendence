@@ -22,7 +22,7 @@ import { ChatRole } from '../types/chat-role.type';
 import { GroupMemberDto } from '../models/group/group-member.dto';
 import { MessageProfileDto } from '../models/message/message-profile.dto';
 import { GroupChatDto } from '../models/group/group-chat.dto';
-import { PlayerStatusService } from '../../ws/player-status.service';
+import { StatusService } from '../../ws/status.service';
 import { GroupMemberDeletedResponse } from '../interfaces/group/group-member-deleted-response.interface';
 import { GroupMemberUpdatedResponseDto } from '../models/group/group-member-updated-response.dto';
 import { GroupMemberRoleUpdateDto } from '../models/group/group-member-role-update.dto';
@@ -32,7 +32,7 @@ export class GroupMemberService {
   private readonly logger: Logger = new Logger(GroupMemberService.name);
 
   constructor(
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly playerStatusService: StatusService,
     @InjectRepository(GroupMemberEntity)
     private readonly groupMemberRepository: Repository<GroupMemberEntity>,
   ) {}

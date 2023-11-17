@@ -8,8 +8,8 @@ import { SimpleProfileDto } from '../profile/models/simple-profile.dto';
 import { BlockService } from '../social/services/block.service';
 
 @Injectable()
-export class PlayerStatusService {
-  private readonly logger: Logger = new Logger(PlayerStatusService.name);
+export class StatusService {
+  private readonly logger: Logger = new Logger(StatusService.name);
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(
@@ -17,16 +17,7 @@ export class PlayerStatusService {
     private readonly blockService: BlockService,
   ) {}
 
-  public async getPlayerStatusSocket(): Promise<
-    Map<number, PlayerStatusSocket>
-  > {
-    return this.playerStatusSocket;
-  }
-
-  public async setStatus(
-    socket: AuthenticatedSocket,
-    status: string,
-  ): Promise<void> {
+  public async set(socket: AuthenticatedSocket, status: string): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
     );
@@ -43,7 +34,7 @@ export class PlayerStatusService {
     this.playerStatusSocket.set(profile.id, playerStatus);
   }
 
-  public async removeStatus(socket: AuthenticatedSocket): Promise<void> {
+  public async remove(socket: AuthenticatedSocket): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
     );
@@ -69,7 +60,7 @@ export class PlayerStatusService {
     );
   }
 
-  public async getAllStatus(): Promise<PlayerStatusDto[]> {
+  public async getAll(): Promise<PlayerStatusDto[]> {
     const playersStatusSockets: PlayerStatusSocket[] = Array.from(
       this.playerStatusSocket.values(),
     );
