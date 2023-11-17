@@ -86,6 +86,10 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
   setReady(
     @MessageBody() data: ConsultDataDto,
     @ConnectedSocket() socket: Socket) {
+    // const [, secondRoomName] = Array.from(socket.rooms);
+    
+    // console.log('Socket is in rooms:', secondRoomName);
+
     this.gameService.setReady(data, socket.id);
     this.server
       .to(`${data.matchId}`)
@@ -116,7 +120,7 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection{
       this.gameService.setBall(data);
       this.server
         .to(`${data.matchId}`)
-        .emit('game-data', this.gameService.allData(data.matchId));
+        .emit('ballPosition', this.gameService.getBall(data.matchId));
     }
   }
 }

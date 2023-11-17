@@ -23,11 +23,15 @@ export class GameService {
     }
     //TODO make a DTO with this type
     setPlayer1(p:GameDataDto, soketId:string){
-        this.player1.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        if (this.player2.get(p.matchId)?.soketId != soketId) {
+            this.player1.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        }
     }
 
     setPlayer2(p:GameDataDto, soketId:string){
-        this.player2.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        if (this.player1.get(p.matchId)?.soketId != soketId) {
+            this.player2.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        }
     }
 
     setBall(p:GameDataDto){
@@ -103,6 +107,12 @@ export class GameService {
         return 0;
     }
 
+    getBall(matchId:string){
+        let pos = this.ball.get(matchId);
+        const ball = pos ? pos : {positionX:0, positionY:0};
+        return {ball}
+    }
+
     allData(matchId:string): SocketGameMessage {
         let obj = this.player1.get(matchId);
         const player1 = obj ? obj.pos : {positionX:0, positionY:0};
@@ -110,6 +120,6 @@ export class GameService {
         const player2 = obj ? obj.pos : {positionX:0, positionY:0};
         let pos = this.ball.get(matchId);
         const ball = pos ? pos : {positionX:0, positionY:0};
-        return {player1: player1, player2: player2, ball}
+        return {player1, player2, ball}
     }
 }

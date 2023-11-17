@@ -39,20 +39,22 @@ class GameService {
         });
     }
 
-    public emitPlayer(p:string,message: GameDataDto): Promise<GameDataDto> {
-        let event: string;
-        
-        if (p == 'player1') {
-            event = socketEvent.GAME_PLAYER_1
-        }
-        else {
-            event = socketEvent.GAME_PLAYER_2
-        }
-        return new Promise<GameDataDto>((resolve): void => {
-            this.socket?.emit(event, message, (ack: GameDataDto): void => {
-                resolve(ack);
+    public emitPlayer(p:string,message: GameDataDto) {
+        console.log('Emit player here: ', p)
+        if (p == 'p1') {
+            return new Promise<GameDataDto>((resolve): void => {
+                this.socket?.emit(socketEvent.GAME_PLAYER_1, message, (ack: GameDataDto): void => {
+                    resolve(ack);
+                });
             });
-        });
+        }
+        else if (p == 'p2') {
+            return new Promise<GameDataDto>((resolve): void => {
+                this.socket?.emit(socketEvent.GAME_PLAYER_2, message, (ack: GameDataDto): void => {
+                    resolve(ack);
+                });
+            });
+        }
     }
 
     public joinPlayerRoom(matchId: string): Promise<string> {
