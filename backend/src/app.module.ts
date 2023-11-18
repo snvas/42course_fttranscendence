@@ -15,6 +15,7 @@ import { SocialModule } from './social/social.module';
 import { StatusModule } from './status/status.module';
 import { MatchModule } from './match/match.module';
 import { ChatModule } from './chat/chat.module';
+import { WsModule } from './ws/ws.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ChatModule } from './chat/chat.module';
     MatchModule,
     SocialModule,
     StatusModule,
+    WsModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
