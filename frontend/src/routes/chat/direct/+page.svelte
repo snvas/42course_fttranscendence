@@ -35,6 +35,7 @@
 	import { parseISO } from 'date-fns';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import { goto } from '$app/navigation';
+	import { verifyUnautorized } from '$lib/utils';
 
 	$socket.connect();
 
@@ -269,19 +270,22 @@
 
 	async function onFriend(userId: number) {
 		let res = await addFriend(userId);
-		if (typeof res !== 'number') {
+		if (typeof res !== 'number' && res != undefined) {
 			if (!$friendsList.find((v) => v.id == userId)) {
 				$friendsList.push(res);
 				$friendsList = $friendsList;
 			}
+		} else {
+			verifyUnautorized(res);
 		}
-		console.log(res);
 	}
 
 	async function onUnfriend(userId: number) {
 		let res = await deleteFriend(userId);
 		if (res == true) {
 			$friendsList = $friendsList.filter((v) => v.id != userId);
+		} else {
+			verifyUnautorized(res);
 		}
 	}
 
@@ -292,14 +296,17 @@
 				$blockList.push(res);
 				$blockList = $blockList;
 			}
+		} else {
+			verifyUnautorized(res);
 		}
-		console.log(res);
 	}
 
 	async function onUnblock(userId: number) {
 		let res = await unblockUser(userId);
 		if (res == true) {
 			$blockList = $blockList.filter((v) => v.id != userId);
+		} else {
+			verifyUnautorized(res);
 		}
 	}
 
@@ -315,7 +322,7 @@
 		try {
 			await matchMakingService.createPrivateMatch(userId);
 		} catch (error) {
-			console.log(error);
+			verifyUnautorized(error);
 		}
 	}
 

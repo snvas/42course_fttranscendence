@@ -6,7 +6,7 @@
 	import type { GroupChatDto } from '$lib/dtos';
 	import { isAxiosError, type AxiosResponse } from 'axios';
 	import { chatService } from '$lib/api';
-	import { validateGroupName } from '$lib/utils';
+	import { validateGroupName, verifyUnautorized } from '$lib/utils';
 
 	onDestroy(() => {
 		$socket.off('receivePrivateMessage');
@@ -69,6 +69,8 @@
 				console.log(error);
 				if (error.response?.status == 406) {
 					alertName = alerts.exist;
+				} else if (verifyUnautorized(error)) {
+					return;
 				} else {
 					console.log('unknown error');
 				}

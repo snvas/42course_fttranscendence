@@ -2,12 +2,14 @@ import { AxiosError, isAxiosError, type AxiosResponse } from 'axios';
 import type { ProfileDTO, ProfileDeletedResponseDto, SimpleProfileDto } from '$lib/dtos';
 import { goto } from '$app/navigation';
 import { profileService } from '$lib/api';
+import { verifyUnautorized } from '$lib/utils';
 
 export async function getProfile(): Promise<AxiosResponse<ProfileDTO> | null> {
 	try {
 		const p = await profileService.getProfile();
 		return p;
 	} catch (error) {
+		verifyUnautorized(error);
 		if (error instanceof AxiosError) {
 			if (error.response?.status == 404) {
 				goto('/welcome');
@@ -24,6 +26,7 @@ export async function getPublicProfile(userId: string): Promise<AxiosResponse<Pr
 		const p = await profileService.getPublicProfile(userId);
 		return p;
 	} catch (error) {
+		verifyUnautorized(error);
 		if (error instanceof AxiosError) {
 			if (error.response?.status == 404) {
 				goto('/404.html');
@@ -39,7 +42,8 @@ export async function getUserAvatar(profilePromise: Promise<AxiosResponse<Profil
 		if (!profile?.data?.avatarId) throw new Error();
 		const image = await profileService.getAvatarImage(profile.data.avatarId);
 		return image;
-	} catch {
+	} catch (error) {
+		verifyUnautorized(error);
 		return null;
 	}
 }
@@ -51,7 +55,8 @@ export async function getAvatarFromId(
 	try {
 		const image = await profileService.getAvatarImage(avatarId);
 		return image;
-	} catch {
+	} catch (error) {
+		verifyUnautorized(error);
 		return null;
 	}
 }
@@ -60,7 +65,8 @@ export async function readAllUsers() {
 	try {
 		const u: AxiosResponse<ProfileDTO[]> = await profileService.readAllUsers();
 		return u.data;
-	} catch {
+	} catch (error) {
+		verifyUnautorized(error);
 		return [];
 	}
 }
@@ -70,6 +76,7 @@ export async function readFriends() {
 		const friends: AxiosResponse<SimpleProfileDto[]> = await profileService.getFriends();
 		return friends.data;
 	} catch (error) {
+		verifyUnautorized(error);
 		return [];
 	}
 }
@@ -79,6 +86,7 @@ export async function addFriend(userId: number) {
 		const newFriend: AxiosResponse<SimpleProfileDto> = await profileService.addFriend(`${userId}`);
 		return newFriend.data;
 	} catch (error) {
+		if (verifyUnautorized(error)) return;
 		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
@@ -93,6 +101,7 @@ export async function deleteFriend(userId: number): Promise<boolean | number> {
 		);
 		return res.data.deleted;
 	} catch (error) {
+		verifyUnautorized(error);
 		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
@@ -105,6 +114,7 @@ export async function blockUser(userId: number): Promise<SimpleProfileDto | numb
 		const res: AxiosResponse<SimpleProfileDto> = await profileService.blockUser(`${userId}`);
 		return res.data;
 	} catch (error) {
+		verifyUnautorized(error);
 		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
@@ -117,6 +127,7 @@ export async function readBlockeds() {
 		const blockeds: AxiosResponse<SimpleProfileDto[]> = await profileService.getBlockedUsers();
 		return blockeds.data;
 	} catch (error) {
+		verifyUnautorized(error);
 		return [];
 	}
 }
@@ -128,6 +139,7 @@ export async function unblockUser(userId: number): Promise<boolean | number> {
 		);
 		return res.data.deleted;
 	} catch (error) {
+		verifyUnautorized(error);
 		if (isAxiosError(error) && error.response) {
 			return error.response.status;
 		}
@@ -136,10 +148,14 @@ export async function unblockUser(userId: number): Promise<boolean | number> {
 }
 
 export async function blockedBy(userId: number): Promise<boolean> {
-	let blockedByList = await profileService.getBlockedBy();
-	console.log('blockedByList', blockedByList);
-
-	return blockedByList.data.find((v) => v.id == userId) ? true : false;
+	try {
+		let blockedByList = await profileService.getBlockedBy();
+		console.log('blockedByList', blockedByList);
+		return blockedByList.data.find((v) => v.id == userId) ? true : false;
+	} catch (e) {
+		verifyUnautorized(e);
+		throw e;
+	}
 }
 
 export async function readBlockedBy(): Promise<SimpleProfileDto[]> {
@@ -147,6 +163,7 @@ export async function readBlockedBy(): Promise<SimpleProfileDto[]> {
 		let blockedByList = await profileService.getBlockedBy();
 		return blockedByList.data;
 	} catch (error) {
+		verifyUnautorized(error);
 		return [];
 	}
 }

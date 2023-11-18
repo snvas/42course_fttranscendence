@@ -6,6 +6,7 @@ import type {
 	PrivateMessageHistoryDto
 } from '$lib/dtos';
 import { chatService } from './services/ChatService';
+import { verifyUnautorized } from '$lib/utils';
 
 export async function getPrivateMessageHistory(): Promise<PrivateMessageHistoryDto[] | undefined> {
 	try {
@@ -22,6 +23,7 @@ export async function readAllGroupChats(): Promise<GroupChatDto[]> {
 		const response: AxiosResponse<GroupChatDto[]> = await chatService.getAllGroupChats();
 		return response.data;
 	} catch (error) {
+		if (verifyUnautorized(error)) return [];
 		throw error;
 	}
 }
@@ -31,6 +33,7 @@ export async function readChatHistory(): Promise<GroupChatHistoryDto[]> {
 		const response = await chatService.getGroupMessageHistory();
 		return response.data;
 	} catch (error) {
+		if (verifyUnautorized(error)) return [];
 		throw error;
 	}
 }
@@ -79,13 +82,16 @@ export async function addGroupChatUser(
 	}
 }
 
-export async function kickGroupChatUser(groupId: number, profileId: number): Promise<boolean> {
+export async function kickGroupChatUser(
+	groupId: number,
+	profileId: number
+): Promise<boolean | number> {
 	try {
 		await chatService.kickGroupChatMember(groupId, profileId);
 		return true;
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			return false;
+			return error.response.data;
 		}
 		throw error;
 	}
