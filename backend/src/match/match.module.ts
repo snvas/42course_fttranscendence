@@ -27,13 +27,6 @@ import { StatusModule } from '../status/status.module';
     AvatarService,
   ],
   imports: [TypeOrmModule.forFeature(entities), StatusModule],
-  exports: [
-    ProfileService,
-    UserService,
-    AvatarService,
-    BlockService,
-    MatchService,
-    MatchGameService,
-  ],
+  exports: [MatchGameService],
 })
 export class MatchModule {}

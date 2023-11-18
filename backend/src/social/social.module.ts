@@ -10,7 +10,7 @@ import { ProfileModule } from '../profile/profile.module';
 @Module({
   controllers: [SocialController],
   providers: [BlockService, FriendService],
-  exports: [BlockService, FriendService],
   imports: [TypeOrmModule.forFeature(entities), StatusModule, ProfileModule],
+  exports: [BlockService, FriendService],
 })
 export class SocialModule {}
