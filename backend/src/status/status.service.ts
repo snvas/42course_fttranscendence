@@ -13,21 +13,11 @@ export class StatusService {
 
   constructor(private readonly profileService: ProfileService) {}
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_MINUTE)
   async onlineUsersInfoJob(): Promise<void> {
     const playersStatus = this.playerStatusSocket;
 
     this.logger.verbose(`### Online users ${playersStatus.size}}`);
-
-    // playersStatus.forEach((a) => {
-    //   this.logger.verbose(`### Player [${a.id}] is ${a.status}`);
-    // });
-  }
-
-  public async getPlayerStatusSocket(): Promise<
-    Map<number, PlayerStatusSocket>
-  > {
-    return this.playerStatusSocket;
   }
 
   public async set(socket: AuthenticatedSocket, status: string): Promise<void> {

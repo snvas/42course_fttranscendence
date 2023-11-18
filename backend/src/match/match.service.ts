@@ -36,17 +36,6 @@ export class MatchService {
     private dataSource: DataSource,
   ) {}
 
-  @Cron(CronExpression.EVERY_SECOND)
-  async onlineUsersInfoJob(): Promise<void> {
-    const playersStatus = await this.status.getPlayerStatusSocket();
-
-    this.logger.verbose(`### Online users ${playersStatus.size}}`);
-
-    playersStatus.forEach((a) => {
-      this.logger.verbose(`### Player [${a.id}] is ${a.status}`);
-    });
-  }
-
   public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
     const matchEntity: MatchEntity[] = await this.matchRepository.find({

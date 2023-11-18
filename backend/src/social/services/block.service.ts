@@ -16,6 +16,8 @@ import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-r
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 import { StatusService } from '../../status/status.service';
+import { socketEvent } from '../../ws/ws-events';
+import { SocialGateway } from '../social.gateway';
 
 @Injectable()
 export class BlockService {
@@ -24,6 +26,7 @@ export class BlockService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly statusService: StatusService,
+    private readonly socialGateway: SocialGateway,
     @InjectRepository(BlockEntity)
     private readonly blockRepository: Repository<BlockEntity>,
   ) {}
@@ -58,18 +61,18 @@ export class BlockService {
         avatarId: blockUsersDb.blockedUser.avatarId,
       } as SimpleProfileDto;
 
-      // const blockedSocket: AuthenticatedSocket | undefined =
-      //   await this.playerStatusService.getSocket(blockedUser.id);
-      //
-      // if (blockedSocket) {
-      //   (await this.matchGateway.getServer())
-      //     .to(blockedSocket.id)
-      //     .emit(socketEvent.BLOCKED_BY, {
-      //       id: userProfile.id,
-      //       nickname: userProfile.nickname,
-      //       avatarId: userProfile.avatarId,
-      //     } as SimpleProfileDto);
-      // }
+      const blockedSocket: AuthenticatedSocket | undefined =
+        await this.statusService.getSocket(blockedUser.id);
+
+      if (blockedSocket) {
+        (await this.socialGateway.getServer())
+          .to(blockedSocket.id)
+          .emit(socketEvent.BLOCKED_BY, {
+            id: userProfile.id,
+            nickname: userProfile.nickname,
+            avatarId: userProfile.avatarId,
+          } as SimpleProfileDto);
+      }
 
       return blockedUser;
     } catch (Error) {
