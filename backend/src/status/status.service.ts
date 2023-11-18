@@ -4,6 +4,7 @@ import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
 import { ProfileDTO } from '../profile/models/profile.dto';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { ProfileService } from '../profile/profile.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class StatusService {
@@ -11,6 +12,17 @@ export class StatusService {
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(private readonly profileService: ProfileService) {}
+
+  @Cron(CronExpression.EVERY_SECOND)
+  async onlineUsersInfoJob(): Promise<void> {
+    const playersStatus = this.playerStatusSocket;
+
+    this.logger.verbose(`### Online users ${playersStatus.size}}`);
+
+    // playersStatus.forEach((a) => {
+    //   this.logger.verbose(`### Player [${a.id}] is ${a.status}`);
+    // });
+  }
 
   public async getPlayerStatusSocket(): Promise<
     Map<number, PlayerStatusSocket>

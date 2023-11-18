@@ -10,7 +10,7 @@ import {
 import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
+import { WsAuthenticatedGuard } from '../ws/guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
 import { socketEvent } from '../ws/ws-events';
