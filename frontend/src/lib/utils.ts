@@ -1,3 +1,6 @@
+import { goto } from '$app/navigation';
+import { isAxiosError } from 'axios';
+
 export function validateNicknameInput(nickname: string): true | string {
 	const maxLength = 12;
 	const minLength = 3;
@@ -38,6 +41,21 @@ export function validateMessage(message: string): true | string {
 	if (message.length > maxLength) {
 		return `message is too long, maximum size is ${maxLength} characters`;
 	}
-	
+
 	return true;
+}
+
+export function verifyUnautorized(error: any | number): boolean {
+	let errorCode: number = 0;
+	if (isAxiosError(error) && error.response) {
+		errorCode = error.response.status;
+	} else if (typeof error === 'number') {
+		errorCode = error;
+	}
+
+	if (errorCode == 403) {
+		goto('/login');
+		return true;
+	}
+	return false;
 }

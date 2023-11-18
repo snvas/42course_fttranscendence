@@ -38,6 +38,7 @@
 	import ConfirmLeaveGroup from '$lib/components/chat/ConfirmLeaveGroup.svelte';
 	import GroupMembers from '$lib/components/chat/GroupMembers.svelte';
 	import GroupConfig from '$lib/components/chat/GroupConfig.svelte';
+	import { verifyUnautorized } from '$lib/utils';
 
 	$socket.connect();
 
@@ -144,6 +145,7 @@
 	async function onJoinGroup(groupId: number, password?: string) {
 		let res = await joinGroupChat(groupId, password);
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 		loadingGroups = readChatHistory();
@@ -154,6 +156,7 @@
 		let res = await leaveGroupChat(groupId);
 
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 		let newGroupChatHistory = groupChatHistory.filter((group) => group.id != groupId);
@@ -164,6 +167,7 @@
 		let res = await addGroupChatUser(selected!.id, profileId);
 
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 		addMemberToGroup(res);
@@ -173,7 +177,8 @@
 		let res = await kickGroupChatUser(selected!.id, profileId);
 
 		// succesful kick is recieved by socket
-		if (res) {
+		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -182,6 +187,7 @@
 		let res = await muteGroupChatMember(group!.id, profileId);
 
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -189,6 +195,7 @@
 	async function onUnmuteGroupChatMember(group: GroupChatDto | null, profileId: number) {
 		let res = await unmuteGroupChatMember(group!.id, profileId);
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -201,6 +208,7 @@
 		let res = await updateGroupChatMemberRole(selected!.id, profileId, role);
 
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -251,6 +259,7 @@
 	async function onDeletedGroupChat(groupChat: GroupChatDto | null) {
 		let res = await deleteGroupChatById(groupChat!.id);
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -258,6 +267,7 @@
 	async function onBanGroupMember(group: GroupChatDto | null, profileId: number) {
 		let res = await banGroupChatMember(group!.id, profileId);
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}
@@ -265,6 +275,7 @@
 	async function onUnbanGroupMember(group: GroupChatDto | null, profileId: number) {
 		let res = await unbunGroupChatMember(group!.id, profileId);
 		if (typeof res === 'number') {
+			verifyUnautorized(res);
 			return res;
 		}
 	}

@@ -29,6 +29,7 @@
 	import { page } from '$app/stores';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
+	import { verifyUnautorized } from '$lib/utils';
 
 	async function fetchAllPlayersStatus() {
 		if ($page.url.pathname == '/login') {
@@ -139,6 +140,7 @@
 			await matchMakingService.acceptPrivateMatch(privateMatch.matchId);
 			status = 'waiting-confirm';
 		} catch (e) {
+			verifyUnautorized(e);
 			console.log(e);
 		}
 	}
@@ -149,6 +151,7 @@
 			await matchMakingService.rejectPrivateMatch(privateMatch.matchId, privateMatch.as);
 			status = 'none';
 		} catch (e) {
+			verifyUnautorized(e);
 			console.log(e);
 		}
 	}
@@ -157,6 +160,7 @@
 		try {
 			await matchMakingService.cancelMatchQueue();
 		} catch (e) {
+			verifyUnautorized(e);
 			console.log(e);
 		}
 	}

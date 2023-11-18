@@ -33,6 +33,8 @@
 	import UsersList from '$lib/components/lists/UsersList.svelte';
 	import type { MatchEventDto, MatchHistoryDto, PlayerStatusDto } from '$lib/dtos';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
+	import { isAxiosError } from 'axios';
+	import { verifyUnautorized } from '$lib/utils';
 
 	let matchHistory: Promise<MatchHistoryDto[]> = onHistory();
 
@@ -61,9 +63,8 @@
 		try {
 			await matchMakingService.joinMatchQueue();
 			status = 'waiting-player';
-			//goto('/room');
 		} catch (error) {
-			console.log(error);
+			verifyUnautorized(error);
 		}
 	}
 
@@ -72,7 +73,7 @@
 			await matchMakingService.cancelMatchQueue();
 			status = 'none';
 		} catch (error) {
-			console.log(error);
+			verifyUnautorized(error);
 		}
 	}
 
@@ -81,7 +82,7 @@
 			let history = await matchMakingService.getMatchHistory();
 			return history.data;
 		} catch (error) {
-			console.log(error);
+			verifyUnautorized(error);
 			return [];
 		}
 	}
@@ -90,7 +91,7 @@
 		try {
 			await matchMakingService.createPrivateMatch(userId);
 		} catch (error) {
-			console.log(error);
+			verifyUnautorized(error);
 		}
 	}
 
@@ -102,11 +103,13 @@
 
 	async function onFriend(userId: number) {
 		let res = await addFriend(userId);
-		if (typeof res !== 'number') {
+		if (typeof res !== 'number' && res != undefined) {
 			if (!$friendsList.find((v) => v.id == userId)) {
 				$friendsList.push(res);
 				$friendsList = $friendsList;
 			}
+		} else {
+			verifyUnautorized(res);
 		}
 		console.log(res);
 	}
@@ -115,6 +118,8 @@
 		let res = await deleteFriend(userId);
 		if (res == true) {
 			$friendsList = $friendsList.filter((v) => v.id != userId);
+		} else {
+			verifyUnautorized(res);
 		}
 	}
 
@@ -125,14 +130,17 @@
 				$blockList.push(res);
 				$blockList = $blockList;
 			}
+		} else {
+			verifyUnautorized(res);
 		}
-		console.log(res);
 	}
 
 	async function onUnblock(userId: number) {
 		let res = await unblockUser(userId);
 		if (res == true) {
 			$blockList = $blockList.filter((v) => v.id != userId);
+		} else {
+			verifyUnautorized(res);
 		}
 	}
 
@@ -163,14 +171,12 @@
 	$socket.on(socketEvent.MATCH_STARTED, (data: MatchEventDto) => {
 		match.set(data);
 		console.log(`Match started: ${data.matchId}`);
-		// if private leave queue
 		goto('/game');
 	});
 
 	$socket.on(socketEvent.MATCH_REJECTED, (data: MatchEventDto) => {
 		match.set(null);
 		console.log(`Match rejected: ${data.matchId}`);
-		// if private exit private invite modal
 		status = 'waiting-player';
 	});
 
@@ -196,6 +202,7 @@
 			status = 'none';
 			// goto('/dashboard');
 		} catch (e) {
+			verifyUnautorized(e);
 			console.log(e);
 		}
 	}
