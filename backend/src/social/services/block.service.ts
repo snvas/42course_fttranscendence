@@ -17,7 +17,7 @@ import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type'
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 import { StatusService } from '../../status/status.service';
 import { socketEvent } from '../../ws/ws-events';
-import { SocialGateway } from '../social.gateway';
+import { WsGateway } from '../../ws/ws.gateway';
 
 @Injectable()
 export class BlockService {
@@ -26,7 +26,7 @@ export class BlockService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly statusService: StatusService,
-    private readonly socialGateway: SocialGateway,
+    private readonly wsGateway: WsGateway,
     @InjectRepository(BlockEntity)
     private readonly blockRepository: Repository<BlockEntity>,
   ) {}
@@ -65,7 +65,7 @@ export class BlockService {
         await this.statusService.getSocket(blockedUser.id);
 
       if (blockedSocket) {
-        (await this.socialGateway.getServer())
+        (await this.wsGateway.getServer())
           .to(blockedSocket.id)
           .emit(socketEvent.BLOCKED_BY, {
             id: userProfile.id,

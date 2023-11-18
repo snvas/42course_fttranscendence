@@ -34,6 +34,6 @@ import { SocialModule } from '../social/social.module';
     ProfileModule,
     SocialModule,
   ],
-  exports: [GroupChatService],
+  exports: [],
 })
 export class ChatModule {}

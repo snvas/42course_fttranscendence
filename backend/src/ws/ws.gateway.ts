@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
     credentials: true,
   },
 })
-export class SocialGateway {
+export class WsGateway {
   @WebSocketServer()
   private readonly server: Server;
 

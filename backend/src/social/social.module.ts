@@ -6,12 +6,17 @@ import entities from '../db/entities';
 import { SocialController } from './social.controller';
 import { StatusModule } from '../status/status.module';
 import { ProfileModule } from '../profile/profile.module';
-import { SocialGateway } from './social.gateway';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   controllers: [SocialController],
-  providers: [BlockService, FriendService, SocialGateway],
-  imports: [TypeOrmModule.forFeature(entities), StatusModule, ProfileModule],
+  providers: [BlockService, FriendService],
+  imports: [
+    TypeOrmModule.forFeature(entities),
+    StatusModule,
+    ProfileModule,
+    WsModule,
+  ],
   exports: [BlockService, FriendService],
 })
 export class SocialModule {}

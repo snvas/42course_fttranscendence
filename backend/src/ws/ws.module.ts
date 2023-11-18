@@ -3,11 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { StatusModule } from '../status/status.module';
 import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
-import { ChatModule } from '../chat/chat.module';
+import { WsGateway } from './ws.gateway';
 
 @Module({
-  providers: [WsAuthenticatedGuard],
-  imports: [TypeOrmModule.forFeature(entities), StatusModule, ChatModule],
-  exports: [WsAuthenticatedGuard],
+  providers: [WsAuthenticatedGuard, WsGateway],
+  imports: [TypeOrmModule.forFeature(entities), StatusModule],
+  exports: [WsAuthenticatedGuard, WsGateway],
 })
 export class WsModule {}
