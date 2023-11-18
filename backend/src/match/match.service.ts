@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { StatusService } from '../status/status.service';
-import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
 import { socketEvent } from '../ws/ws-events';
@@ -21,6 +20,7 @@ import * as UUID from 'uuid';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
 import { BlockService } from '../social/services/block.service';
+import { WsGateway } from '../ws/ws.gateway';
 
 @Injectable()
 export class MatchService {
@@ -30,7 +30,7 @@ export class MatchService {
     private readonly profileService: ProfileService,
     private readonly status: StatusService,
     private readonly blockService: BlockService,
-    private readonly matchGateway: MatchGateway,
+    private readonly wsGateway: WsGateway,
     @InjectRepository(MatchEntity)
     private readonly matchRepository: Repository<MatchEntity>,
     private dataSource: DataSource,
@@ -152,7 +152,7 @@ export class MatchService {
       `Private Match [${matchEntity.id}] created between [${profile.id}] | [${profile.nickname}] and [${opponentProfile.id}] | [${opponentProfile.nickname}]`,
     );
 
-    (await this.matchGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(profileSocket.id)
       .emit(
         socketEvent.PRIVATE_MATCH_FOUND,
@@ -164,7 +164,7 @@ export class MatchService {
         ),
       );
 
-    (await this.matchGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(opponentSocket.id)
       .emit(
         socketEvent.PRIVATE_MATCH_FOUND,
@@ -503,7 +503,7 @@ export class MatchService {
     const playersStatus: PlayerStatusDto[] =
       await this.status.getFrontEndStatus();
 
-    (await this.matchGateway.getServer()).emit(
+    (await this.wsGateway.getServer()).emit(
       socketEvent.PLAYERS_STATUS,
       playersStatus,
     );
@@ -532,7 +532,7 @@ export class MatchService {
       await this.status.getSocket(matchEntity.p2.id);
 
     if (p1Socket && p2Socket) {
-      (await this.matchGateway.getServer())
+      (await this.wsGateway.getServer())
         .to(p1Socket.id)
         .emit(
           event,
@@ -544,7 +544,7 @@ export class MatchService {
           ),
         );
 
-      (await this.matchGateway.getServer())
+      (await this.wsGateway.getServer())
         .to(p2Socket.id)
         .emit(
           event,

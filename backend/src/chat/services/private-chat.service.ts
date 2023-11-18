@@ -25,7 +25,7 @@ export class PrivateChatService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly blockService: BlockService,
-    private readonly playerStatusService: StatusService,
+    private readonly statusService: StatusService,
     @InjectRepository(PrivateMessageEntity)
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
@@ -48,7 +48,7 @@ export class PrivateChatService {
       }
 
       const receiverSocket: AuthenticatedSocket | undefined =
-        await this.playerStatusService.getSocket(message.receiver.id);
+        await this.statusService.getSocket(message.receiver.id);
 
       const privateMessage: PrivateMessageDto = await this.savePrivateMessage(
         message,

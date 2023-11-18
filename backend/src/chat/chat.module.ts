@@ -14,6 +14,7 @@ import { GroupMessageService } from './services/group-message.service';
 import { StatusModule } from '../status/status.module';
 import { ProfileModule } from '../profile/profile.module';
 import { SocialModule } from '../social/social.module';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   controllers: [ChatController],
@@ -33,6 +34,7 @@ import { SocialModule } from '../social/social.module';
     StatusModule,
     ProfileModule,
     SocialModule,
+    WsModule,
   ],
   exports: [],
 })

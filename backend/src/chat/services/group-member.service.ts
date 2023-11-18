@@ -32,7 +32,7 @@ export class GroupMemberService {
   private readonly logger: Logger = new Logger(GroupMemberService.name);
 
   constructor(
-    private readonly playerStatusService: StatusService,
+    private readonly statusService: StatusService,
     @InjectRepository(GroupMemberEntity)
     private readonly groupMemberRepository: Repository<GroupMemberEntity>,
   ) {}
@@ -55,7 +55,7 @@ export class GroupMemberService {
       const memberEntity: GroupMemberEntity =
         await this.groupMemberRepository.save(groupMember);
 
-      await this.playerStatusService.addRoom(profile.id, `${groupChat.id}`);
+      await this.statusService.addRoom(profile.id, `${groupChat.id}`);
 
       return this.createGroupMemberDto(memberEntity, groupChat, profile);
     } catch (Exception) {
@@ -151,7 +151,7 @@ export class GroupMemberService {
       `### Removing member [${profile.id}] from Group chat [${chat.id}]`,
     );
 
-    await this.playerStatusService.removeRoom(profile.id, `${chat.id}`);
+    await this.statusService.removeRoom(profile.id, `${chat.id}`);
 
     return {
       deleted: memberDeleteResult.affected > 0,

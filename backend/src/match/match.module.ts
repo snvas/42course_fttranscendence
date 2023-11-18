@@ -4,12 +4,12 @@ import { WsAuthenticatedGuard } from '../ws/guards/ws-authenticated.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { MatchService } from './match.service';
-import { MatchGateway } from './match.gateway';
 import { MatchGameService } from './services/match-game.service';
 import { MatchAnswerGuard } from './guards/match-answer.guard';
 import { StatusModule } from '../status/status.module';
 import { ProfileModule } from '../profile/profile.module';
 import { SocialModule } from '../social/social.module';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   controllers: [MatchController],
@@ -17,7 +17,6 @@ import { SocialModule } from '../social/social.module';
     WsAuthenticatedGuard,
     MatchService,
     MatchGameService,
-    MatchGateway,
     MatchAnswerGuard,
   ],
   imports: [
@@ -25,6 +24,7 @@ import { SocialModule } from '../social/social.module';
     StatusModule,
     ProfileModule,
     SocialModule,
+    WsModule,
   ],
   exports: [MatchGameService],
 })
