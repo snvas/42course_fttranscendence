@@ -1,11 +1,9 @@
 <script lang="ts">
 	import PongHeader from '$lib/components/PongHeader.svelte';
+	import { gameService } from '$lib/api';
 	import p5 from 'p5';
 	import { onMount } from 'svelte';
-	import { socket } from '$lib/stores';
-	import { io } from 'socket.io-client';
-	import axios from 'axios';
-	import { waitFor } from '@testing-library/svelte';
+	import { match, socket } from '$lib/stores';
 
 	type Positions = {
 		positionX: number,
@@ -23,23 +21,9 @@
 		window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	$: console.log(heightFull);
 
-	const game_socket = io("http://localhost:3000");
+	const userId = $match?.as == 'p1'? String($match?.p1.id) : String($match?.p2.id);
 
-	const is_ok = game_socket.connect();
-	function sendMessage(msg: string, data: Positions) {
-		game_socket.emit(msg, data)
-  	}
-
-	async function getPlay() {
-        const response = await axios.get('http://localhost:3000/api/game');
-        return response.data;
-    }
-	// function waitingList(){
-	// 	if (player1 && player2)
-	// 		//contruct sketch
-	// }
-
-	// player1 and 2 passade for paramther
+	console.log($match?.matchId)
 	async function sketch(p5: p5) {
 		let game: Game;
 		let hitSound: p5.SoundFile;
@@ -49,13 +33,18 @@
 		let speedBoost: SpeedBoost;
 		//let sizeIncrease : SizeIncrease;
 
-		game_socket.on('is-ready', (data) => {
+		gameService.getSocket().on('is-ready', (data) => {
 			if (data == 1){
 				game.start();
-			} else if (data == 2) {
+			} else if (data == 2 || data == 0) {
 				//player disconected
 				game.stop();
 			}
+		})
+
+		gameService.getSocket().on('scoreboard', (data) => {
+			game.pointP1 = data.p1Score;
+			game.pointP2 = data.p2Score;
 		})
 
 		p5.setup = async () => {
@@ -63,8 +52,8 @@
 			game = new Game();
 			hitSound = p5.loadSound('PingPongHitBall.mp3'); //
 			ball1 = new Ball(game);
-			player1 = new Player(1, "player1");
-			player2 = new Player(2, "player2");
+			player1 = new Player();
+			player2 = new Player();
 			game.setBall(ball1);
 			p5.textSize(32);
 			p5.textAlign(p5.CENTER, p5.CENTER);
@@ -85,16 +74,18 @@
 		const backgroundColorSelected: string = localStorage.getItem("backgroundColor") || "black";
 
 		p5.draw = () => {
-			game_socket.on('game-data', (data) => {
-				player1.setPositions(data.player1);
-				player2.setPositions(data.player2);
-				ball1.setPositions(data.ball)
+			gameService.getSocket().on('game-data', (data) => {
+				if (!($match?.as == 'p1')){
+					player1.setPositions(data.player1)
+				}
+				else {
+					player2.setPositions(data.player2)
+				}
 			})
 			p5.background(backgroundColors[backgroundColorSelected]);
 			p5.rect(width / 2, 0, 5, height);
 			player1.drawPlayer();
 			player2.drawPlayer();
-			
 			let scoreText = `${game.pointP1}  |  ${game.pointP2}`;
 			p5.text(scoreText, width / 6, 40);
 			if (game.winner) {
@@ -106,8 +97,12 @@
 				ball1.draw();
 				ball1.move();
 				ball1.checkWalls();
-				player1.movePlayer();
-				player2.movePlayer();
+				if ($match?.as == 'p1'){
+					player1.movePlayer();
+				}
+				else {
+					player2.movePlayer();
+				}
 				speedBoost.draw();
 				//sizeIncrease.draw();
 				ball1.checkColisionPlayer(player1);
@@ -134,7 +129,10 @@
 			} else {
 				if (!game.running && !game.winner) {
 					if (p5.keyIsDown(p5.ENTER)) {
-						game_socket.emit("ready");
+						gameService.emitReady({
+							matchId: String($match?.matchId),
+							userId
+						});
 					}
 				}
 			}
@@ -168,6 +166,10 @@
 			}
 
 			draw() {
+				// the ball in new rote
+				gameService.getSocket().on('ballPosition', (data) => {
+					this.setPositions(data.ball)
+				})
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
@@ -181,18 +183,21 @@
 				this.positionY += this.velocityY;
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage('ball', {positionX, positionY})
+				gameService.emitBall({
+					matchId: String($match?.matchId),
+					pos:{positionX, positionY},
+					userId
+				})
 			}
 
 			checkWalls() {
-				// TODO send sokect here
 				if (this.positionX - this.diam / 2 <= 0) {
-					//pontuar jogador 2
+					gameService.p2(String($match?.matchId))
 					this.game.pointing(2);
 					this.game.stop();
 				}
 				if (this.positionX - this.diam / 2 >= width) {
-					//pontuarjogador1
+					gameService.p1(String($match?.matchId))
 					this.game.pointing(1);
 					this.game.stop();
 				}
@@ -225,7 +230,7 @@
 
 				if (collides) {
 					// Ajuste a posição da bola para evitar colisões consecutivas
-					if (player.id == 1) {
+					if (player.player == 'p1') {
 						this.positionX = playerRight + this.diam / 2;
 						this.sound.play();
 						collision = true;
@@ -286,26 +291,33 @@
 		const boardColorSelected = localStorage.getItem("boardColor") || "white";
 
 		class Player {
-			private msg;
-			public id: number;
+			public player: string;
 			public heightP: number;
 			public widthP: number;
 			public positionX: number;
 			public positionY: number;
 			public velocityY: number;
 
-			constructor(typeP: number, player:string) {
-				this.msg = player
-				this.id = typeP;
+			constructor() {
 				this.heightP = 60;
 				this.widthP = 20;
-				if (this.id == 1) {
+				this.player = String($match?.as);
+				if (this.player == 'p1') {
+					console.log("Position P1")
 					this.positionX = 0;
 				} else {
 					this.positionX = width - this.widthP;
 				}
 				this.positionY = height / 2;
 				this.velocityY = 15;
+
+				let positionX = this.positionX;
+				let positionY = this.positionY;
+				gameService.emitPlayer(this.player, {
+					matchId: String($match?.matchId),
+					pos:{positionX, positionY},
+					userId
+				})
 			}
 
 			drawPlayer() {
@@ -322,38 +334,41 @@
 			}
 
 			movePlayer() {
-				if (this.id == 1) {
-					if (p5.keyIsDown(87)) {
-						if (this.positionY > 0) {
-							this.positionY -= this.velocityY;
-						} else {
-							this.positionY = 0;
-						}
-					}
-					if (p5.keyIsDown(83)) {
-						this.positionY += this.velocityY;
-						if (this.positionY + this.heightP > height) {
-							this.positionY = height - this.heightP;
-						}
-					}
-				} else if (this.id == 2) {
-					if (p5.keyIsDown(p5.UP_ARROW)) {
-						if (this.positionY > 0) {
-							this.positionY -= this.velocityY;
-						} else {
-							this.positionY = 0;
-						}
-					}
-					if (p5.keyIsDown(p5.DOWN_ARROW)) {
-						this.positionY += this.velocityY;
-						if (this.positionY + this.heightP > height) {
-							this.positionY = height - this.heightP;
-						}
+				if (p5.keyIsDown(87)) {
+					if (this.positionY > 0) {
+						this.positionY -= this.velocityY;
+					} else {
+						this.positionY = 0;
 					}
 				}
+				if (p5.keyIsDown(83)) {
+					this.positionY += this.velocityY;
+					if (this.positionY + this.heightP > height) {
+						this.positionY = height - this.heightP;
+					}
+				}
+				if (p5.keyIsDown(p5.UP_ARROW)) {
+					if (this.positionY > 0) {
+						this.positionY -= this.velocityY;
+					} else {
+						this.positionY = 0;
+					}
+				}
+				if (p5.keyIsDown(p5.DOWN_ARROW)) {
+					this.positionY += this.velocityY;
+					if (this.positionY + this.heightP > height) {
+						this.positionY = height - this.heightP;
+					}
+				}
+				
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				sendMessage(String(this.msg), {positionX, positionY})
+				
+				gameService.emitPlayer(this.player, {
+					matchId: String($match?.matchId),
+					pos:{positionX, positionY},
+					userId
+				})
 				/*if (p5.keyIsDown(87) || p5.keyIsDown(83) || p5.keyIsDown(p5.UP_ARROW) || p5.keyIsDown(p5.DOWN_ARROW)){
 					socket.emit('player-move', {
 						playerId: this.id,
@@ -483,13 +498,11 @@
 
 			pointing(p: number) {
 				if (p == 1) {
-					this.pointP1++;
 					if (this.pointP1 == 5) {
 						this.gameOver(1);
 						return;
 					}
 				} else if (p == 2) {
-					this.pointP2++;
 					if (this.pointP2 == 5) {
 						this.gameOver(2);
 						return;
@@ -536,6 +549,8 @@
 				player1.positionY = data.player1.y;
 				player2.positionY = data.player2.y;
 		});*/
+		gameService.connect();
+		gameService.joinPlayerRoom(String($match?.matchId))
 
 		let element: HTMLElement | null = window.document.getElementById('p5-container');
 		if (!element){

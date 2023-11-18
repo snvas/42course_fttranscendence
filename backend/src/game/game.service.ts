@@ -1,74 +1,125 @@
 import { Injectable } from '@nestjs/common';
 import { Positions } from './types/positions.type';
 import { SocketGameMessage } from './types/socket-game-message.type';
+import { MatchGameService } from 'src/match/services/match-game.service';
+import { GameDataDto } from './dto/game.data.dto';
+import { ConsultDataDto } from './dto/consult.data.dto';
+import { Player } from './types/player.type';
 
 @Injectable()
 export class GameService {
-    private player1: Positions;
-    private player2:Positions;
-    private ball: Positions;
-    private isReady: Array<string>;
-    constructor(){
-        this.isReady = [];
+    private player1: Map<string, Player>;
+    private player2: Map<string, Player>;
+    private ball: Map<string, Positions>;
+    private isReady: Map<string, Array<string>>;
+
+    constructor(
+        private readonly matchGameService:MatchGameService
+    ){
+        this.player1 = new Map();
+        this.player2 = new Map();
+        this.ball = new Map();
+        this.isReady = new Map([]);
+    }
+    //TODO make a DTO with this type
+    setPlayer1(p:GameDataDto, soketId:string){
+        if (this.player2.get(p.matchId)?.soketId != soketId) {
+            this.player1.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        }
     }
 
-    setPlayer1(data: Positions){
-        this.player1 = data;
+    setPlayer2(p:GameDataDto, soketId:string){
+        if (this.player1.get(p.matchId)?.soketId != soketId) {
+            this.player2.set(p.matchId, {pos:p.pos, id: p.userId, soketId});
+        }
     }
 
-    setPlayer2(data: Positions){
-        this.player2 = data;
+    setBall(p:GameDataDto){
+        this.ball.set(p.matchId, {positionX: p.pos.positionX, positionY: p.pos.positionY});
     }
 
-    setBall(data: Positions){
-        this.ball = data;
-    }
-
-    ballValidation(user: string) {
-        if (user == this.isReady[0]) {
-            console.log("ball validated")
+    ballValidation(data:ConsultDataDto, socketId:string) {
+        const arr = this.isReady.get(data.matchId);
+        const value = arr ? arr[0]: "";
+        if (socketId == value) {
             return true;
         }
-        console.log("ball Invalida")
         return false;
     }
 
-    setReady(user: string){
-        if (this.isReady.length) {
-            if (this.isReady.indexOf(user) == -1) {
-                this.isReady.push(user);
-            }
+    setReady(data:ConsultDataDto, socketId:string){
+        if (!this.isReady.get(data.matchId)) {
+            this.isReady.set(data.matchId, new Array(socketId))
         }
         else {
-            this.isReady.push(user);
+            const arr = this.isReady.get(data.matchId);
+            if (arr?.indexOf(socketId) == -1) {
+                arr?.push(socketId);
+            }
         }
     }
 
-    playerDisconected(id:string) {
-        if (this.isReady.indexOf(id) == 1) {
-            this.isReady.reverse();
+    reConnect(matchId:string, socketId:string) {
+        if(socketId == this.player1.get(matchId)?.soketId
+        || socketId == this.player2.get(matchId)?.soketId) {
+            console.log("socket of reconnect is the same of connect")
+            this.isReady.get(matchId)?.push(socketId)
         }
-        this.isReady.pop();
+    }
+
+    async p1(matchId:string) {
+        this.isReady.set(matchId, []);
+        await this.matchGameService.savePoints(matchId, 'p1');
+        return this.matchGameService.getMatchPoints(matchId);
+    }
+
+    async p2(matchId:string) {
+        this.isReady.set(matchId, []);
+        await this.matchGameService.savePoints(matchId, 'p2');
+        return await this.matchGameService.getMatchPoints(matchId);
+    }
+    //get room name on consultDataDto
+    playerDisconected(matchId:string, socketId:string) {
+        let arr =  this.isReady.get(matchId);
+        if (arr?.indexOf(socketId) == 0) {
+            arr?.reverse();
+        }
+        setTimeout(() => {
+            const value = arr ? arr[1]: "";
+            if (arr?.length != 2) {
+                if (value == this.player1.get(matchId)?.soketId){
+                    this.matchGameService.abandonMatch(matchId,'p1')
+                }
+                else {
+                    this.matchGameService.abandonMatch(matchId, 'p2')
+                }
+            }
+        }, 60000); // 60 seconds
+        this.isReady.get(matchId)?.pop();
         return 2;
     }
 
-    isPlayersReady(){
-        console.log(this.isReady.length == 2)
-        if (this.isReady.length == 2){
+    //finish room and delete Map
+    isPlayersReady(matchId:string){
+        if (this.isReady.get(matchId)?.length == 2){
             return 1;
         }
         return 0;
     }
 
-    allData(): SocketGameMessage {
-        const player1 = this.player1;
-        const player2 = this.player2;
-        const ball = this.ball;
-        return {player1, player2, ball}
+    getBall(matchId:string){
+        let pos = this.ball.get(matchId);
+        const ball = pos ? pos : {positionX:0, positionY:0};
+        return {ball}
     }
 
-    ballData() {
-        const ball = this.ball;
-        return {ball}
+    allData(matchId:string): SocketGameMessage {
+        let obj = this.player1.get(matchId);
+        const player1 = obj ? obj.pos : {positionX:0, positionY:0};
+        obj = this.player2.get(matchId);
+        const player2 = obj ? obj.pos : {positionX:0, positionY:0};
+        let pos = this.ball.get(matchId);
+        const ball = pos ? pos : {positionX:0, positionY:0};
+        return {player1, player2, ball}
     }
 }

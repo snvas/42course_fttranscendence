@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MatchController } from './match.controller';
-import { StatusService } from '../social/services/status.service';
 import { ProfileService } from '../profile/profile.service';
 import { AvatarService } from '../avatar/avatar.service';
 import { UserService } from '../user/user.service';
@@ -12,6 +11,7 @@ import { MatchService } from './match.service';
 import { MatchGateway } from './match.gateway';
 import { MatchGameService } from './services/match-game.service';
 import { MatchAnswerGuard } from './guards/match-answer.guard';
+import { StatusModule } from '../status/status.module';
 
 @Module({
   controllers: [MatchController],
@@ -21,19 +21,16 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
     MatchGameService,
     MatchGateway,
     MatchAnswerGuard,
-    StatusService,
     BlockService,
     ProfileService,
     UserService,
     AvatarService,
   ],
-  imports: [TypeOrmModule.forFeature(entities)],
+  imports: [TypeOrmModule.forFeature(entities), StatusModule],
   exports: [
-    StatusService,
     ProfileService,
     UserService,
     AvatarService,
-    StatusService,
     BlockService,
     MatchService,
     MatchGameService,

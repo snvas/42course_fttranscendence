@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProfileService } from '../profile/profile.service';
-import { StatusService } from '../social/services/status.service';
+import { StatusService } from '../status/status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
 import { GroupMemberService } from './services/group-member.service';

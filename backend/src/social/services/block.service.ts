@@ -15,7 +15,7 @@ import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
 import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-response.dto';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
-import { StatusService } from './status.service';
+import { StatusService } from '../../status/status.service';
 
 @Injectable()
 export class BlockService {

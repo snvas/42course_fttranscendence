@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { StatusService } from '../social/services/status.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { GroupChatService } from '../chat/services/group-chat.service';
+import { StatusModule } from '../status/status.module';
 
 @Module({
-  providers: [GroupChatService, StatusService],
-  imports: [TypeOrmModule.forFeature(entities)],
-  exports: [GroupChatService, StatusService],
+  providers: [GroupChatService],
+  imports: [TypeOrmModule.forFeature(entities), StatusModule],
+  exports: [GroupChatService],
 })
 export class WsModule {}

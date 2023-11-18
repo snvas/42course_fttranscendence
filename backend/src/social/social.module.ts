@@ -7,7 +7,7 @@ import { FriendService } from './services/friend.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { SocialController } from './social.controller';
-import { StatusService } from './services/status.service';
+import { StatusService } from '../status/status.service';
 
 @Module({
   controllers: [SocialController],

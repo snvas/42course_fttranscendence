@@ -52,6 +52,30 @@
 		@apply transition-all;
 	}
 
+	.key-style {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply bg-white;
+		@apply rounded-lg;
+		@apply h-20;
+		@apply w-20;
+		@apply m-2;
+		@apply text-4xl uppercase;
+	}
+
+	.key-style-disabled {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply bg-gray-800;
+		@apply rounded-lg;
+		@apply h-20;
+		@apply w-20;
+		@apply m-2;
+		@apply text-4xl uppercase;
+	}
+
 	.btn-op {
 		@apply bg-[#38761d] border-4;
 		@apply rounded-lg;

@@ -26,6 +26,8 @@ export * from '../../../../backend/src/profile/models/simple-profile.dto';
 export * from "../../../../backend/src/match/models/match-answer.dto";
 export * from '../../../../backend/src/match/models/match-event.dto';
 export * from '../../../../backend/src/match/models/match-history.dto';
+export * from '../../../../backend/src/game/dto/game.data.dto';
+export * from '../../../../backend/src/game/dto/consult.data.dto';
 
 export type ComponentMessage = {
     message: string;

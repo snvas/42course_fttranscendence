@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { StatusService } from '../social/services/status.service';
+import { StatusService } from '../status/status.service';
 import { MatchGateway } from './match.gateway';
 import { PlayerStatusDto } from '../profile/models/player-status.dto';
 import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';

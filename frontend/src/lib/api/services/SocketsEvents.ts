@@ -22,5 +22,12 @@ export const socketEvent = {
 	GROUP_CHAT_MEMBER_MUTED: 'groupChatMemberMuted',
 	GROUP_CHAT_MEMBER_UNMUTED: 'groupChatMemberUnmuted',
 	GROUP_CHAT_MEMBER_BANNED: 'groupChatMemberBanned',
-	GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned'
+	GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned',
+	GAME_PLAYER_1: 'player1',
+	GAME_PLAYER_2: 'player2',
+	GAMR_BALL: 'ball',
+	GAME_PLAYER_IS_READY: 'ready',
+	GAME_JOIN_ON_ROOM: 'join',
+	GAME_POINT_PLAYER_1: 'p1',
+	GAME_POINT_PLAYER_2: 'p2'
 };

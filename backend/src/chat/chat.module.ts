@@ -14,16 +14,15 @@ import { ChatAdminGuard } from './guards/chat-admin-guard';
 import { GroupChatService } from './services/group-chat.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupMemberService } from './services/group-member.service';
-import { StatusService } from '../social/services/status.service';
 import { GroupMessageService } from './services/group-message.service';
 import { BlockService } from '../social/services/block.service';
+import { StatusModule } from '../status/status.module';
 
 @Module({
   controllers: [ChatController],
   providers: [
     ChatService,
     ChatGateway,
-    StatusService,
     PrivateChatService,
     BlockService,
     GroupChatService,
@@ -37,7 +36,7 @@ import { BlockService } from '../social/services/block.service';
     UserService,
     AvatarService,
   ],
-  imports: [TypeOrmModule.forFeature(entities)],
+  imports: [TypeOrmModule.forFeature(entities), StatusModule],
   exports: [
     ChatService,
     ChatGateway,
