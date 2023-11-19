@@ -244,7 +244,7 @@ export class GameService {
     if (this.isReady.get(matchId)?.length == 2) {
       return true;
     }
-    return false;
+    return 0;
   }
 
   /**
