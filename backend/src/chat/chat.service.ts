@@ -1,13 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProfileService } from '../profile/profile.service';
-import { PlayerStatusService } from '../profile/services/player-status.service';
+import { StatusService } from '../status/status.service';
 import { PrivateChatService } from './services/private-chat.service';
 import { GroupChatService } from './services/group-chat.service';
 import { GroupMemberService } from './services/group-member.service';
 import { PrivateMessageHistoryDto } from './models/private/private-message-history.dto';
 import { GroupChatHistoryDto } from './models/group/group-chat-history.dto';
 import { GroupCreationDto } from './models/group/group-creation.dto';
-import { ChatGateway } from './chat.gateway';
 import { GroupChatDto } from './models/group/group-chat.dto';
 import { socketEvent } from '../ws/ws-events';
 import { GroupChatDeletedResponseDto } from './models/group/group-chat-deleted-response.dto';
@@ -22,6 +21,7 @@ import { GroupMemberDeletedResponseDto } from './models/group/group-member-delet
 import { GroupMemberUpdatedResponseDto } from './models/group/group-member-updated-response.dto';
 import { GroupMemberRoleUpdateDto } from './models/group/group-member-role-update.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
+import { WsGateway } from '../ws/ws.gateway';
 
 @Injectable()
 export class ChatService {
@@ -29,11 +29,11 @@ export class ChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly statusService: StatusService,
     private readonly privateChatService: PrivateChatService,
     private readonly groupChatService: GroupChatService,
     private readonly groupMemberService: GroupMemberService,
-    private readonly messageGateway: ChatGateway,
+    private readonly wsGateway: WsGateway,
   ) {}
 
   public async getPrivateMessageHistory(
@@ -61,7 +61,7 @@ export class ChatService {
       userId,
     );
 
-    (await this.messageGateway.getServer()).emit(
+    (await this.wsGateway.getServer()).emit(
       socketEvent.GROUP_CHAT_CREATED,
       groupChat,
     );
@@ -75,7 +75,7 @@ export class ChatService {
     const deletedResponse: GroupChatDeletedResponseDto =
       await this.groupChatService.deleteById(chatId);
 
-    const server: Server = await this.messageGateway.getServer();
+    const server: Server = await this.wsGateway.getServer();
 
     server.emit(socketEvent.GROUP_CHAT_DELETED, {
       chatId,
@@ -97,7 +97,7 @@ export class ChatService {
       password,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.JOINED_GROUP_CHAT_MEMBER, groupMember);
 
@@ -108,7 +108,7 @@ export class ChatService {
     const deletedResponseAndMember: GroupMemberDeletedResponse &
       GroupMemberDto = await this.groupChatService.leave(chatId, userId);
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(
         socketEvent.LEAVE_GROUP_CHAT_MEMBER,
@@ -123,7 +123,7 @@ export class ChatService {
     const passwordUpdate: GroupChatUpdatedResponseDto =
       await this.groupChatService.changePassword(chatId, password);
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_PASSWORD_UPDATED, {
         chatId,
@@ -140,7 +140,7 @@ export class ChatService {
 
     const groupChat: GroupChatDto =
       await this.groupChatService.getGroupChatDtoById(chatId);
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_PASSWORD_DELETED, groupChat);
 
@@ -158,7 +158,7 @@ export class ChatService {
       chatRole,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.ADDED_GROUP_CHAT_MEMBER, groupMember);
 
@@ -179,14 +179,14 @@ export class ChatService {
       deletedResponseAndMember,
     );
 
-    const server: Server = await this.messageGateway.getServer();
+    const server: Server = await this.wsGateway.getServer();
 
     server
       .to(`${chatId}`)
       .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, groupMemberDto);
 
     server
-      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
+      .to(`${(await this.statusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.KICKED_GROUP_CHAT_MEMBER, groupMemberDto);
 
     return {
@@ -207,7 +207,7 @@ export class ChatService {
       chatRole,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(
         socketEvent.GROUP_CHAT_MEMBER_ROLE_UPDATED,
@@ -227,7 +227,7 @@ export class ChatService {
     const updatedResponseAndMember: GroupMemberUpdatedResponseDto &
       GroupMemberDto = await this.groupMemberService.mute(chatId, profileId);
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(
         socketEvent.GROUP_CHAT_MEMBER_MUTED,
@@ -247,7 +247,7 @@ export class ChatService {
     const updatedResponseAndMember: GroupMemberUpdatedResponseDto &
       GroupMemberDto = await this.groupMemberService.unmute(chatId, profileId);
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(
         socketEvent.GROUP_CHAT_MEMBER_UNMUTED,
@@ -269,12 +269,12 @@ export class ChatService {
       profileId,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
-    (await this.messageGateway.getServer())
-      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
+    (await this.wsGateway.getServer())
+      .to(`${(await this.statusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_BANNED, groupMemberDto);
 
     return groupMemberDto;
@@ -289,12 +289,12 @@ export class ChatService {
       profileId,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
 
-    (await this.messageGateway.getServer())
-      .to(`${(await this.playerStatusService.getSocket(profileId))?.id}`)
+    (await this.wsGateway.getServer())
+      .to(`${(await this.statusService.getSocket(profileId))?.id}`)
       .emit(socketEvent.GROUP_CHAT_MEMBER_UNBANNED, groupMemberDto);
 
     return groupMemberDto;
@@ -308,7 +308,7 @@ export class ChatService {
     const groupMessage: GroupMessageDto =
       await this.groupChatService.saveHttpMessage(chatId, userId, messageDto);
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${chatId}`)
       .emit(socketEvent.RECEIVE_GROUP_MESSAGE, groupMessage);
 
@@ -326,7 +326,7 @@ export class ChatService {
       messageDto,
     );
 
-    (await this.messageGateway.getServer())
+    (await this.wsGateway.getServer())
       .to(`${profileId}`)
       .emit(socketEvent.RECEIVE_PRIVATE_MESSAGE, privateMessage);
 

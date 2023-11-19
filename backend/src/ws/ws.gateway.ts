@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
     credentials: true,
   },
 })
-export class MatchGateway {
+export class WsGateway {
   @WebSocketServer()
   private readonly server: Server;
 

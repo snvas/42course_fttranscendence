@@ -15,8 +15,8 @@ import { MessageProfile } from '../interfaces/message/message-profile.interface'
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../types/authenticated-socket.type';
 import { socketEvent } from '../../ws/ws-events';
-import { PlayerStatusService } from '../../profile/services/player-status.service';
-import { BlockService } from '../../profile/services/block.service';
+import { StatusService } from '../../status/status.service';
+import { BlockService } from '../../social/services/block.service';
 
 @Injectable()
 export class PrivateChatService {
@@ -25,7 +25,7 @@ export class PrivateChatService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly blockService: BlockService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly statusService: StatusService,
     @InjectRepository(PrivateMessageEntity)
     private readonly privateMessageRepository: Repository<PrivateMessageEntity>,
   ) {}
@@ -48,7 +48,7 @@ export class PrivateChatService {
       }
 
       const receiverSocket: AuthenticatedSocket | undefined =
-        await this.playerStatusService.getSocket(message.receiver.id);
+        await this.statusService.getSocket(message.receiver.id);
 
       const privateMessage: PrivateMessageDto = await this.savePrivateMessage(
         message,

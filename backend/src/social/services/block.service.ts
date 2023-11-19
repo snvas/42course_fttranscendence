@@ -8,14 +8,16 @@ import {
 import { BlockEntity } from '../../db/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, QueryFailedError, Repository } from 'typeorm';
-import { ProfileService } from '../profile.service';
-import { ProfileDTO } from '../models/profile.dto';
-import { SimpleProfile } from '../interfaces/simples-profile.interface';
-import { SimpleProfileDto } from '../models/simple-profile.dto';
-import { ProfileDeletedResponseDto } from '../models/profile-delete-response.dto';
+import { ProfileService } from '../../profile/profile.service';
+import { ProfileDTO } from '../../profile/models/profile.dto';
+import { SimpleProfile } from '../../profile/interfaces/simples-profile.interface';
+import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
+import { ProfileDeletedResponseDto } from '../../profile/models/profile-delete-response.dto';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { PlayerStatusDto } from '../models/player-status.dto';
-import { PlayerStatusService } from './player-status.service';
+import { PlayerStatusDto } from '../../profile/models/player-status.dto';
+import { StatusService } from '../../status/status.service';
+import { socketEvent } from '../../ws/ws-events';
+import { WsGateway } from '../../ws/ws.gateway';
 
 @Injectable()
 export class BlockService {
@@ -23,7 +25,8 @@ export class BlockService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
+    private readonly statusService: StatusService,
+    private readonly wsGateway: WsGateway,
     @InjectRepository(BlockEntity)
     private readonly blockRepository: Repository<BlockEntity>,
   ) {}
@@ -58,18 +61,18 @@ export class BlockService {
         avatarId: blockUsersDb.blockedUser.avatarId,
       } as SimpleProfileDto;
 
-      // const blockedSocket: AuthenticatedSocket | undefined =
-      //   await this.playerStatusService.getSocket(blockedUser.id);
-      //
-      // if (blockedSocket) {
-      //   (await this.matchGateway.getServer())
-      //     .to(blockedSocket.id)
-      //     .emit(socketEvent.BLOCKED_BY, {
-      //       id: userProfile.id,
-      //       nickname: userProfile.nickname,
-      //       avatarId: userProfile.avatarId,
-      //     } as SimpleProfileDto);
-      // }
+      const blockedSocket: AuthenticatedSocket | undefined =
+        await this.statusService.getSocket(blockedUser.id);
+
+      if (blockedSocket) {
+        (await this.wsGateway.getServer())
+          .to(blockedSocket.id)
+          .emit(socketEvent.BLOCKED_BY, {
+            id: userProfile.id,
+            nickname: userProfile.nickname,
+            avatarId: userProfile.avatarId,
+          } as SimpleProfileDto);
+      }
 
       return blockedUser;
     } catch (Error) {
@@ -180,7 +183,7 @@ export class BlockService {
     );
 
     const players: PlayerStatusDto[] =
-      await this.playerStatusService.getFrontEndStatus();
+      await this.statusService.getFrontEndStatus();
 
     const blockedPlayersSockets: string[] = (
       await Promise.all(
@@ -189,7 +192,7 @@ export class BlockService {
             player: PlayerStatusDto,
           ): Promise<AuthenticatedSocket | undefined> => {
             const socket: AuthenticatedSocket | undefined =
-              await this.playerStatusService.getSocket(player.id);
+              await this.statusService.getSocket(player.id);
             if (
               socket !== undefined &&
               blockedUsers.some(

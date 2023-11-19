@@ -9,23 +9,19 @@ import {
   UserAuthenticatedGuard,
 } from './index';
 import entities from '../db/entities';
-import { UserService } from '../user/user.service';
-import { ProfileService } from '../profile/profile.service';
-import { AvatarService } from '../avatar/avatar.service';
+import { UserModule } from '../user/user.module';
+import { ProfileModule } from '../profile/profile.module';
 
 @Module({
   controllers: [AuthController],
   providers: [
-    UserService,
-    AvatarService,
-    ProfileService,
     FortyTwoStrategy,
     UserAuthenticatedGuard,
     FortyTwoAuthGuard,
     SessionSerializer,
     AuthService,
   ],
-  imports: [TypeOrmModule.forFeature(entities)],
-  exports: [UserAuthenticatedGuard, AvatarService, ProfileService],
+  imports: [TypeOrmModule.forFeature(entities), UserModule, ProfileModule],
+  exports: [AuthService, UserAuthenticatedGuard],
 })
 export class AuthModule {}

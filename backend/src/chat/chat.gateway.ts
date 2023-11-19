@@ -5,12 +5,10 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { AuthenticatedSocket } from './types/authenticated-socket.type';
-import { WsAuthenticatedGuard } from './guards/ws-authenticated.guard';
+import { WsAuthenticatedGuard } from '../ws/guards/ws-authenticated.guard';
 import { PrivateMessageDto } from './models/private/private-message.dto';
 import { GroupMessageDto } from './models/group/group-message.dto';
 import { socketEvent } from '../ws/ws-events';
@@ -24,19 +22,12 @@ import { GroupChatService } from './services/group-chat.service';
   },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer()
-  private readonly server: Server;
-
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   constructor(
     private readonly privateChatService: PrivateChatService,
     private readonly groupChatService: GroupChatService,
   ) {}
-
-  async getServer(): Promise<Server> {
-    return this.server;
-  }
 
   async handleConnection(
     @ConnectedSocket() socket: AuthenticatedSocket,

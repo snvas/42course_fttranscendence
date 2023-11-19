@@ -1,21 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PlayerStatusSocket } from '../../chat/types/player-status.socket';
-import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
-import { ProfileDTO } from '../models/profile.dto';
-import { PlayerStatusDto } from '../models/player-status.dto';
-import { ProfileService } from '../profile.service';
+import { PlayerStatusSocket } from '../chat/types/player-status.socket';
+import { AuthenticatedSocket } from '../chat/types/authenticated-socket.type';
+import { ProfileDTO } from '../profile/models/profile.dto';
+import { PlayerStatusDto } from '../profile/models/player-status.dto';
+import { ProfileService } from '../profile/profile.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
-export class PlayerStatusService {
-  private readonly logger: Logger = new Logger(PlayerStatusService.name);
+export class StatusService {
+  private readonly logger: Logger = new Logger(StatusService.name);
   private playerStatusSocket: Map<number, PlayerStatusSocket> = new Map();
 
   constructor(private readonly profileService: ProfileService) {}
 
-  public async setStatus(
-    socket: AuthenticatedSocket,
-    status: string,
-  ): Promise<void> {
+  @Cron(CronExpression.EVERY_MINUTE)
+  async onlineUsersInfoJob(): Promise<void> {
+    const playersStatus = this.playerStatusSocket;
+
+    this.logger.verbose(`### Online users ${playersStatus.size}}`);
+  }
+
+  public async set(socket: AuthenticatedSocket, status: string): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
     );
@@ -32,7 +37,7 @@ export class PlayerStatusService {
     this.playerStatusSocket.set(profile.id, playerStatus);
   }
 
-  public async removeStatus(socket: AuthenticatedSocket): Promise<void> {
+  public async remove(socket: AuthenticatedSocket): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
     );
@@ -58,7 +63,7 @@ export class PlayerStatusService {
     );
   }
 
-  public async getAllStatus(): Promise<PlayerStatusDto[]> {
+  public async getAll(): Promise<PlayerStatusDto[]> {
     const playersStatusSockets: PlayerStatusSocket[] = Array.from(
       this.playerStatusSocket.values(),
     );
@@ -79,7 +84,17 @@ export class PlayerStatusService {
   public async getSocket(
     profileId: number,
   ): Promise<AuthenticatedSocket | undefined> {
-    return this.playerStatusSocket.get(profileId)?.socket;
+    this.logger.verbose(`### Player [${profileId}] get socket`);
+    const playerStatus: PlayerStatusSocket | undefined =
+      this.playerStatusSocket.get(profileId);
+
+    this.logger.verbose(`### Sockets: ${this.playerStatusSocket.size}`);
+
+    if (!playerStatus) {
+      return undefined;
+    }
+
+    return playerStatus.socket;
   }
 
   public async addRoom(profileId: number, room: string): Promise<void> {

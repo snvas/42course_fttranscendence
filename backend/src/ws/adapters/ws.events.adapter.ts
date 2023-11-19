@@ -2,23 +2,25 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server } from 'socket.io';
 import passport from 'passport';
 import express from 'express';
-import { INestApplication, Logger } from '@nestjs/common';
+import { forwardRef, INestApplication, Inject, Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../../chat/types/authenticated-socket.type';
 import { socketEvent } from '../ws-events';
-import { PlayerStatusService } from '../../profile/services/player-status.service';
+import { StatusService } from '../../status/status.service';
 import { GroupChatService } from '../../chat/services/group-chat.service';
 import { PlayerStatusDto } from '../../profile/models/player-status.dto';
 
 export class WsEventsAdapter extends IoAdapter {
   private readonly session: express.RequestHandler;
   private readonly logger: Logger = new Logger(WsEventsAdapter.name);
-  private readonly playerService: PlayerStatusService;
+  private readonly playerService: StatusService;
+  @Inject(forwardRef(() => GroupChatService))
   private readonly groupChatService: GroupChatService;
 
   constructor(session: express.RequestHandler, app: INestApplication) {
     super(app);
     this.session = session;
-    this.playerService = app.get(PlayerStatusService);
+    this.playerService = app.get(StatusService);
+
     this.groupChatService = app.get(GroupChatService);
   }
 
@@ -46,7 +48,7 @@ export class WsEventsAdapter extends IoAdapter {
         );
 
         this.playerService
-          .setStatus(socket, 'online')
+          .set(socket, 'online')
           .then(() => {
             return this.groupChatService.getPlayerGroupChatNames(socket);
           })
@@ -80,7 +82,7 @@ export class WsEventsAdapter extends IoAdapter {
       }
 
       this.playerService
-        .removeStatus(socket)
+        .remove(socket)
         .then(() => {
           return this.playerService.getFrontEndStatus();
         })

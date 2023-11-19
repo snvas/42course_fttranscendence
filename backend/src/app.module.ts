@@ -8,11 +8,14 @@ import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 import AvatarModule from './avatar/avatar.module';
 import { dataSourceOptions } from './db/data-source-cli';
-import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SocialModule } from './social/social.module';
+import { StatusModule } from './status/status.module';
 import { MatchModule } from './match/match.module';
+import { ChatModule } from './chat/chat.module';
+import { WsModule } from './ws/ws.module';
 
 @Module({
   imports: [
@@ -21,9 +24,11 @@ import { MatchModule } from './match/match.module';
     AvatarModule,
     ProfileModule,
     ChatModule,
-    ChatModule,
     GameModule,
     MatchModule,
+    SocialModule,
+    StatusModule,
+    WsModule,
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,

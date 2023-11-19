@@ -42,10 +42,9 @@ import { GroupMemberDeletedResponse } from '../interfaces/group/group-member-del
 import { GroupChatUpdatedResponseDto } from '../models/group/group-chat-updated-response.dto';
 import { GroupChatDeletedResponseDto } from '../models/group/group-chat-deleted-response.dto';
 import { SimpleProfileDto } from '../../profile/models/simple-profile.dto';
-import { BlockService } from '../../profile/services/block.service';
+import { BlockService } from '../../social/services/block.service';
 import { socketEvent } from '../../ws/ws-events';
 import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { PlayerStatusService } from '../../profile/services/player-status.service';
 
 @Injectable()
 export class GroupChatService {
@@ -53,7 +52,6 @@ export class GroupChatService {
 
   constructor(
     private readonly profileService: ProfileService,
-    private readonly playerStatusService: PlayerStatusService,
     private readonly blockService: BlockService,
     private readonly groupMemberService: GroupMemberService,
     private readonly groupMessageService: GroupMessageService,

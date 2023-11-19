@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MatchController } from './match.controller';
-import { PlayerStatusService } from '../profile/services/player-status.service';
-import { ProfileService } from '../profile/profile.service';
-import { AvatarService } from '../avatar/avatar.service';
-import { UserService } from '../user/user.service';
-import { BlockService } from '../profile/services/block.service';
-import { WsAuthenticatedGuard } from '../chat/guards/ws-authenticated.guard';
+import { WsAuthenticatedGuard } from '../ws/guards/ws-authenticated.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import entities from '../db/entities';
 import { MatchService } from './match.service';
-import { MatchGateway } from './match.gateway';
 import { MatchGameService } from './services/match-game.service';
 import { MatchAnswerGuard } from './guards/match-answer.guard';
+import { StatusModule } from '../status/status.module';
+import { ProfileModule } from '../profile/profile.module';
+import { SocialModule } from '../social/social.module';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   controllers: [MatchController],
@@ -19,23 +17,15 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
     WsAuthenticatedGuard,
     MatchService,
     MatchGameService,
-    MatchGateway,
     MatchAnswerGuard,
-    PlayerStatusService,
-    BlockService,
-    ProfileService,
-    UserService,
-    AvatarService,
   ],
-  imports: [TypeOrmModule.forFeature(entities)],
-  exports: [
-    PlayerStatusService,
-    ProfileService,
-    UserService,
-    AvatarService,
-    BlockService,
-    MatchService,
-    MatchGameService,
+  imports: [
+    TypeOrmModule.forFeature(entities),
+    StatusModule,
+    ProfileModule,
+    SocialModule,
+    WsModule,
   ],
+  exports: [MatchGameService],
 })
 export class MatchModule {}
