@@ -47,9 +47,9 @@
 		 * If the received data is 2 or 0, stops the game (indicating player disconnection).
 		 */
 		gameService.getSocket().on('is-ready', (data) => {
-			if (data == 1) {
+			if (data == true) {
 				game.start();
-			} else if (data == 2 || data == 0) {
+			} else if (data == false) {
 				game.stop();
 			}
 		});
@@ -65,7 +65,7 @@
 			console.log('Pontos p1: ' + game.pointP1 + ' /Pontos p2: ' + game.pointP2);
 		});
 
-		/**	
+		/**
 		 * Listens for the 'finished' event from the game socket and handles the game over logic.
 		 * @param {Object} data - The data received from the 'finished' event.
 		 * @returns {void}
@@ -87,6 +87,14 @@
 		gameService.getSocket().on('ball-movement', (data) => {
 			ball1.setMovement(data);
 			lastUpdate = data.lastUpdate;
+		});
+
+		gameService.getSocket().on('abandon-match', (data) => {
+			console.log('abandon-match', data);
+			if (data) {
+				game.stop();
+				goto('/endgame');
+			}
 		});
 
 		/**
@@ -165,11 +173,10 @@
 				} else {
 					player2.movePlayer();
 				}
-			} if (game.winner){
+			}
+			if (game.winner) {
 				game.stop();
-			} 
-			else if (!game.winner && !game.running) {
-				
+			} else if (!game.winner && !game.running) {
 				if (p5.keyIsDown(p5.ENTER)) {
 					gameService.emitReady({
 						matchId: String($match?.matchId),
@@ -177,11 +184,10 @@
 					});
 					pressedEnter = true;
 				}
-				if (pressedEnter){
+				if (pressedEnter) {
 					showStartText = false;
 					p5.text('Waiting Oponnet press ENTER', width / 2, height / 2);
 				}
-				
 			}
 		};
 
@@ -525,7 +531,6 @@
 
 		if (playerType && matchId) {
 			gameService.getSocket().emit('abandon-match', { matchId, by: playerType });
-			goto('/dashboard');
 		}
 	}
 </script>

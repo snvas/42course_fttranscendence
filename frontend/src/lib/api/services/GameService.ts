@@ -67,6 +67,14 @@ class GameService {
 			});
 		});
 	}
+
+	public emitAbandoned(message: ConsultDataDto): Promise<ConsultDataDto> {
+		return new Promise<ConsultDataDto>((resolve): void => {
+			this.socket?.emit(socketEvent.GAME_ABANDONED, message, (ack: ConsultDataDto): void => {
+				resolve(ack);
+			});
+		});
+	}
 }
 
 export const gameService: GameService = new GameService('http://localhost:3000');

@@ -11,7 +11,6 @@ import { Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { GameService } from './game.service';
 import { AuthenticatedSocket } from 'src/chat/types/authenticated-socket.type';
-import { Socket } from 'socket.io';
 import { GameDataDto } from './dto/game.data.dto';
 import { ConsultDataDto } from './dto/consult.data.dto';
 
@@ -122,6 +121,7 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
     await this.gameService.abandonMatch(data.matchId, data.by);
+    this.server.to(`${data.matchId}`).emit('abandon-match', data.by);
     socket.leave(data.matchId);
   }
 
