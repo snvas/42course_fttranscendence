@@ -15,7 +15,9 @@ import { Socket } from 'socket.io';
 import { GameDataDto } from './dto/game.data.dto';
 import { ConsultDataDto } from './dto/consult.data.dto';
 
-// TODO make pontuation logic
+/**
+ * The game gateway that handles the communication between the client and the game logic.
+ */
 @WebSocketGateway({
   cors: {
     origin: process.env.APP_CORS_ORIGIN,
@@ -25,11 +27,25 @@ import { ConsultDataDto } from './dto/consult.data.dto';
 export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
   private readonly logger: Logger = new Logger(GameGateway.name);
 
-  constructor(private readonly gameService: GameService) {}
+  /**
+   * Constructs a new instance of the GameGateway class.
+   * @param gameService The game service used for communication with the game logic.
+   */
+  constructor(private readonly gameService: GameService) {
+    this.gameService.setCallback((to, ev, d) => {
+      this.server.to(to).emit(ev, d);
+    });
+  }
   @WebSocketServer()
   server: Server;
 
   @SubscribeMessage('player1')
+  /**
+   * Handles the player 1 event.
+   *
+   * @param data - The game data.
+   * @param socket - The connected socket.
+   */
   handlePlayer1(
     @MessageBody() data: GameDataDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
@@ -41,6 +57,11 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
   }
 
   @SubscribeMessage('player2')
+  /**
+   * Handles the player 2 connection and emits game data to all connected clients.
+   * @param data - The game data received from the client.
+   * @param socket - The connected socket of the player 2.
+   */
   handlePlayer2(
     @MessageBody() data: GameDataDto,
     @ConnectedSocket() socket: AuthenticatedSocket,
@@ -52,16 +73,25 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
   }
 
   @SubscribeMessage('join')
+  /**
+   * Handles the join event for a match.
+   * @param matchId - The ID of the match to join.
+   * @param socket - The authenticated socket connection.
+   */
   handleJoin(
     @MessageBody() matchId: string,
     @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
-    //console.log('SOKECT ROOM IS HERE');
-    // console.log(matchId);
     socket.join(matchId);
   }
 
   @SubscribeMessage('ready')
+  /**
+   * Sets the player's readiness for the game.
+   *
+   * @param data - The ConsultDataDto containing the necessary data for the game.
+   * @param socket - The connected socket of the player.
+   */
   setReady(
     @MessageBody() data: ConsultDataDto,
     @ConnectedSocket() socket: Socket,
@@ -77,6 +107,11 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
       .emit('is-ready', this.gameService.isPlayersReady(data.matchId));
   }
 
+  /**
+   * Handles the disconnection of a client from the chat socket.
+   * @param socket - The authenticated socket that disconnected.
+   * @returns A promise that resolves when the disconnection is handled.
+   */
   async handleDisconnect(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
