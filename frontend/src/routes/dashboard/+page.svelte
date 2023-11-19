@@ -208,7 +208,7 @@
 	}
 </script>
 
-<div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
+<div class="h-full min-h-screen w-full min-w-screen flex flex-col">
 	<div class="flex-none">
 		<PongHeader />
 	</div>
