@@ -94,7 +94,7 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
    */
   setReady(
     @MessageBody() data: ConsultDataDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
     // check correct way
     this.gameService.setCallback((to, ev, d) => {
@@ -107,12 +107,22 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
       .emit('is-ready', this.gameService.isPlayersReady(data.matchId));
   }
 
-  ///REVIEW
+  @SubscribeMessage('finish')
+  async finishedMatch(
+    @MessageBody() data: { matchId: string },
+    @ConnectedSocket() socket: AuthenticatedSocket,
+  ) {
+    await this.gameService.finishMatch(data.matchId);
+    socket.leave(data.matchId);
+  }
+
   @SubscribeMessage('abandon-match')
   async handleAbandonMatch(
     @MessageBody() data: { matchId: string; by: 'p1' | 'p2' },
+    @ConnectedSocket() socket: AuthenticatedSocket,
   ) {
     await this.gameService.abandonMatch(data.matchId, data.by);
+    socket.leave(data.matchId);
   }
 
   /**

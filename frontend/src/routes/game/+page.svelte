@@ -62,9 +62,10 @@
 		gameService.getSocket().on('scoreboard', (data) => {
 			game.pointP1 = data.p1Score;
 			game.pointP2 = data.p2Score;
+			console.log('Pontos p1: ' + game.pointP1 + ' /Pontos p2: ' + game.pointP2);
 		});
 
-		/**
+		/**	
 		 * Listens for the 'finished' event from the game socket and handles the game over logic.
 		 * @param {Object} data - The data received from the 'finished' event.
 		 * @returns {void}
@@ -120,6 +121,7 @@
 
 		const backgroundColorSelected: string = localStorage.getItem('backgroundColor') || 'black';
 		let showStartText = true;
+		let pressedEnter = false;
 
 		/**
 		 * Function that is called by the p5.js library to draw the game page.
@@ -155,7 +157,6 @@
 				p5.text('Use W/S or UP/DOWN to move', width / 2, height / 2);
 				p5.text('First to reach 5 points wins', width / 2, height / 2 + 50);
 			}
-
 			if (game.running == true) {
 				ball1.draw();
 
@@ -164,18 +165,23 @@
 				} else {
 					player2.movePlayer();
 				}
-
-				if (game.winner) {
-					let victoryText = `Player ${game.winner} wins!`;
-					p5.text(victoryText, width / 2, height / 2);
-				}
-			} else if (!game.winner) {
+			} if (game.winner){
+				game.stop();
+			} 
+			else if (!game.winner && !game.running) {
+				
 				if (p5.keyIsDown(p5.ENTER)) {
 					gameService.emitReady({
 						matchId: String($match?.matchId),
 						userId
 					});
+					pressedEnter = true;
 				}
+				if (pressedEnter){
+					showStartText = false;
+					p5.text('Waiting Oponnet press ENTER', width / 2, height / 2);
+				}
+				
 			}
 		};
 
@@ -511,7 +517,6 @@
 	 */
 	onDestroy(() => {
 		gameNew.remove();
-		gameService.disconnect();
 	});
 
 	function abandonMatch() {

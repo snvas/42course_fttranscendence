@@ -69,20 +69,20 @@ export class MatchGameService {
     const winner: 'p1' | 'p2' = this.getWinner(match);
 
     if (winner === 'p1') {
-      await this.profileService.update(match.p1.id, {
+      await this.profileService.updateByProfileId(match.p1.id, {
         level: match.p1.level + 40,
         wins: match.p1.wins + 1,
       });
-      await this.profileService.update(match.p2.id, {
+      await this.profileService.updateByProfileId(match.p2.id, {
         losses: match.p2.losses + 1,
       });
     } else {
-      await this.profileService.update(match.p1.id, {
+      await this.profileService.updateByProfileId(match.p1.id, {
         losses: match.p1.losses + 1,
       });
-      await this.profileService.update(match.p2.id, {
-        level: match.p2.level + 10,
-        wins: match.p2.losses + 1, //check if this is correct
+      await this.profileService.updateByProfileId(match.p2.id, {
+        level: match.p2.level + 40,
+        wins: match.p2.wins + 1,
       });
     }
 
@@ -107,20 +107,20 @@ export class MatchGameService {
     const match: MatchEntity = await this.getMatch(matchId);
 
     if (by === 'p1') {
-      await this.profileService.update(match.p1.id, {
-        wins: match.p1.losses + 1,
+      await this.profileService.updateByProfileId(match.p1.id, {
+        losses: match.p1.losses + 1,
       });
-      await this.profileService.update(match.p2.id, {
+      await this.profileService.updateByProfileId(match.p2.id, {
         level: match.p2.level + 20,
         wins: match.p2.wins + 1,
       });
     } else {
-      await this.profileService.update(match.p1.id, {
+      await this.profileService.updateByProfileId(match.p1.id, {
         level: match.p1.level + 20,
         wins: match.p1.wins + 1,
       });
-      await this.profileService.update(match.p2.id, {
-        wins: match.p2.losses + 1,
+      await this.profileService.updateByProfileId(match.p2.id, {
+        losses: match.p2.losses + 1,
       });
     }
 

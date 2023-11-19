@@ -3,7 +3,7 @@
 	import { matchMakingService } from '$lib/api';
 	import { useAuth, match } from '$lib/stores';
 	import PongHeader from '$lib/components/PongHeader.svelte';
-	import type { MatchHistoryDto } from '../../../../backend/src/match/models/match-history.dto';
+	import type { MatchHistoryDto } from '$lib/dtos';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
 	import { getAvatarFromId } from '$lib/api';
 
