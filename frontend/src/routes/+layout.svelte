@@ -31,8 +31,10 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { verifyUnautorized } from '$lib/utils';
 
+	const notLoggedInRoutes = ['/login', '/welcome', '/validate-otp'];
+
 	async function fetchAllPlayersStatus() {
-		if ($page.url.pathname == '/login') {
+		if (notLoggedInRoutes.includes($page.url.pathname)) {
 			return;
 		}
 		$allUsers = await readAllUsers();
@@ -48,7 +50,6 @@
 		blockList: SimpleProfileDto[],
 		blockedByList: SimpleProfileDto[]
 	) {
-		console.log('updatePlayerStatus');
 		let online: DashboardUsersList[] = [];
 		let offline: DashboardUsersList[] = [];
 

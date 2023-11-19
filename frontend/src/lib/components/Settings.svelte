@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAuth } from '$lib/stores';
+	import { socket, useAuth } from '$lib/stores';
 	import { authService, profileService } from '$lib/api';
 	import { goto } from '$app/navigation';
 
@@ -19,6 +19,7 @@
 
 	async function onDelete() {
 		await profileService.deleteAccount();
+		$socket.disconnect();
 		goto('/deleted');
 	}
 
