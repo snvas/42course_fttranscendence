@@ -1,14 +1,13 @@
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import type { ConsultDataDto, GameDataDto } from '$lib/dtos';
 import { socketEvent } from './SocketsEvents';
+import { chatService } from './ChatService';
 
 class GameService {
 	private readonly socket: Socket;
 
-	constructor(baseURL: string) {
-		const socketBaseUrl: string = `${baseURL}`;
-
-		this.socket = io(socketBaseUrl, { withCredentials: true, autoConnect: false });
+	constructor() {
+		this.socket = chatService.getSocket();
 	}
 
 	public connect(): void {
@@ -77,4 +76,4 @@ class GameService {
 	}
 }
 
-export const gameService: GameService = new GameService('http://localhost:3000');
+export const gameService: GameService = new GameService();
