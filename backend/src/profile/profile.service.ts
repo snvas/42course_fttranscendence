@@ -240,6 +240,14 @@ export class ProfileService {
     }
   }
 
+  async updateByProfileId(
+    profileId: number,
+    profile: Partial<Profile>,
+  ): Promise<ProfileUpdatedResponseDto> {
+    const profileDto: ProfileDTO = await this.findByProfileId(profileId);
+    return this.update(profileDto.userEntity.id, profile);
+  }
+
   /**
    * Deletes a user profile.
    * @param userId - The ID of the user.

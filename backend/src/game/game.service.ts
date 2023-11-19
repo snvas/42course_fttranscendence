@@ -71,15 +71,15 @@ export class GameService {
         if (playerThatScored) {
           this.matchGameService
             .savePoints(matchId, playerThatScored)
-            .then((res) => {
+            .then(async (res) => {
               this.emit(matchId, 'scoreboard', {
                 p1Score: res.p1Score,
                 p2Score: res.p2Score,
               });
               console.log('scoreboard');
               if (this.checkVictory(matchId, res)) {
-                this.finishMatch(matchId);
-                console.log('finished');
+                await this.finishMatch(matchId);
+                console.log('finished OK');
               }
             });
           ball = resetBall(now);
@@ -99,13 +99,12 @@ export class GameService {
   async finishMatch(matchId: string) {
     try {
       const updatedMatch = await this.matchGameService.finishMatch(matchId);
-      this.emit(matchId, 'finished', { winner: updatedMatch.winner });
+      this.emit(matchId, 'finished', { updatedMatch });
     } catch (error) {
       console.log('Erron on finished match: ', error);
     }
   }
 
-  ///REVIEW
   async abandonMatch(matchId: string, by: 'p1' | 'p2') {
     const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
     console.log('abandoned');
