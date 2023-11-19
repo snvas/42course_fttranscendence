@@ -131,9 +131,9 @@
 	});
 
 	// TODO: receber  eventos de ser bloqueao para atualizar a lista
-	// $socket.on(socketEvent.BLOCKED_BY, (data) => {
-	// 	console.log(`Recieved block by: ${data}`);
-	// })
+	 $socket.on(socketEvent.BLOCKED_BY, (data) => {
+	 	console.log(`Recieved block by: ${data}`);
+	 })
 
 	async function confirmMatch() {
 		if (!privateMatch) return;

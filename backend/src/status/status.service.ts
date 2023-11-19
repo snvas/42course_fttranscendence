@@ -20,6 +20,15 @@ export class StatusService {
     this.logger.verbose(`### Online users ${playersStatus.size}}`);
   }
 
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async onlineUsersInfo(): Promise<void> {
+    const playersStatus = this.playerStatusSocket;
+    playersStatus.forEach((playerStatus) => {
+      this.logger.verbose(
+        `### Online user ${playerStatus.id} | ${playerStatus.nickname} | ${playerStatus.status}`,
+      );
+    });
+  }
   public async set(socket: AuthenticatedSocket, status: string): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
