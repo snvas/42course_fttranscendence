@@ -41,24 +41,36 @@
 		let hitSound: p5.SoundFile;
 		let lastUpdate: number = Date.now();
 
+		/**
+		 * Listens for the 'is-ready' event from the game socket.
+		 * If the received data is 1, starts the game.
+		 * If the received data is 2 or 0, stops the game (indicating player disconnection).
+		 */
 		gameService.getSocket().on('is-ready', (data) => {
 			if (data == 1) {
 				game.start();
 			} else if (data == 2 || data == 0) {
-				//player disconected
 				game.stop();
 			}
 		});
 
+		/**
+		 * Listens for the 'scoreboard' event from the game socket and updates the game's player scores.
+		 *
+		 * @param {Object} data - The data received from the 'scoreboard' event.
+		 */
 		gameService.getSocket().on('scoreboard', (data) => {
 			game.pointP1 = data.p1Score;
 			game.pointP2 = data.p2Score;
 		});
 
+		/**
+		 * Listens for the 'finished' event from the game socket and handles the game over logic.
+		 * @param {Object} data - The data received from the 'finished' event.
+		 * @returns {void}
+		 */
 		gameService.getSocket().on('finished', (data) => {
 			game.gameOver(data.winner);
-
-			goto('/dashboard');
 		});
 
 		gameService.getSocket().on('game-data', (data) => {
@@ -75,6 +87,10 @@
 			lastUpdate = data.lastUpdate;
 		});
 
+		/**
+		 * Sets up the game canvas and initializes game objects.
+		 * @returns {Promise<void>}
+		 */
 		p5.setup = async () => {
 			p5.createCanvas(width, height);
 			game = new Game();
@@ -88,6 +104,10 @@
 			p5.fill(255);
 		};
 
+		/**
+		 * Object that maps color names to their corresponding hexadecimal values.
+		 * @type {Object<string, string>}
+		 */
 		const backgroundColors: { [key: string]: string } = {
 			black: '#030712',
 			red: '#f87171',
@@ -99,6 +119,13 @@
 
 		const backgroundColorSelected: string = localStorage.getItem('backgroundColor') || 'black';
 
+		/**
+		 * Function that is called by the p5.js library to draw the game page.
+		 * It updates the game state, draws the players, ball, score, and victory text.
+		 * If the game is running, it moves the player based on the match.as value.
+		 * If there is a winner, it displays the victory text.
+		 * If the game is not running and there is no winner, it listens for the ENTER key press to emit the ready event.
+		 */
 		p5.draw = () => {
 			const now = Date.now();
 			const delta = (now - lastUpdate) / 1000;
@@ -137,18 +164,55 @@
 			}
 		};
 
+		/**
+		 * Represents a ball in the game.
+		 */
 		class Ball {
+			/**
+			 * The X position of the ball.
+			 */
 			public positionX: number;
+			/**
+			 * The Y position of the ball.
+			 */
 			public positionY: number;
+			/**
+			 * The X velocity of the ball.
+			 */
 			public velocityX: number;
+			/**
+			 * The Y velocity of the ball.
+			 */
 			public velocityY: number;
+			/**
+			 * The diameter of the ball.
+			 */
 			public diam: number;
+			/**
+			 * The game instance the ball belongs to.
+			 */
 			public game: Game;
+			/**
+			 * The minor Y value of the ball.
+			 */
 			public yminor: number;
+			/**
+			 * The major Y value of the ball.
+			 */
 			public ymajor: number;
+			/**
+			 * The X reference value of the ball.
+			 */
 			public xref: number;
+			/**
+			 * The sound file associated with the ball.
+			 */
 			public sound: p5.SoundFile;
 
+			/**
+			 * Creates a new instance of the Ball class.
+			 * @param game - The game instance the ball belongs to.
+			 */
 			constructor(game: Game) {
 				this.positionX = width / 2;
 				this.positionY = height / 2;
@@ -162,10 +226,17 @@
 				this.sound = hitSound;
 			}
 
+			/**
+			 * Draws a circle at the specified position with the specified diameter.
+			 */
 			draw() {
 				p5.circle(this.positionX, this.positionY, this.diam);
 			}
 
+			/**
+			 * Sets the movement of the game object.
+			 * @param {Movement} data - The movement data.
+			 */
 			setMovement(data: Movement) {
 				this.positionX = data.positionX;
 				this.positionY = data.positionY;
@@ -173,6 +244,10 @@
 				this.velocityY = data.velocityY;
 			}
 
+			/**
+			 * Moves the ball based on the given delta.
+			 * @param {number} delta - The time delta.
+			 */
 			move(delta: number) {
 				this.positionX += this.velocityX * delta;
 				this.positionY += this.velocityY * delta;
@@ -207,6 +282,11 @@
 			public positionY: number;
 			public velocityY: number;
 
+			/**
+			 * Constructor function for the game page component.
+			 * Initializes the player's position and velocity.
+			 * Emits the player's information to the game service.
+			 */
 			constructor() {
 				this.heightP = 60;
 				this.widthP = 20;
@@ -229,6 +309,9 @@
 				});
 			}
 
+			/**
+			 * Draws the player on the game board.
+			 */
 			drawPlayer() {
 				p5.fill(
 					boardColors[boardColorSelected][0],
@@ -239,11 +322,21 @@
 				p5.fill(255, 255, 255);
 			}
 
+			/**
+			 * Sets the positions of the game elements.
+			 * @param {Positions} data - The positions data object.
+			 */
 			setPositions(data: Positions) {
 				this.positionX = data.positionX;
 				this.positionY = data.positionY;
 			}
 
+			/**
+			 * Moves the player based on the keyboard input.
+			 * If the UP_ARROW or 'W' key is pressed, the player moves up.
+			 * If the DOWN_ARROW or 'S' key is pressed, the player moves down.
+			 * The player's position is updated and emitted to the game service.
+			 */
 			movePlayer() {
 				if (p5.keyIsDown(p5.UP_ARROW)) {
 					if (this.positionY > 0) {
@@ -280,13 +373,38 @@
 			}
 		}
 
+		/**
+		 * Represents a game.
+		 */
 		class Game {
+			/**
+			 * Indicates whether the game is currently running.
+			 */
 			public running: boolean;
+
+			/**
+			 * The number of points for player 1.
+			 */
 			public pointP1: number;
+
+			/**
+			 * The number of points for player 2.
+			 */
 			public pointP2: number;
+
+			/**
+			 * The ball object used in the game.
+			 */
 			public ball: Ball;
+
+			/**
+			 * The winner of the game.
+			 */
 			public winner: number;
 
+			/**
+			 * Creates a new instance of the Game class.
+			 */
 			constructor() {
 				this.running = false;
 				this.pointP1 = 0;
@@ -295,15 +413,24 @@
 				this.winner = 0;
 			}
 
+			/**
+			 * Stops the game.
+			 */
 			stop() {
 				this.running = false;
 			}
 
+			/**
+			 * Starts the game.
+			 */
 			start() {
-				//this.ball.centerBall();
 				this.running = true;
 			}
 
+			/**
+			 * Updates the points and checks for game over.
+			 * @param p - The player who scored the point.
+			 */
 			pointing(p: number) {
 				if (p == 1) {
 					if (this.pointP1 == 5) {
@@ -319,26 +446,27 @@
 				p5.print('Pontos p1: ' + this.pointP1 + ' /Pontos p2: ' + this.pointP2);
 			}
 
+			/**
+			 * Ends the game and sets the winner.
+			 * @param winner - The player who won the game.
+			 */
 			gameOver(winner: number) {
-				this.running = false; // Para o jogo
-				this.winner = winner; // Armazena o ID do jogador vencedor
-				//setTimeout(() => {
-				//	this.restart();
-				//}, 2000); // Pausa de 2 segundos antes de reiniciar
+				this.running = false;
+				this.winner = winner;
+				goto('/endgame');
 			}
 
+			/**
+			 * Restarts the points to zero.
+			 */
 			restartPoints() {
 				this.pointP1 = this.pointP2 = 0;
 			}
 
-			restart() {
-				this.running = false;
-				this.pointP1 = 0;
-				this.pointP2 = 0;
-				this.winner = 0;
-				//this.ball.centerBall();
-			}
-
+			/**
+			 * Sets the ball object used in the game.
+			 * @param ball - The ball object.
+			 */
 			setBall(ball: Ball) {
 				this.ball = ball;
 			}
@@ -347,6 +475,11 @@
 
 	let gameNew: p5;
 
+	/**
+	 * Initializes the game on mount.
+	 * Connects to the game service, joins the player room, and loads the sound.
+	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
+	 */
 	onMount(async () => {
 		gameService.connect();
 		gameService.joinPlayerRoom(String($match?.matchId));
@@ -361,11 +494,15 @@
 		gameNew = new p5(sketch, element);
 	});
 
+	/**
+	 * Removes the game element and disconnects from the game service.
+	 */
 	onDestroy(() => {
 		gameNew.remove();
 		gameService.disconnect();
 	});
 </script>
+
 
 <div class="h-screen flex flex-col">
 	<PongHeader />
