@@ -70,6 +70,7 @@
 		 * @returns {void}
 		 */
 		gameService.getSocket().on('finished', (data) => {
+			game.stop();
 			game.gameOver(data.winner);
 		});
 
@@ -118,6 +119,7 @@
 		};
 
 		const backgroundColorSelected: string = localStorage.getItem('backgroundColor') || 'black';
+		let showStartText = true;
 
 		/**
 		 * Function that is called by the p5.js library to draw the game page.
@@ -132,6 +134,7 @@
 			lastUpdate = now;
 
 			p5.background(backgroundColors[backgroundColorSelected]);
+			p5.fill(255);
 			p5.rect(width / 2, 0, 5, height);
 
 			player1.drawPlayer();
@@ -140,6 +143,18 @@
 			let scoreText = `${game.pointP1}  |  ${game.pointP2}`;
 
 			p5.text(scoreText, width / 6, 40);
+
+			if (!game.running && showStartText) {
+				p5.textAlign(p5.CENTER, p5.CENTER);
+				p5.fill(250, 204, 21);
+				p5.textSize(32);
+				p5.textStyle(p5.BOLD);
+				p5.textFont('Arial');
+				p5.text('Press ENTER to start', width / 2, height / 2 - 50);
+				p5.textSize(24);
+				p5.text('Use W/S or UP/DOWN to move', width / 2, height / 2);
+				p5.text('First to reach 5 points wins', width / 2, height / 2 + 50);
+			}
 
 			if (game.running == true) {
 				ball1.draw();
@@ -422,6 +437,7 @@
 			 */
 			start() {
 				this.running = true;
+				showStartText = false;
 			}
 
 			/**
@@ -490,7 +506,6 @@
 		console.log('Loaded Sound');
 		gameNew = new p5(sketch, element);
 	});
-
 	/**
 	 * Removes the game element and disconnects from the game service.
 	 */
@@ -498,14 +513,23 @@
 		gameNew.remove();
 		gameService.disconnect();
 	});
+
+	function abandonMatch() {
+		const playerType = $match?.as;
+		const matchId = $match?.matchId;
+
+		if (playerType && matchId) {
+			gameService.getSocket().emit('abandon-match', { matchId, by: playerType });
+			goto('/dashboard');
+		}
+	}
 </script>
 
-
-<div class="h-screen flex flex-col">
+<div class="min-h-screen h-full flex flex-col">
 	<PongHeader />
 	<div class="flex flex-col justify-end items-end">
-		<a href="/dashboard"
-			><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></a
+		<button on:click={abandonMatch} class="mr-10 mt-10"
+			><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></button
 		>
 	</div>
 	<div class="flex w-full items-center justify-center grow">

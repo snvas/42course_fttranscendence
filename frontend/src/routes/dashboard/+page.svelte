@@ -278,7 +278,7 @@
 					{/if}
 				</div>
 			</div>
-			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
+			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-screen lg:order-2">
 				<UsersList
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}
