@@ -100,6 +100,8 @@ export class GameService {
     try {
       const updatedMatch = await this.matchGameService.finishMatch(matchId);
       this.emit(matchId, 'finished', { updatedMatch });
+      this.isReady.get(matchId)?.pop(); //stop the game
+      this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
       this.clean(matchId);
     } catch (error) {
       console.log('Erron on finished match: ', error);
@@ -273,7 +275,7 @@ export class GameService {
     return { player1, player2, ball };
   }
 
-  clean(matchId:string){
+  clean(matchId: string) {
     this.player1.delete(matchId);
     this.player2.delete(matchId);
     this.ball.delete(matchId);

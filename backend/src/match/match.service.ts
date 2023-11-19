@@ -641,6 +641,9 @@ export class MatchService {
       await this.status.getSocket(matchEntity.p2.id);
 
     if (p1Socket && p2Socket) {
+      this.logger.debug(
+        `Sending match [${matchEntity.id}] event [${event}] to players [${matchEntity.p1.id}] and [${matchEntity.p2.id}]`,
+      );
       (await this.wsGateway.getServer())
         .to(p1Socket.id)
         .emit(

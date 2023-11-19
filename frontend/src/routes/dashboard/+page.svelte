@@ -33,7 +33,6 @@
 	import UsersList from '$lib/components/lists/UsersList.svelte';
 	import type { MatchEventDto, MatchHistoryDto, PlayerStatusDto } from '$lib/dtos';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
-	import { isAxiosError } from 'axios';
 	import { verifyUnautorized } from '$lib/utils';
 
 	let matchHistory: Promise<MatchHistoryDto[]> = onHistory();
@@ -155,11 +154,7 @@
 			$profile = v.data;
 		}
 	});
-
-	$socket.on('matchFound', (data) => {
-		console.log(data);
-	});
-
+	
 	$: avatar = getUserAvatar(loadProfile);
 
 	$socket.on(socketEvent.MATCH_FOUND, (data: MatchEventDto) => {

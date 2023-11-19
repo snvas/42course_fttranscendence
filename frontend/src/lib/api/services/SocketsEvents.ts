@@ -31,4 +31,5 @@ export const socketEvent = {
 	GAME_POINT_PLAYER_1: 'p1',
 	GAME_POINT_PLAYER_2: 'p2',
 	GAME_ABANDONED: 'abandon-match',
+	BLOCKED_BY: 'blockedBy',
 };

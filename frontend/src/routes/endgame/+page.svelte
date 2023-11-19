@@ -6,6 +6,7 @@
 	import type { MatchHistoryDto } from '$lib/dtos';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
 	import { getAvatarFromId } from '$lib/api';
+	import { onDestroy } from 'svelte';
 
 	let auth = useAuth();
 
@@ -33,6 +34,11 @@
 	}
 
 	getMatchHistory();
+
+	onDestroy(() => {
+		$match = null;
+	});
+	
 </script>
 
 <div class="w-screen h-full min-h-screen">
