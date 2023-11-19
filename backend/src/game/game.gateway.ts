@@ -107,6 +107,14 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
       .emit('is-ready', this.gameService.isPlayersReady(data.matchId));
   }
 
+  ///REVIEW
+  @SubscribeMessage('abandon-match')
+  async handleAbandonMatch(
+    @MessageBody() data: { matchId: string; by: 'p1' | 'p2' },
+  ) {
+    await this.gameService.abandonMatch(data.matchId, data.by);
+  }
+
   /**
    * Handles the disconnection of a client from the chat socket.
    * @param socket - The authenticated socket that disconnected.

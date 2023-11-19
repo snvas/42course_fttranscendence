@@ -63,6 +63,9 @@ export class MatchGameService {
    */
   public async finishMatch(matchId: string): Promise<MatchEntity> {
     const match: MatchEntity = await this.getMatch(matchId);
+    if (!match.p1 || !match.p2) {
+      throw new NotFoundException('Players not found in match [${matchId}}]');
+    }
     const winner: 'p1' | 'p2' = this.getWinner(match);
 
     if (winner === 'p1') {
@@ -70,10 +73,16 @@ export class MatchGameService {
         level: match.p1.level + 40,
         wins: match.p1.wins + 1,
       });
+      await this.profileService.update(match.p2.id, {
+        losses: match.p2.losses + 1,
+      });
     } else {
+      await this.profileService.update(match.p1.id, {
+        losses: match.p1.losses + 1,
+      });
       await this.profileService.update(match.p2.id, {
         level: match.p2.level + 10,
-        wins: match.p2.losses + 1,
+        wins: match.p2.losses + 1, //check if this is correct
       });
     }
 
@@ -148,11 +157,11 @@ export class MatchGameService {
     });
 
     if (!match) {
-      throw new NotFoundException('Match not found');
+      throw new NotFoundException('Match [${matchId}]not found');
     }
 
     if (!match.p1 || !match.p2) {
-      throw new NotFoundException('Match players not found');
+      throw new NotFoundException('Players not found in match [${matchId}}]');
     }
     return match;
   }

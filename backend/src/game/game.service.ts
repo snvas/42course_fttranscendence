@@ -79,7 +79,6 @@ export class GameService {
               console.log('scoreboard');
               if (this.checkVictory(matchId, res)) {
                 this.finishMatch(matchId);
-                this.emit(matchId, 'finished', { winner: playerThatScored });
                 console.log('finished');
               }
             });
@@ -97,8 +96,20 @@ export class GameService {
    * Finish a match.
    * @param matchId - The ID of the match to finish.
    */
-  finishMatch(matchId: string) {
-    this.matchGameService.finishMatch(matchId);
+  async finishMatch(matchId: string) {
+    try {
+      const updatedMatch = await this.matchGameService.finishMatch(matchId);
+      this.emit(matchId, 'finished', { winner: updatedMatch.winner });
+    } catch (error) {
+      console.log('Erron on finished match: ', error);
+    }
+  }
+
+  ///REVIEW
+  async abandonMatch(matchId: string, by: 'p1' | 'p2') {
+    const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
+    console.log('abandoned');
+    this.emit(matchId, 'abandoned', { winner: updatedMatch.winner });
   }
 
   /**
