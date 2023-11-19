@@ -22,10 +22,22 @@ import { MatchHistoryDto } from './models/match-history.dto';
 import { BlockService } from '../social/services/block.service';
 import { WsGateway } from '../ws/ws.gateway';
 
+/**
+ * MatchService class responsible for handling match-related operations.
+ */
 @Injectable()
 export class MatchService {
   private readonly logger: Logger = new Logger(MatchService.name);
 
+  /**
+   * Creates an instance of the MatchService class.
+   * @param profileService - The profile service.
+   * @param status - The status service.
+   * @param blockService - The block service.
+   * @param wsGateway - The WebSocket gateway.
+   * @param matchRepository - The match repository.
+   * @param dataSource - The data source.
+   */
   constructor(
     private readonly profileService: ProfileService,
     private readonly status: StatusService,
@@ -36,8 +48,20 @@ export class MatchService {
     private dataSource: DataSource,
   ) {}
 
+  /**
+   * Retrieves the match history for a given user.
+   *
+   * @param userId - The ID of the user.
+   * @returns A promise that resolves to an array of MatchHistoryDto objects representing the match history.
+   */
   public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
     const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    /**
+     * Retrieves an array of MatchEntity objects based on the provided criteria.
+     *
+     * @param profile - The profile object used to filter the matches.
+     * @returns An array of MatchEntity objects.
+     */
     const matchEntity: MatchEntity[] = await this.matchRepository.find({
       where: [
         {
@@ -119,6 +143,14 @@ export class MatchService {
     });
   }
 
+  /**
+   * Joins a private match between the user and an opponent.
+   *
+   * @param userId - The ID of the user joining the match.
+   * @param opponentProfileId - The ID of the opponent's profile.
+   * @returns A Promise that resolves to void.
+   * @throws BadRequestException if the player is not connected or blocked.
+   */
   public async joinPrivateMatch(
     userId: number,
     opponentProfileId: number,
@@ -177,6 +209,13 @@ export class MatchService {
       );
   }
 
+  /**
+   * Handles the match status for a user.
+   *
+   * @param userId - The ID of the user.
+   * @param status - The match status to set for the user. Can be one of 'waitingMatch', 'online', or 'playing'.
+   * @returns A Promise that resolves when the match status is handled.
+   */
   public async handleUserMatchStatus(
     userId: number,
     status: 'waitingMatch' | 'online' | 'playing',
@@ -186,6 +225,12 @@ export class MatchService {
     await this.handleMatchStatus(profile.id, status);
   }
 
+  /**
+   * Handles the match status for a player.
+   * @param profileId - The ID of the player's profile.
+   * @param status - The status to set for the player ('waitingMatch', 'online', or 'playing').
+   * @throws BadRequestException if the player is not connected.
+   */
   public async handleMatchStatus(
     profileId: number,
     status: 'waitingMatch' | 'online' | 'playing',
@@ -218,6 +263,15 @@ export class MatchService {
   }
 
   @Cron(CronExpression.EVERY_SECOND)
+  /**
+   * Performs the match-making job by pairing up waiting players and creating matches.
+   * If there are less than 2 waiting players, the function returns without doing anything.
+   * The function retrieves the waiting players and their profiles, and then iterates through
+   * the profiles to find valid matches. For each pair of profiles, it checks if both players
+   * have an active socket connection. If they do, it sets their status to 'waitingGame' and
+   * checks if they have blocked each other. If they haven't blocked each other, it creates
+   * a match entity and handles the match event.
+   */
   async matchMakingJob(): Promise<void> {
     const waitingMatchPlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingMatch');
@@ -262,6 +316,10 @@ export class MatchService {
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
+  /**
+   * Handles the timeout for waiting games.
+   * If a player has been waiting for more than 10 seconds, their status is changed to "waitingMatch".
+   */
   async gameWaitingTimeout(): Promise<void> {
     const waitingGamePlayers: PlayerStatusDto[] =
       await this.getMatchPlayerByStatus('waitingGame');
@@ -290,6 +348,16 @@ export class MatchService {
     }
   }
 
+  /**
+   * Accepts a match.
+   *
+   * @param matchId - The ID of the match.
+   * @param as - The player accepting the match ('p1' or 'p2').
+   * @param type - The type of the match ('public' or 'private'). Defaults to 'public'.
+   * @returns A promise that resolves to a MatchUpdatedDto object.
+   * @throws BadRequestException if the match has already started.
+   * @throws InternalServerErrorException if the match join is not updated.
+   */
   public async acceptMatch(
     matchId: string,
     as: 'p1' | 'p2',
@@ -349,6 +417,15 @@ export class MatchService {
     }
   }
 
+  /**
+   * Rejects a match.
+   *
+   * @param matchId - The ID of the match to reject.
+   * @param type - The type of the match ('public' or 'private'). Defaults to 'public'.
+   * @returns A Promise that resolves to a MatchUpdatedDto object containing the updated match information.
+   * @throws BadRequestException if the match has already started.
+   * @throws InternalServerErrorException if the match status is not updated.
+   */
   public async rejectMatch(
     matchId: string,
     type: 'public' | 'private' = 'public',
@@ -425,6 +502,15 @@ export class MatchService {
     return matchEntity;
   }
 
+  /**
+   * Handles the start of a match.
+   *
+   * @param as - The player who initiated the match ('p1' or 'p2').
+   * @param matchEntity - The match entity.
+   * @param queryRunner - The query runner for database operations.
+   * @param type - The type of match ('public' or 'private'). Default is 'public'.
+   * @returns A promise that resolves to an UpdateResult or null.
+   */
   private async handleMatchStart(
     as: 'p1' | 'p2',
     matchEntity: MatchEntity,
@@ -465,6 +551,11 @@ export class MatchService {
     });
   }
 
+  /**
+   * Retrieves the player statuses with a specific match status.
+   * @param matchStatus The match status to filter by ('waitingMatch', 'waitingGame', or 'playing').
+   * @returns A promise that resolves to an array of PlayerStatusDto objects.
+   */
   private async getMatchPlayerByStatus(
     matchStatus: 'waitingMatch' | 'waitingGame' | 'playing',
   ): Promise<PlayerStatusDto[]> {
@@ -475,6 +566,12 @@ export class MatchService {
     );
   }
 
+  /**
+   * Retrieves and sorts the profiles of waiting match players.
+   *
+   * @param waitingMatchPlayers - The list of waiting match players.
+   * @returns A promise that resolves to an array of sorted ProfileDTO objects.
+   */
   private async getSortedWaitingMatchProfiles(
     waitingMatchPlayers: PlayerStatusDto[],
   ): Promise<ProfileDTO[]> {
@@ -499,6 +596,10 @@ export class MatchService {
     return waitingMatchProfiles;
   }
 
+  /**
+   * Sends the player status event to the frontend.
+   * @returns A promise that resolves when the event is sent.
+   */
   private async sendPlayerStatusEvent(): Promise<void> {
     const playersStatus: PlayerStatusDto[] =
       await this.status.getFrontEndStatus();
@@ -509,6 +610,14 @@ export class MatchService {
     );
   }
 
+  /**
+   * Handles a match event.
+   *
+   * @param matchEntity - The match entity.
+   * @param event - The event string.
+   * @returns A promise that resolves when the event is handled.
+   * @throws {InternalServerErrorException} If the event is invalid.
+   */
   private async handleMatchEvent(
     matchEntity: MatchEntity,
     event: string,
@@ -558,6 +667,13 @@ export class MatchService {
     }
   }
 
+  /**
+   * Retrieves a match entity with the specified match ID in a transactional context.
+   * @param queryRunner - The query runner for the transaction.
+   * @param matchId - The ID of the match entity to retrieve.
+   * @returns A promise that resolves to the retrieved match entity.
+   * @throws NotFoundException if the match entity is not found.
+   */
   private async getMatchTransactional(
     queryRunner: QueryRunner,
     matchId: string,
@@ -579,6 +695,14 @@ export class MatchService {
     return matchEntity;
   }
 
+  /**
+   * Updates a match transactionally.
+   *
+   * @param queryRunner - The query runner used for the transaction.
+   * @param matchId - The ID of the match to update.
+   * @param partialEntity - The partial entity containing the updated match data.
+   * @returns A promise that resolves to the update result.
+   */
   private async updateMatchTransactional(
     queryRunner: QueryRunner,
     matchId: string,
@@ -591,6 +715,13 @@ export class MatchService {
     );
   }
 
+  /**
+   * Creates a new match between two profiles.
+   *
+   * @param p1 - The first profile.
+   * @param p2 - The second profile.
+   * @returns A promise that resolves to the created match entity.
+   */
   private async createMatch(
     p1: ProfileDTO,
     p2: ProfileDTO,
@@ -602,6 +733,13 @@ export class MatchService {
     });
   }
 
+  /**
+   * Creates a private match between two profiles.
+   *
+   * @param profile - The profile of the first player.
+   * @param opponentProfile - The profile of the second player.
+   * @returns A promise that resolves to the created MatchEntity.
+   */
   private async createPrivateMatch(
     profile: ProfileDTO,
     opponentProfile: ProfileDTO,
@@ -614,6 +752,14 @@ export class MatchService {
     });
   }
 
+  /**
+   * Creates a match event object.
+   * @param matchId - The ID of the match.
+   * @param p1Profile - The profile of player 1.
+   * @param p2Profile - The profile of player 2.
+   * @param as - The role of the player creating the match event ('p1' or 'p2').
+   * @returns The created match event object.
+   */
   private createMatchEvent(
     matchId: string,
     p1Profile: ProfileEntity,

@@ -25,7 +25,7 @@ export const socketEvent = {
 	GROUP_CHAT_MEMBER_UNBANNED: 'groupChatMemberUnbanned',
 	GAME_PLAYER_1: 'player1',
 	GAME_PLAYER_2: 'player2',
-	GAMR_BALL: 'ball',
+	GAME_BALL: 'ball',
 	GAME_PLAYER_IS_READY: 'ready',
 	GAME_JOIN_ON_ROOM: 'join',
 	GAME_POINT_PLAYER_1: 'p1',

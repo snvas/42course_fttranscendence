@@ -12,7 +12,7 @@
 	}
 </script>
 
-<div class="gap-20 flex flex-col h-screen justify-center items-center pt-10 lg:pt-20 w-screen">
+<div class="gap-20 flex flex-col h-full min-h-screen justify-center items-center pt-10 lg:pt-20 w-screen">
 	<div class="w-full flex flex-row gap-10 items-center">
 		<div class={chunkClass}>
 			<div class={lineClass} />

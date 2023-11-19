@@ -1,7 +1,7 @@
-import { Positions } from "./positions.type"
+import { Positions } from './positions.type';
 
 export type Player = {
-    id: string
-    soketId: string
-    pos: Positions
-}
+  id: string;
+  soketId: string;
+  pos: Positions;
+};

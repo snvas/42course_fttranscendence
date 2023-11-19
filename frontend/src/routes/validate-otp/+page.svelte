@@ -4,6 +4,12 @@
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import { isAxiosError } from 'axios';
 
+	/**
+	 * Function to handle form submission and validate OTP code.
+	 * @async
+	 * @function onSubmit
+	 * @returns {Promise<void>}
+	 */
 	async function onSubmit() {
 		try {
 			await authService.validateOTP(code);

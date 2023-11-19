@@ -208,7 +208,7 @@
 	}
 </script>
 
-<div class="h-full min-h-screen w-full min-w-screen flex flex-col lg:h-screen lg:w-screen">
+<div class="h-full min-h-screen w-full min-w-screen flex flex-col">
 	<div class="flex-none">
 		<PongHeader />
 	</div>
@@ -278,7 +278,7 @@
 					{/if}
 				</div>
 			</div>
-			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-full lg:order-2">
+			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-screen lg:order-2">
 				<UsersList
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}

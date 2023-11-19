@@ -1,3 +1,6 @@
+/**
+ * Controller responsible for handling match-related requests.
+ */
 import {
   Body,
   Controller,
@@ -21,6 +24,11 @@ import { MatchAnswerGuard } from './guards/match-answer.guard';
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
+  /**
+   * Retrieves the match history for the authenticated user.
+   * @param user - The authenticated user.
+   * @returns A promise that resolves to an array of MatchHistoryDto objects.
+   */
   @HttpCode(HttpStatus.OK)
   @Get('history')
   async getMatchHistory(
@@ -29,6 +37,11 @@ export class MatchController {
     return await this.matchService.getMatchHistory(user.id);
   }
 
+  /**
+   * Joins the match queue for the authenticated user.
+   * @param user - The authenticated user.
+   * @returns A promise that resolves when the user successfully joins the match queue.
+   */
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('queue/join')
   async joinMatchQueue(
@@ -37,6 +50,11 @@ export class MatchController {
     await this.matchService.handleUserMatchStatus(user.id, 'waitingMatch');
   }
 
+  /**
+   * Leaves the match queue for the authenticated user.
+   * @param user - The authenticated user.
+   * @returns A promise that resolves when the user successfully leaves the match queue.
+   */
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('queue/leave')
   async leaveMatchQueue(
@@ -45,6 +63,12 @@ export class MatchController {
     await this.matchService.handleUserMatchStatus(user.id, 'online');
   }
 
+  /**
+   * Creates a private match between the authenticated user and the specified profile.
+   * @param profileId - The ID of the profile to create the private match with.
+   * @param user - The authenticated user.
+   * @returns A promise that resolves when the private match is successfully created.
+   */
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('private/create/:profileId')
   async createPrivateMatch(
@@ -54,6 +78,11 @@ export class MatchController {
     return await this.matchService.joinPrivateMatch(user.id, profileId);
   }
 
+  /**
+   * Accepts a match request.
+   * @param matchAnswerDto - The match answer DTO containing the match ID and the answer.
+   * @returns A promise that resolves to the updated match DTO.
+   */
   @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('accept')
@@ -66,6 +95,11 @@ export class MatchController {
     );
   }
 
+  /**
+   * Rejects a match request.
+   * @param matchAnswerDto - The match answer DTO containing the match ID.
+   * @returns A promise that resolves to the updated match DTO.
+   */
   @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('reject')
@@ -75,6 +109,11 @@ export class MatchController {
     return await this.matchService.rejectMatch(matchAnswerDto.matchId);
   }
 
+  /**
+   * Accepts a private match request.
+   * @param matchAnswerDto - The match answer DTO containing the match ID and the answer.
+   * @returns A promise that resolves to the updated match DTO.
+   */
   @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('private/accept')
@@ -88,6 +127,11 @@ export class MatchController {
     );
   }
 
+  /**
+   * Rejects a private match request.
+   * @param matchAnswerDto - The match answer DTO containing the match ID.
+   * @returns A promise that resolves to the updated match DTO.
+   */
   @UseGuards(MatchAnswerGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('private/reject')

@@ -18,7 +18,7 @@
 	}
 </script>
 
-<div class="border-4 border-white h-full flex flex-col rounded-3xl pb-2">
+<div class="border-4 border-white flex flex-col rounded-3xl pb-2 h-full">
 	<div class="flex-none flex justify-center p-3">
 		<div class="w-full mx-auto min-w-fit mb-4 rounded-xl btn-users">USERS</div>
 	</div>

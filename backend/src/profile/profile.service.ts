@@ -29,6 +29,13 @@ import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
 export class ProfileService {
   private readonly logger: Logger = new Logger(ProfileService.name);
 
+  /**
+   * Constructs a new instance of the ProfileService class.
+   * @param userService - The UserService instance.
+   * @param avatarService - The AvatarService instance.
+   * @param profileRepository - The ProfileEntity repository.
+   * @param dataSource - The DataSource instance.
+   */
   constructor(
     private readonly userService: UserService,
     private readonly avatarService: AvatarService,
@@ -37,6 +44,12 @@ export class ProfileService {
     private dataSource: DataSource,
   ) {}
 
+  /**
+   * Finds a profile by user ID.
+   * @param userId - The ID of the user.
+   * @returns A Promise that resolves to a ProfileDTO object.
+   * @throws NotFoundException if the user is not found.
+   */
   async findByUserId(userId: number): Promise<ProfileDTO> {
     const profileEntity: ProfileEntity | null =
       await this.profileRepository.findOne({
@@ -60,6 +73,12 @@ export class ProfileService {
     return this.createProfileDto(profileEntity);
   }
 
+  /**
+   * Finds a profile by profile ID.
+   * @param profileId - The ID of the profile to find.
+   * @returns A Promise that resolves to a ProfileDTO object representing the found profile.
+   * @throws NotFoundException if the profile with the given ID is not found.
+   */
   async findByProfileId(profileId: number): Promise<ProfileDTO> {
     const profileEntity: ProfileEntity | null =
       await this.profileRepository.findOne({
@@ -83,6 +102,11 @@ export class ProfileService {
     return this.createProfileDto(profileEntity);
   }
 
+  /**
+   * Retrieves all profiles.
+   * @returns A promise that resolves to an array of ProfileDTO objects.
+   * @throws NotFoundException if group chats are not found.
+   */
   async findAllProfiles(): Promise<ProfileDTO[]> {
     const profileEntity: ProfileEntity[] | null =
       await this.profileRepository.find({
@@ -103,6 +127,11 @@ export class ProfileService {
     );
   }
 
+  /**
+   * Checks if a nickname already exists in the profile repository.
+   * @param nickname - The nickname to check.
+   * @returns A promise that resolves to a boolean indicating if the nickname exists.
+   */
   async isNicknameExist(nickname: string): Promise<boolean> {
     const profileEntity: ProfileEntity | null =
       await this.profileRepository.findOneBy({
@@ -112,6 +141,15 @@ export class ProfileService {
     return !!profileEntity;
   }
 
+  /**
+   * Creates a profile for a user.
+   * @param userId - The ID of the user.
+   * @param nickname - The nickname for the profile.
+   * @returns A Promise that resolves to a ProfileDTO object representing the created profile.
+   * @throws NotFoundException if the user with the given ID is not found.
+   * @throws BadRequestException if the user already has a profile or if the nickname already exists.
+   * @throws NotAcceptableException if the nickname already exists.
+   */
   async create(userId: number, nickname: string): Promise<ProfileDTO> {
     const userEntity: UserEntity | null = await this.userService.findById(
       userId,
@@ -153,6 +191,15 @@ export class ProfileService {
     return plainToClass(ProfileDTO, savedEntity);
   }
 
+  /**
+   * Updates the profile of a user.
+   *
+   * @param userId - The ID of the user.
+   * @param profile - The partial profile object containing the fields to update.
+   * @returns A promise that resolves to a ProfileUpdatedResponseDto object.
+   * @throws NotFoundException if the user is not found.
+   * @throws NotAcceptableException if the chosen nickname already exists.
+   */
   async update(
     userId: number,
     profile: Partial<Profile>,
@@ -193,6 +240,12 @@ export class ProfileService {
     }
   }
 
+  /**
+   * Deletes a user profile.
+   * @param userId - The ID of the user.
+   * @returns A promise that resolves to a ProfileDeletedResponseDto object.
+   * @throws NotFoundException if the user or avatar is not found.
+   */
   async delete(userId: number): Promise<ProfileDeletedResponseDto> {
     const profileDto: ProfileDTO = await this.findByUserId(userId);
 
@@ -233,6 +286,11 @@ export class ProfileService {
     };
   }
 
+  /**
+   * Finds profiles by user IDs.
+   * @param userIds - An array of user IDs.
+   * @returns A promise that resolves to an array of ProfileEntity objects.
+   */
   async findByUserIds(userIds: number[]): Promise<ProfileEntity[]> {
     return await this.profileRepository
       .createQueryBuilder('profile')
@@ -241,6 +299,14 @@ export class ProfileService {
       .getMany();
   }
 
+  /**
+   * Uploads an avatar for a user.
+   *
+   * @param userId - The ID of the user.
+   * @param imageBuffer - The buffer containing the image data.
+   * @param filename - The name of the image file.
+   * @returns A promise that resolves to an AvatarDTO object representing the uploaded avatar.
+   */
   async uploadAvatar(
     userId: number,
     imageBuffer: Buffer,
@@ -290,6 +356,11 @@ export class ProfileService {
     return avatarDTO;
   }
 
+  /**
+   * Checks if a user has a profile.
+   * @param user - The user object.
+   * @returns A promise that resolves to a boolean indicating whether the user has a profile or not.
+   */
   public async userHasProfile(user: FortyTwoUserDto): Promise<boolean> {
     try {
       const profileDTO: ProfileDTO = await this.findByUserId(user.id);
@@ -305,6 +376,11 @@ export class ProfileService {
     return false;
   }
 
+  /**
+   * Calculates the level and percentage based on the given score.
+   * @param score - The score to calculate the level and percentage for.
+   * @returns An object containing the level and percentage.
+   */
   public calculateLevel(score: number): { level: number; percentage: number } {
     let previousLevelScore = 0;
     let nextLevelScore = 120;
@@ -327,6 +403,11 @@ export class ProfileService {
     return { level, percentage };
   }
 
+  /**
+   * Creates a profile DTO from a profile entity.
+   * @param profileEntity The profile entity to create the DTO from.
+   * @returns The created profile DTO.
+   */
   private createProfileDto(profileEntity: ProfileEntity) {
     const profileDto: ProfileDTO = plainToClass(ProfileDTO, profileEntity);
 
