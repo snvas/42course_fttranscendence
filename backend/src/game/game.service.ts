@@ -100,6 +100,7 @@ export class GameService {
     try {
       const updatedMatch = await this.matchGameService.finishMatch(matchId);
       this.emit(matchId, 'finished', { updatedMatch });
+      this.clean(matchId);
     } catch (error) {
       console.log('Erron on finished match: ', error);
     }
@@ -111,6 +112,7 @@ export class GameService {
     this.isReady.get(matchId)?.pop(); //stop the game
     this.emit(matchId, 'abandoned', { winner: updatedMatch.winner });
     this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
+    this.clean(matchId);
   }
 
   /**
@@ -269,6 +271,14 @@ export class GameService {
     const pos = this.ball.get(matchId);
     const ball = pos ? pos : { positionX: 0, positionY: 0 };
     return { player1, player2, ball };
+  }
+
+  clean(matchId:string){
+    this.player1.delete(matchId);
+    this.player2.delete(matchId);
+    this.ball.delete(matchId);
+    this.isReady.delete(matchId);
+    this.lastUpdate.delete(matchId);
   }
 }
 
