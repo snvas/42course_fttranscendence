@@ -169,6 +169,19 @@ export class BlockService {
       );
     }
 
+    const blockedSocket: AuthenticatedSocket | undefined =
+      await this.statusService.getSocket(blockedUser.id);
+
+    if (blockedSocket) {
+      (await this.wsGateway.getServer())
+        .to(blockedSocket.id)
+        .emit(socketEvent.UNBLOCKED_BY, {
+          id: userProfile.id,
+          nickname: userProfile.nickname,
+          avatarId: userProfile.avatarId,
+        } as SimpleProfileDto);
+    }
+
     return {
       deleted: deleteResult.affected > 0,
       affected: deleteResult.affected,
