@@ -29,7 +29,7 @@ class GameService {
 
 	public emitBall(message: GameDataDto): Promise<GameDataDto> {
 		return new Promise<GameDataDto>((resolve): void => {
-			this.socket?.emit(socketEvent.GAMR_BALL, message, (ack: GameDataDto): void => {
+			this.socket?.emit(socketEvent.GAME_BALL, message, (ack: GameDataDto): void => {
 				resolve(ack);
 			});
 		});
