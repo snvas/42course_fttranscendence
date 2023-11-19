@@ -240,8 +240,6 @@
 			setMovement(data: Movement) {
 				this.positionX = data.positionX;
 				this.positionY = data.positionY;
-				this.velocityX = data.velocityX;
-				this.velocityY = data.velocityY;
 			}
 
 			/**
@@ -292,7 +290,6 @@
 				this.widthP = 20;
 				this.player = String($match?.as);
 				if (this.player == 'p1') {
-					//console.log('Position P1');
 					this.positionX = 0;
 				} else {
 					this.positionX = width - this.widthP;
