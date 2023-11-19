@@ -29,6 +29,7 @@ export class StatusService {
       );
     });
   }
+
   public async set(socket: AuthenticatedSocket, status: string): Promise<void> {
     const profile: ProfileDTO = await this.profileService.findByUserId(
       socket.request.user.id,
@@ -47,11 +48,17 @@ export class StatusService {
   }
 
   public async remove(socket: AuthenticatedSocket): Promise<void> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(
-      socket.request.user.id,
-    );
+    try {
+      const profile: ProfileDTO = await this.profileService.findByUserId(
+        socket.request.user.id,
+      );
 
-    this.playerStatusSocket.delete(profile.id);
+      this.playerStatusSocket.delete(profile.id);
+    } catch (error) {
+      this.logger.warn(
+        `### Trying to disconnect a socket from a user: [${socket.request.user.id}]`,
+      );
+    }
   }
 
   public async getFrontEndStatus(): Promise<PlayerStatusDto[]> {
