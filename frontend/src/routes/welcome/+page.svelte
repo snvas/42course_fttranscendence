@@ -6,7 +6,7 @@
 	import { profileService } from '$lib/api';
 	import { isAxiosError } from 'axios';
 	import { validateNicknameInput } from '$lib/utils';
-
+	
 	const alerts = {
 		none: '',
 		alreadyExist: 'User name already exists',
