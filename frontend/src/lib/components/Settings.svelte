@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { socket, useAuth } from '$lib/stores';
-	import { authService, profileService } from '$lib/api';
+	import { useAuth } from '$lib/stores';
+	import { authService } from '$lib/api';
 	import { goto } from '$app/navigation';
 
 	let auth = useAuth();
@@ -15,12 +15,6 @@
 
 	async function onGameRules() {
 		goto('/controls&rules');
-	}
-
-	async function onDelete() {
-		await profileService.deleteAccount();
-		$socket.disconnect();
-		goto('/deleted');
 	}
 
 	async function onTwoFactorAuth() {
@@ -47,5 +41,5 @@
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
-	<button class="btn-deleted" on:click={onDelete}>delete account</button>
+	
 </div>
