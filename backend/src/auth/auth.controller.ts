@@ -80,7 +80,33 @@ export class AuthController {
     @Req() { user }: { user: FortyTwoUserDto },
     @Session() session: Record<string, any>,
   ): Promise<FortyTwoUserDto> {
-    this.logger.debug(`### user session: ${JSON.stringify(session)}`);
+    this.logger.debug(`### User session: ${JSON.stringify(session)}`);
+
+    return plainToClass(FortyTwoUserDto, user);
+  }
+
+  @Get('session/unique-validation')
+  @HttpCode(HttpStatus.OK)
+  async sessionUniqueValidation(
+    @Req() req: Request,
+    @Session() session: Record<string, any>,
+  ): Promise<FortyTwoUserDto> {
+    this.logger.debug(`### User session: ${JSON.stringify(session)}`);
+
+    const user: FortyTwoUserDto = req.user as FortyTwoUserDto;
+
+    await this.authService.validateUniqueSession(user.id, req.sessionID);
+    return plainToClass(FortyTwoUserDto, user);
+  }
+
+  @Post('session/destroy-old')
+  @HttpCode(HttpStatus.OK)
+  async destroyOldSessions(@Req() req: Request): Promise<FortyTwoUserDto> {
+    this.logger.debug(`### user sessionId: ${JSON.stringify(req.sessionID)}`);
+
+    const user: FortyTwoUserDto = req.user as FortyTwoUserDto;
+
+    await this.authService.destroyOldSessions(user.id, req.sessionID);
     return plainToClass(FortyTwoUserDto, user);
   }
 

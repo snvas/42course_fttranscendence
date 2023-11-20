@@ -3,9 +3,10 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserEntity } from '../db/entities';
+import { SessionEntity, UserEntity } from '../db/entities';
 import { ConfigService } from '@nestjs/config';
 import { authenticator } from 'otplib';
 import { Request, Response } from 'express';
@@ -14,6 +15,8 @@ import { toDataURL, toFileStream } from 'qrcode';
 import { FortyTwoUser, OneTimePassword } from './index';
 import { plainToClass } from 'class-transformer';
 import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +25,8 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    @InjectRepository(SessionEntity)
+    private readonly sessionRepository: Repository<SessionEntity>,
   ) {}
 
   async loginUser(user: FortyTwoUser): Promise<FortyTwoUser> {
@@ -70,6 +75,39 @@ export class AuthService {
     }
 
     this.logger.log(`### User [${user.id}] logged out successfully`);
+  }
+
+  async validateUniqueSession(
+    userId: number,
+    currentSessionId: string,
+  ): Promise<void> {
+    const sessions: SessionEntity[] = await this.sessionRepository.find();
+
+    sessions.forEach((session) => {
+      const sessionUserId: number = JSON.parse(session.json).passport.user.id;
+      if (sessionUserId === userId && session.id !== currentSessionId) {
+        this.logger.verbose(`### User [${userId}] already has another session`);
+        throw new NotAcceptableException('User already has another session');
+      }
+    });
+  }
+
+  async destroyOldSessions(
+    userId: number,
+    currentSessionId: string,
+  ): Promise<void> {
+    const sessions: SessionEntity[] = await this.sessionRepository.find();
+
+    for (const session of sessions) {
+      const sessionUserId: number = JSON.parse(session.json).passport.user.id;
+
+      if (sessionUserId === userId && session.id !== currentSessionId) {
+        this.logger.verbose(
+          `### Destroying session [${session.id}] for user [${userId}] | current session id [${currentSessionId}]`,
+        );
+        await this.sessionRepository.delete(session.id);
+      }
+    }
   }
 
   async enable2FA(user: FortyTwoUser, otp: OneTimePassword): Promise<void> {
