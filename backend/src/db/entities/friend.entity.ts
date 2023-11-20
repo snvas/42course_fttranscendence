@@ -8,9 +8,13 @@ export class FriendEntity implements Friend {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.friendBy)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.friendBy, {
+    onDelete: 'CASCADE',
+  })
   profile: ProfileEntity;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.friends)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.friends, {
+    onDelete: 'CASCADE',
+  })
   friend: ProfileEntity;
 }

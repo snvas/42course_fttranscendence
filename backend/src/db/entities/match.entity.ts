@@ -14,10 +14,14 @@ export class MatchEntity implements Match {
   @PrimaryColumn()
   id: string;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.matchsAsP1)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.matchsAsP1, {
+    onDelete: 'CASCADE',
+  })
   p1: ProfileEntity;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.matchsAsP2)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.matchsAsP2, {
+    onDelete: 'CASCADE',
+  })
   p2: ProfileEntity;
 
   @Column({ default: false })

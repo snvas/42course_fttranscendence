@@ -13,12 +13,17 @@ export class PrivateMessageEntity implements PrivateMessage {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ProfileEntity, (sender) => sender.sentPrivateMessages)
+  @ManyToOne(() => ProfileEntity, (sender) => sender.sentPrivateMessages, {
+    onDelete: 'CASCADE',
+  })
   sender: ProfileEntity;
 
   @ManyToOne(
     () => ProfileEntity,
     (receiver) => receiver.receivedPrivateMessages,
+    {
+      onDelete: 'CASCADE',
+    },
   )
   receiver: ProfileEntity;
 

@@ -22,7 +22,9 @@ export class GroupMessageEntity implements GroupMessage {
   })
   groupChat: GroupChatEntity;
 
-  @ManyToOne(() => ProfileEntity, (sender) => sender.groupMessages)
+  @ManyToOne(() => ProfileEntity, (sender) => sender.groupMessages, {
+    onDelete: 'CASCADE',
+  })
   sender: ProfileEntity;
 
   @CreateDateColumn()
