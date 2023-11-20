@@ -170,7 +170,7 @@ export class BlockService {
     }
 
     const blockedSocket: AuthenticatedSocket | undefined =
-      await this.statusService.getSocket(blockedUser.id);
+      await this.statusService.getSocket(blockProfile.id);
 
     if (blockedSocket) {
       (await this.wsGateway.getServer())

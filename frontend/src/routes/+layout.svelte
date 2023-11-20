@@ -130,10 +130,19 @@
 		status = 'none';
 	});
 
-	// TODO: receber  eventos de ser bloqueao para atualizar a lista
-	 $socket.on(socketEvent.BLOCKED_BY, (data) => {
-	 	console.log(`Recieved block by: ${data}`);
-	 })
+	$socket.on(socketEvent.BLOCKED_BY, (data) => {
+		console.log(`Recieved block by: ${data.id}`);
+		let newBlockedByList = $blockedByList;
+		if (!newBlockedByList.find((v) => v.id == data.id)) {
+			$blockedByList = [...newBlockedByList, data];
+		}
+	});
+
+	$socket.on(socketEvent.UNBLOCKED_BY, (data) => {
+		console.log(`Recieved unblock by: ${data.id}`);
+		let newBlockedByList = $blockedByList;
+		$blockedByList = newBlockedByList.filter((v) => v.id != data.id);
+	});
 
 	async function confirmMatch() {
 		if (!privateMatch) return;

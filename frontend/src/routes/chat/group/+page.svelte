@@ -587,7 +587,7 @@
 				class="btn-primary w-3/4 lg:w-full md:text-2xl text-xs flex justify-center h-fit flex-initial"
 				on:click={onCreateGroup}
 			>
-				Criar um Grupo
+				CREATE A GROUP
 			</button>
 		</div>
 	</div>
