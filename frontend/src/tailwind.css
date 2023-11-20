@@ -76,6 +76,24 @@
 		@apply text-4xl uppercase;
 	}
 
+	.achievement {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply bg-gray-800;
+		@apply rounded-lg;
+		@apply h-36;
+		@apply w-36;
+	}
+	
+	.achievement-icon {
+		@apply text-4xl uppercase;
+	}
+
+	.achievement-text {
+		@apply text-2xl uppercase;
+	}
+
 	.btn-op {
 		@apply bg-[#38761d] border-4;
 		@apply rounded-lg;

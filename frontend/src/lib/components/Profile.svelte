@@ -4,11 +4,20 @@
 	import AvatarImage from './AvatarImage.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import LevelIndicator from '$lib/components/LevelIndicator.svelte';
+	import { profileService } from '$lib/api'; // Amigos
+	import type { MatchHistoryDto } from '$lib/dtos'; // Partidas
 	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
 
 </script>
+
+<style>
+	.achievement-border {
+		border-color: white;
+		border-width: 6px;
+	}
+</style>
 
 <div class="flex flex-col w-full h-full gap-10">
 	{#await profile}
@@ -36,26 +45,23 @@
 		<LevelIndicator level={profile?.data.level} levelPercentage={profile?.data.level_percentage} />
 
 		<div class="flex flex-row w-full min-w-fit">
-			<p class="mb-5">ACHIEVEMENTS</p>
+			<p>ACHIEVEMENTS:</p>
 		</div>
-		<div class="flex flex-row h-20 w-full min-w-fit gap-5">
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.wins} Wins</p>
+		<div class="flex flex-row w-full justify-around min-w-fit">
+			<div class="flex flex-col achievement achievement-border">
+				<i class="fa fa-user-plus achievement-icon mb-2" aria-hidden="true"></i>
+				<p class="achievement-text">ADD +5</p>
+				<p class="achievement-text">FRIENDS</p>
 			</div>
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.losses} Lose</p>
+			<div class="flex flex-col achievement achievement-border">
+				<i class="fa fa-trophy achievement-icon mb-2" aria-hidden="true"></i>
+				<p class="achievement-text">WIN +10<p>
+				<p class="achievement-text">ROUNDS</p>
 			</div>
-			
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">
-					{(profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
-				</p>
+			<div class="flex flex-col achievement achievement-border">
+				<i class="fa fa-gamepad achievement-icon mb-2" aria-hidden="true"></i>
+				<p class="achievement-text">PLAY +10</p> 
+				<p class="achievement-text">MATCHES</p>
 			</div>
 		</div>
 	{/await}
