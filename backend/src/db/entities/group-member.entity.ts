@@ -31,7 +31,9 @@ export class GroupMemberEntity implements GroupMember {
   })
   groupChat: GroupChatEntity;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.groupMemberships, {
+    onDelete: 'CASCADE',
+  })
   profile: ProfileEntity;
 
   @CreateDateColumn()
