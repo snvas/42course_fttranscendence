@@ -11,7 +11,7 @@
 	export let historyList: DashboardUsersList[];
 </script>
 
-<div class="flex-auto w-full flex flex-col overflow-auto rounded-lg mb-2">
+<div class="flex-auto w-full flex flex-col overflow-x-hidden overflow-y-auto file:rounded-lg mb-2">
 	{#each historyList as history}
 		<div
 			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between

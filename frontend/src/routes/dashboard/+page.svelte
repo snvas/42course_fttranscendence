@@ -223,7 +223,7 @@
 	}
 </script>
 
-<div class="h-full min-h-screen w-full min-w-screen flex flex-col">
+<div class="h-full lg:h-screen min-h-screen w-full min-w-screen flex flex-col">
 	<div class="flex-none">
 		<PongHeader />
 	</div>
@@ -242,7 +242,7 @@
 					<Settings />
 				{/if}
 			</div>
-			<div class="flex flex-col lg:w-1/3 w-full h-full lg:order-1 order-first gap-10">
+			<div class="flex flex-col lg:w-1/3 w-full h-full lg:order-1 order-first gap-10 overflow-y-auto overflow-x-hidden">
 				<Profile bind:profile={loadProfile} {onLogout} {avatar} />
 
 				<div class="flex flex-col w-full h-full mx-auto">
@@ -293,7 +293,7 @@
 					{/if}
 				</div>
 			</div>
-			<div class="gap-15 flex flex-col justify-start lg:w-1/3 w-full h-screen lg:order-2">
+			<div class="lg:w-1/3 lg:order-2 w-full h-full">
 				<UsersList
 					users={$playersStatus}
 					getAvatar={getAvatarFromId}

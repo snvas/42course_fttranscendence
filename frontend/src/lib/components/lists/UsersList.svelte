@@ -22,7 +22,7 @@
 	<div class="flex-none flex justify-center p-3">
 		<div class="w-full mx-auto min-w-fit mb-4 rounded-xl btn-users">USERS</div>
 	</div>
-	<div class="overflow-y-auto flex flex-col justify-start">
+	<div class="flex flex-col justify-start overflow-auto overflow-x-hidden">
 		{#await loading}
 			Carregando
 		{:then}
