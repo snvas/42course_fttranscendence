@@ -10,7 +10,8 @@
 		selectedGroup,
 		friendsList,
 		blockList,
-		match
+		match,
+		useSession
 	} from '$lib/stores';
 	import {
 		authService,
@@ -34,14 +35,32 @@
 	import type { MatchEventDto, MatchHistoryDto, PlayerStatusDto } from '$lib/dtos';
 	import { socketEvent } from '$lib/api/services/SocketsEvents';
 	import { verifyUnautorized } from '$lib/utils';
+	import { AxiosError } from 'axios';
 
 	let matchHistory: Promise<MatchHistoryDto[]> = onHistory();
 
 	const auth = useAuth();
+	let session = useSession();
 
 	$: if (!$auth.loading && !$auth.session) {
 		$socket.disconnect();
 		goto('/login');
+	} else {
+		validatedSession();
+	}
+
+	async function validatedSession() {
+		try {
+			await authService.validateUniqueUserSession();
+			return true;
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (error.response?.status == 406) {
+					verifyUnautorized(error);
+					goto('/confirm-login');
+				}
+			}
+		}
 	}
 
 	chatService.connect();
@@ -54,6 +73,7 @@
 
 	async function onLogout() {
 		$socket.disconnect();
+		//403 check
 		await authService.logoutUser();
 		goto('/login');
 	}
@@ -154,7 +174,7 @@
 			$profile = v.data;
 		}
 	});
-	
+
 	$: avatar = getUserAvatar(loadProfile);
 
 	$socket.on(socketEvent.MATCH_FOUND, (data: MatchEventDto) => {

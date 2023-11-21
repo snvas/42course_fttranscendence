@@ -150,13 +150,14 @@
 			player1.drawPlayer();
 			player2.drawPlayer();
 
-			let scoreText = `${game.pointP1}  |  ${game.pointP2}`;
-
-			p5.text(scoreText, width / 6, 40);
+			let scoreText = `${game.pointP1}    ${game.pointP2}`;
+			p5.textSize(72);
+			p5.fill(250, 204, 21);
+			p5.text(scoreText, width / 2, 60);
 
 			if (!game.running && showStartText) {
 				p5.textAlign(p5.CENTER, p5.CENTER);
-				p5.fill(250, 204, 21);
+				
 				p5.textSize(32);
 				p5.textStyle(p5.BOLD);
 				p5.textFont('Arial');
@@ -186,6 +187,8 @@
 				}
 				if (pressedEnter) {
 					showStartText = false;
+					p5.textSize(24);
+					p5.fill(255);
 					p5.text('Waiting Oponnet press ENTER', width / 2, height / 2);
 				}
 			}

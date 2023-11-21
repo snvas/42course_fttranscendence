@@ -227,9 +227,7 @@
 		<button class="btn-primary w-fit md:text-2xl text-xs" on:click={onTwoFactorAuth}>
 			{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 		</button>
-		<button class="btn-deleted w-fit md:text-2xl text-xs" on:click={onDelete}>
-			delete account
-		</button>
+		
 	</div>
 	<div class="h-12 text-green-500 text-2xl text-center w-full">
 		{message}

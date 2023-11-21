@@ -25,7 +25,7 @@ class AuthService {
     }
 
     public async destroyOldUserSessions(): Promise<AxiosResponse<FortyTwoUserDto>> {
-        return this.axiosInstance.post('session/destroy-old');
+        return this.axiosInstance.post('/session/destroy-old');
     }
 
     public async validate2FASession(): Promise<AxiosResponse<FortyTwoUserDto>> {
