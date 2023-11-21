@@ -41,7 +41,7 @@ export class AuthService {
       `### Current Database User: ${JSON.stringify(databaseUser)}`,
     );
     if (databaseUser) {
-      await this.userService.update(userEntity);
+      await this.userService.update(databaseUser);
       return plainToClass(Oauth2UserDto, databaseUser);
     }
 
