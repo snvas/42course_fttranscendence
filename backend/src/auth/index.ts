@@ -1,7 +1,7 @@
 import { FortyTwoAuthGuard } from './guards/fortytwo-auth.guard';
 import { UserAuthenticatedGuard } from './guards/user-authenticated.guard';
 import { OAuth2User } from '../user/interfaces/fortytwo-user.interface';
-import { SessionSerializer } from './serializers/fortytwo-auth.serializer';
+import { SessionSerializer } from './serializers/session.serializer';
 import { FortyTwoStrategy } from './strategies/fortytwo.strategy';
 import { Public } from './decorators/public.decorator';
 import { TwoFactorAuthentication } from './decorators/two-factor-auth.decorator';

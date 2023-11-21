@@ -29,10 +29,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     this.logger.verbose(
       `### Validating user ${profile.id} with google strategy`,
     );
-    const { id, displayName, emails, otpEnabled, otpSecret } = profile;
+    const { displayName, emails, otpEnabled, otpSecret } = profile;
 
     const user: OAuth2User = await this.authService.loginUser({
-      id,
       displayName,
       email: emails[0].value,
       otpEnabled,
