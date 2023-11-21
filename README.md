@@ -1,13 +1,19 @@
 # :ping_pong: FT Transcendence
 This project consists of creating user accounts, chatting in channels and playing the game pong.
 
-## :time: Project Time
+## :group: Project Time
 [Alef Gabriel](https://github.com/Alef-gabriel)
+
 [Anderson Alcará Alvarenga](https://github.com/aalcara)
+
 [Felipe Camargo](https://github.com/unilui)
+
 [Rodrigo Avila Moreira](https://github.com/r-moreira)
+
 [Soraia Novaes](https://github.com/snvas)
+
 [EmpreendeLab](https://empreendelab.com.br)
+
 ### :adult: User Account
 
 ### :speaking_head: Chat
