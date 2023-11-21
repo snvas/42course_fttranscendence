@@ -31,7 +31,7 @@
 	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 	import { verifyUnautorized } from '$lib/utils';
 
-	const notLoggedInRoutes = ['/login', '/welcome', '/validate-otp'];
+	const notLoggedInRoutes = ['/', '/login', '/welcome', '/validate-otp'];
 
 	async function fetchAllPlayersStatus() {
 		if (notLoggedInRoutes.includes($page.url.pathname)) {
