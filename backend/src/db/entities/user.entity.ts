@@ -5,10 +5,10 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FortyTwoUser } from '../../auth';
+import { OAuth2User } from '../../auth';
 
 @Entity({ name: 'users' })
-export class UserEntity implements FortyTwoUser {
+export class UserEntity implements OAuth2User {
   @PrimaryColumn()
   id: number;
 
@@ -16,13 +16,7 @@ export class UserEntity implements FortyTwoUser {
   email: string;
 
   @Column()
-  username: string;
-
-  @Column()
   displayName: string;
-
-  @Column()
-  profileUrl: string;
 
   @Column({ default: false })
   otpEnabled?: boolean;

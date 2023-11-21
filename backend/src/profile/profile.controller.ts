@@ -20,7 +20,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { FortyTwoUser } from '../auth';
+import { OAuth2User } from '../auth';
 import { ProfileDTO } from './models/profile.dto';
 import { ProfileUpdatedResponseDto } from './models/profile-updated-response.dto';
 import { ProfileDeletedResponseDto } from './models/profile-delete-response.dto';
@@ -30,7 +30,7 @@ import { Readable } from 'stream';
 import { AvatarService } from '../avatar/avatar.service';
 import { Response } from 'express';
 import { AvatarEntity } from '../db/entities';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 import { ProfileNicknameDto } from './models/profile-nickname.dto';
 
 @Controller('profile')
@@ -44,7 +44,7 @@ export class ProfileController {
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
   async getUserProfile(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<ProfileDTO> {
     return await this.profileService.findByUserId(user.id);
   }
@@ -67,7 +67,7 @@ export class ProfileController {
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
   async saveProfile(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Body() body: ProfileNicknameDto,
   ): Promise<ProfileDTO> {
     return await this.profileService.create(user.id, body.nickname);
@@ -76,7 +76,7 @@ export class ProfileController {
   @Put()
   @HttpCode(HttpStatus.CREATED)
   async updateProfile(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Body() profile: Partial<ProfileDTO>,
   ): Promise<ProfileUpdatedResponseDto> {
     return await this.profileService.update(user.id, profile);
@@ -85,7 +85,7 @@ export class ProfileController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   async deleteProfile(
-    @Req() { user }: { user: FortyTwoUser },
+    @Req() { user }: { user: OAuth2User },
   ): Promise<ProfileDeletedResponseDto> {
     return await this.profileService.delete(user.id);
   }
@@ -99,7 +99,7 @@ export class ProfileController {
     {
       user,
     }: {
-      user: FortyTwoUserDto;
+      user: Oauth2UserDto;
     },
     @UploadedFile(
       new ParseFilePipe({

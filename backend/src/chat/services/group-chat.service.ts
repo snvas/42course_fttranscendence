@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { AuthenticatedSocket } from '../types/authenticated-socket.type';
 import { GroupMessageDto } from '../models/group/group-message.dto';
-import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../../user/models/oauth2-user.dto';
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import {
   GroupChatEntity,
@@ -100,7 +100,7 @@ export class GroupChatService {
     socket: AuthenticatedSocket,
     groupMessageDto: GroupMessageDto,
   ): Promise<GroupMessageDto> {
-    const user: FortyTwoUserDto = socket.request.user as FortyTwoUserDto;
+    const user: Oauth2UserDto = socket.request.user as Oauth2UserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
     const groupChat: GroupChatEntity = await this.getGroupChatById(
       groupMessageDto.groupChat.id,

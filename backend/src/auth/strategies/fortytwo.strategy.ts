@@ -5,7 +5,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-import { FortyTwoUser } from '../index';
+import { OAuth2User } from '../index';
 import { faker } from '@faker-js/faker';
 
 //This class is used to do 42 OAuth2 authentication
@@ -42,26 +42,16 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
     accessToken: string,
     refreshToken: string,
     profile: any,
-  ): Promise<FortyTwoUser> {
+  ): Promise<OAuth2User> {
     this.logger.verbose(`### Validating user ${profile.id} with 42 strategy`);
-    const {
-      id,
-      username,
-      displayName,
-      emails,
-      profileUrl,
-      otpEnabled,
-      otpSecret,
-    } = profile;
+    const { id, displayName, emails, otpEnabled, otpSecret } = profile;
 
-    const user: FortyTwoUser =
+    const user: OAuth2User =
       this.configService.get<string>('APP_MOCK_42_USERS') === 'true'
         ? await this.authService.loginUser(this.generateFakeUser())
         : await this.authService.loginUser({
             id,
-            username,
             displayName,
-            profileUrl,
             email: emails[0].value,
             otpEnabled,
             otpSecret,
@@ -70,12 +60,10 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
     return user || null;
   }
 
-  private generateFakeUser(): FortyTwoUser {
+  private generateFakeUser(): OAuth2User {
     return {
       id: faker.number.int({ max: 2147483647 }),
-      username: faker.internet.userName(),
       displayName: faker.person.fullName(),
-      profileUrl: faker.internet.url({ protocol: 'https' }),
       email: faker.internet.email(),
       otpEnabled: false,
       otpValidated: false,

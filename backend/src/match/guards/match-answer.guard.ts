@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ProfileService } from '../../profile/profile.service';
 import { ProfileDTO } from '../../profile/models/profile.dto';
-import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../../user/models/oauth2-user.dto';
 import { MatchAnswerDto } from '../models/match-answer.dto';
 import { MatchService } from '../match.service';
 import { MatchEntity } from '../../db/entities';
@@ -22,7 +22,7 @@ export class MatchAnswerGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user: FortyTwoUserDto = request.user as FortyTwoUserDto;
+    const user: Oauth2UserDto = request.user as Oauth2UserDto;
     const profile: ProfileDTO = await this.profileService.findByUserId(user.id);
     const matchAnswerDto: MatchAnswerDto = request.body as MatchAnswerDto;
 

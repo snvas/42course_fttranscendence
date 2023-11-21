@@ -7,7 +7,7 @@ import {
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { Reflector } from '@nestjs/core';
 import { IS_TWO_FACTOR_AUTH } from '../decorators/two-factor-auth.decorator';
-import { FortyTwoUser } from '../../user/interfaces/fortytwo-user.interface';
+import { OAuth2User } from '../../user/interfaces/fortytwo-user.interface';
 
 // This class is used to check if user is authenticated, all non-public routes should use this guard
 @Injectable()
@@ -44,7 +44,7 @@ export class UserAuthenticatedGuard implements CanActivate {
       return false;
     }
 
-    const user: FortyTwoUser = request.user as FortyTwoUser;
+    const user: OAuth2User = request.user as OAuth2User;
 
     //Allow if user is authenticated and 2FA is not enabled
     if (!request.user.otpEnabled) {

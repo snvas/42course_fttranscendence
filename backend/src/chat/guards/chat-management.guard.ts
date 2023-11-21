@@ -4,7 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../../user/models/oauth2-user.dto';
 import { ProfileService } from '../../profile/profile.service';
 import { ProfileDTO } from '../../profile/models/profile.dto';
 import { ChatRole } from '../types/chat-role.type';
@@ -26,7 +26,7 @@ export class ChatManagementGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user: FortyTwoUserDto = request.user as FortyTwoUserDto;
+    const user: Oauth2UserDto = request.user as Oauth2UserDto;
     const { chatId, profileId } = request.params;
     const asker: ProfileDTO = await this.profileService.findByUserId(user.id);
     const receiver: ProfileDTO = await this.profileService.findByProfileId(
