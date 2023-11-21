@@ -2,12 +2,12 @@
 This project consists of creating user accounts, chatting in channels and playing the game pong.
 
 ## :time: Project Time
-[https://github.com/Alef-gabriel](Alef Gabriel)
-[https://github.com/aalcara](Anderson Alcará Alvarenga)
-[https://github.com/unilui](Felipe Camargo)
-[https://github.com/r-moreira](Rodrigo Avila Moreira)
-[https://github.com/snvas](Soraia Novaes)
-
+[Alef Gabriel](https://github.com/Alef-gabriel)
+[Anderson Alcará Alvarenga](https://github.com/aalcara)
+[Felipe Camargo](https://github.com/unilui)
+[Rodrigo Avila Moreira](https://github.com/r-moreira)
+[Soraia Novaes](https://github.com/snvas)
+[EmpreendeLab](https://empreendelab.com.br)
 ### :adult: User Account
 
 ### :speaking_head: Chat
@@ -33,7 +33,7 @@ All the different things a user can do when they come to this website:
 - Update Profile Icon
 - Change Username
 - Enable Two-Factor Authentication
-- Add, Send Invites, Accept Invities, Remove, Block and Un-Block Friends
+- Add, Remove, Block and Un-Block Friends
 
 ### :ping_pong: Game
 - Play The Pong Game
