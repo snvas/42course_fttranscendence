@@ -2,6 +2,7 @@
 	import { useAuth } from '$lib/stores';
 	import { authService } from '$lib/api';
 	import { goto } from '$app/navigation';
+	import { verifyUnautorized } from '$lib/utils';
 
 	let auth = useAuth();
 
@@ -21,9 +22,13 @@
 		if (!tfaEnabled) {
 			goto('/enable2fa');
 		} else {
-			await authService.disable2FA();
-			message = 'Two Factor Authentication disabled!';
-			auth = useAuth();
+			try {
+				await authService.disable2FA();
+				message = 'Two Factor Authentication disabled!';
+				auth = useAuth();
+			} catch (error) {
+				verifyUnautorized(error);
+			}
 		}
 	}
 
@@ -41,5 +46,4 @@
 	<button class="btn-primary" on:click={onTwoFactorAuth}>
 		{!tfaEnabled ? 'Enable' : 'Disable'} Two Factor Authentication
 	</button>
-	
 </div>
