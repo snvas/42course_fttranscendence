@@ -76,6 +76,45 @@
 		@apply text-4xl uppercase;
 	}
 
+	.achievement {
+		@apply flex;
+		@apply items-center;
+		@apply justify-center;
+		@apply rounded-2xl;
+		@apply h-28;
+		@apply w-28;
+		@apply border-[6px];
+	}
+
+	.achievement-none {
+		@apply opacity-60;
+		@apply bg-[#27272a];
+		@apply border-[#3f3f46];
+		@apply text-[#3f3f46];
+	}
+
+	.achievement-bronze {
+		@apply bg-[#cd7f32];
+		@apply border-[#b45309];
+		@apply text-[#b45309];
+	}
+
+	.achievement-silver {
+		@apply bg-[#c0c0c0];
+		@apply border-[#64748b];
+		@apply text-[#64748b];
+	}
+
+	.achievement-gold {
+		@apply bg-[#ffd700];
+		@apply border-[#ca8a04];
+		@apply text-[#ca8a04];
+	}
+
+	.achievement-icon {
+		@apply text-4xl uppercase;
+	}
+
 	.btn-op {
 		@apply bg-[#38761d] border-4;
 		@apply rounded-lg;

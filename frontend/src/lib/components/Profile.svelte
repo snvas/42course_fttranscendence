@@ -7,10 +7,23 @@
 	export let onLogout: (() => Promise<void>) | null;
 	export let profile: Promise<AxiosResponse<ProfileDTO> | null>;
 	export let avatar: Promise<AxiosResponse<Blob> | null>;
+	import AchievementsModal from '$lib/components/achievementsModal.svelte';
+	import { writable } from 'svelte/store';
+	import { friendsList } from '$lib/stores';
+
+	// Create a writable store
+	export const showAchievements = writable('hide');
+
+	function onShowAllAchievements() {
+		showAchievements.set('show');
+	}
 
 </script>
 
 <div class="flex flex-col w-full h-full gap-10">
+	{#if $showAchievements == 'show'}
+		<AchievementsModal show={showAchievements}/>
+	{/if}
 	{#await profile}
 		Loading
 	{:then profile}
@@ -36,27 +49,84 @@
 		<LevelIndicator level={profile?.data.level} levelPercentage={profile?.data.level_percentage} />
 
 		<div class="flex flex-row w-full min-w-fit">
-			<p class="mb-5">ACHIEVEMENTS</p>
+			<p class="text-xl ml-2">ACHIEVEMENTS:</p>
 		</div>
-		<div class="flex flex-row h-20 w-full min-w-fit gap-5">
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.wins} Wins</p>
-			</div>
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">{profile?.data.losses} Lose</p>
-			</div>
-			
-			<div
-				class="w-full flex border-4 border-dashed border-white justify-center items-center rounded-xl"
-			>
-				<p class="">
-					{(profile?.data.wins ?? 0) + (profile?.data.losses ?? 0)} Matches
-				</p>
-			</div>
+		<div class="flex flex-row w-full justify-around min-w-fit">
+			{#if $friendsList.length > 30}
+				<button class="flex flex-col achievement achievement-gold" on:click={onShowAllAchievements}>
+					<i class="fa fa-user-plus achievement-icon mb-2" aria-hidden="true"></i>
+					<p >ADD +30</p>
+					<p >FRIENDS</p>
+				</button>
+			{:else if $friendsList.length > 15}
+				<button class="flex flex-col achievement achievement-silver" on:click={onShowAllAchievements}>
+					<i class="fa fa-user-plus achievement-icon mb-2" aria-hidden="true"></i>
+					<p >ADD +15</p>
+					<p >FRIENDS</p>
+				</button>
+			{:else if $friendsList.length > 5}
+				<button class="flex flex-col achievement achievement-bronze" on:click={onShowAllAchievements}>
+					<i class="fa fa-user-plus achievement-icon mb-2" aria-hidden="true"></i>
+					<p >ADD +5</p>
+					<p >FRIENDS</p>
+				</button>
+			{:else}
+				<button class="flex flex-col achievement achievement-none" on:click={onShowAllAchievements}>
+					<i class="fa fa-user-plus achievement-icon mb-2" aria-hidden="true"></i>
+					<p >ADD +5</p>
+					<p >FRIENDS</p>
+				</button>
+			{/if}
+			{#if (profile?.data.wins ?? 0) > 100}
+				<button class="flex flex-col achievement achievement-gold" on:click={onShowAllAchievements}>
+					<i class="fa fa-trophy achievement-icon mb-2" aria-hidden="true"></i>
+					<p >WIN +100<p>
+					<p >ROUNDS</p>
+				</button>
+			{:else if (profile?.data.wins ?? 0) > 30}
+				<button class="flex flex-col achievement achievement-silver" on:click={onShowAllAchievements}>
+					<i class="fa fa-trophy achievement-icon mb-2" aria-hidden="true"></i>
+					<p >WIN +30<p>
+					<p >ROUNDS</p>
+				</button>
+			{:else if (profile?.data.wins ?? 0) > 10}
+				<button class="flex flex-col achievement achievement-bronze" on:click={onShowAllAchievements}>
+					<i class="fa fa-trophy achievement-icon mb-2" aria-hidden="true"></i>
+					<p >WIN +10<p>
+					<p >ROUNDS</p>
+				</button>
+			{:else}
+				<button class="flex flex-col achievement achievement-none" on:click={onShowAllAchievements}>
+					<i class="fa fa-trophy achievement-icon mb-2" aria-hidden="true"></i>
+					<p >WIN +10<p>
+					<p >ROUNDS</p>
+				</button>
+			{/if}
+			{#if (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0) > 100}
+				<button class="flex flex-col achievement achievement-gold" on:click={onShowAllAchievements}>
+					<i class="fa fa-gamepad achievement-icon mb-2" aria-hidden="true"></i>
+					<p >PLAY +100</p>
+					<p >MATCHES</p>
+				</button>
+			{:else if (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0) > 30}
+				<button class="flex flex-col achievement achievement-silver" on:click={onShowAllAchievements}>
+					<i class="fa fa-gamepad achievement-icon mb-2" aria-hidden="true"></i>
+					<p >PLAY +30</p>
+					<p >MATCHES</p>
+				</button>
+			{:else if (profile?.data.wins ?? 0) + (profile?.data.losses ?? 0) > 10}
+				<button class="flex flex-col achievement achievement-bronze" on:click={onShowAllAchievements}>
+					<i class="fa fa-gamepad achievement-icon mb-2" aria-hidden="true"></i>
+					<p >PLAY +10</p>
+					<p >MATCHES</p>
+				</button>
+			{:else}
+				<button class="flex flex-col achievement achievement-none" on:click={onShowAllAchievements}>
+					<i class="fa fa-gamepad achievement-icon mb-2" aria-hidden="true"></i>
+					<p >PLAY +10</p>
+					<p >MATCHES</p>
+				</button>
+			{/if}
 		</div>
 	{/await}
 </div>
