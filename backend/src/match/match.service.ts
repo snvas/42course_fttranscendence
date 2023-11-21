@@ -48,14 +48,20 @@ export class MatchService {
     private dataSource: DataSource,
   ) {}
 
+  public async getUserMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
+    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+    return await this.getProfileMatchHistory(profile.id);
+  }
+
   /**
    * Retrieves the match history for a given user.
    *
-   * @param userId - The ID of the user.
+   * @param profileId - The ID of the user.
    * @returns A promise that resolves to an array of MatchHistoryDto objects representing the match history.
    */
-  public async getMatchHistory(userId: number): Promise<MatchHistoryDto[]> {
-    const profile: ProfileDTO = await this.profileService.findByUserId(userId);
+  public async getProfileMatchHistory(
+    profileId: number,
+  ): Promise<MatchHistoryDto[]> {
     /**
      * Retrieves an array of MatchEntity objects based on the provided criteria.
      *
@@ -66,25 +72,25 @@ export class MatchService {
       where: [
         {
           p1: {
-            id: profile.id,
+            id: profileId,
           },
           status: 'finished',
         },
         {
           p2: {
-            id: profile.id,
+            id: profileId,
           },
           status: 'finished',
         },
         {
           p1: {
-            id: profile.id,
+            id: profileId,
           },
           status: 'abandoned',
         },
         {
           p2: {
-            id: profile.id,
+            id: profileId,
           },
           status: 'abandoned',
         },
@@ -109,7 +115,7 @@ export class MatchService {
         throw new InternalServerErrorException('Match without winner');
       }
 
-      if (match.p1.id === profile.id) {
+      if (match.p1.id === profileId) {
         userScore = match.p1Score;
         user = match.p1;
         opponent = match.p2;

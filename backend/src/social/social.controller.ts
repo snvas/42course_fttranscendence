@@ -35,6 +35,13 @@ export class SocialController {
     return await this.friendService.getFriends(user.id);
   }
 
+  @Get('friends/public/:profileId')
+  async getPublicFriends(
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<SimpleProfileDto[]> {
+    return await this.friendService.getPublicFriends(profileId);
+  }
+
   @Get('friend-by')
   async getFriendBy(
     @Req() { user }: { user: Oauth2UserDto },
