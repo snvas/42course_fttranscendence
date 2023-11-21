@@ -1,5 +1,5 @@
 services:
-  postgres:
+  postgres_db:
     type: postgres
     plan: free
     database: postgres
@@ -25,7 +25,7 @@ services:
       - npm
       - start
     environment:
-      DB_HOST: postgres
+      DB_HOST: postgres_db
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -45,7 +45,7 @@ services:
       - run
       - migration:run
     environment:
-      DB_HOST: postgres
+      DB_HOST: postgres_db
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
