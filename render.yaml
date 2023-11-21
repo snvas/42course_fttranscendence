@@ -1,20 +1,20 @@
 services:
-  postgres_db:
-    type: postgres
+  - type: postgres
+    name: postgres_db
     plan: free
     database: postgres
     username: ${POSTGRES_USER:-root}
     password: ${POSTGRES_PASSWORD:-root}
 
-  pgadmin:
-    type: pgadmin
+  - type: pgadmin
+    name: pgadmin
     plan: free
     database_url: postgres://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD:-root}@postgres:5432/postgres
     email: ${PGADMIN_DEFAULT_EMAIL:-root@admin.org}
     password: ${PGADMIN_DEFAULT_PASSWORD:-root}
 
-  nestjs:
-    type: web
+  - type: web
+    name: nestjs
     plan: free
     ports:
       - 3000
@@ -32,8 +32,8 @@ services:
       DB_NAME: postgres
       APP_PORT: 3000
 
-  nestjs-migrate:
-    type: web
+  - type: web
+    name: nestjs-migrate
     plan: free
     ports:
       - 80
@@ -51,8 +51,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: postgres
 
-  svelte:
-    type: web
+  - type: web
+    name: svelte
     plan: free
     ports:
       - 3001
