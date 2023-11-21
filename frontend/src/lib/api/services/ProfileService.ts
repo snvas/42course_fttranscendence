@@ -68,6 +68,10 @@ export class ProfileService {
         return this.socialAxiosInstance.get(`friends`);
     }
 
+    public async getPublicFriends(id: string): Promise<AxiosResponse<SimpleProfileDto[]>> {
+        return this.socialAxiosInstance.get(`friends/public/${id}`);
+    }
+
     public async getFriendBy(): Promise<SimpleProfileDto[]> {
         return this.socialAxiosInstance.get(`friend-by`);
     }

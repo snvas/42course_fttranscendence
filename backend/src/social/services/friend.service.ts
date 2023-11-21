@@ -83,6 +83,29 @@ export class FriendService {
     });
   }
 
+  public async getPublicFriends(
+    profileId: number,
+  ): Promise<SimpleProfileDto[]> {
+    const friends: FriendEntity[] = await this.friendRepository.find({
+      where: {
+        profile: {
+          id: profileId,
+        },
+      },
+      relations: {
+        friend: true,
+      },
+    });
+
+    return friends.map((friendship: FriendEntity): SimpleProfileDto => {
+      return {
+        id: friendship.friend.id,
+        nickname: friendship.friend.nickname,
+        avatarId: friendship.friend.avatarId,
+      } as SimpleProfile;
+    });
+  }
+
   public async getFriendBy(userId: number): Promise<SimpleProfileDto[]> {
     const friends: FriendEntity[] = await this.friendRepository.find({
       where: {

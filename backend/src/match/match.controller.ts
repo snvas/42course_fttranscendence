@@ -34,7 +34,15 @@ export class MatchController {
   async getMatchHistory(
     @Req() { user }: { user: Oauth2UserDto },
   ): Promise<MatchHistoryDto[]> {
-    return await this.matchService.getMatchHistory(user.id);
+    return await this.matchService.getUserMatchHistory(user.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('history/public/:profileId')
+  async getPublicMatchHistory(
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MatchHistoryDto[]> {
+    return await this.matchService.getProfileMatchHistory(profileId);
   }
 
   /**
