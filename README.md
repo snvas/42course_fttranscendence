@@ -48,8 +48,6 @@ All the different things a user can do when they come to this website:
 - Send Messages in Chat within the Channel
 - Send Invites to Other Users to play the Pong Game
 
-<br>
-<br>
 
 # :keyboard: Development
 
