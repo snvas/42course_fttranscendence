@@ -12,8 +12,6 @@ This project consists of creating user accounts, chatting in channels and playin
 
 [Soraia Novaes](https://github.com/snvas)
 
-[EmpreendeLab](https://empreendelab.com.br)
-
 ### Mandatory Parts
 #### :adult: User Account
 
