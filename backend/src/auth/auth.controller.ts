@@ -14,12 +14,13 @@ import {
 import { FortyTwoAuthGuard, Public, TwoFactorAuthentication } from './index';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 import { OneTimePasswordDto } from './models/one-time-password.dto';
 import { ResponseMessageDto } from './models/response-message.dto';
 import { ConfigService } from '@nestjs/config';
 import { plainToClass } from 'class-transformer';
 import { ProfileService } from '../profile/profile.service';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -35,7 +36,7 @@ export class AuthController {
   @UseGuards(FortyTwoAuthGuard)
   @Get('42/login')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async login(): Promise<void> {
+  async fortyTwoLogin(): Promise<void> {
     return;
   }
 
@@ -43,8 +44,41 @@ export class AuthController {
   @UseGuards(FortyTwoAuthGuard)
   @Get('42/redirect')
   @HttpCode(HttpStatus.OK)
-  async redirect(
-    @Req() { user }: { user: FortyTwoUserDto },
+  async fortyTwoRedirect(
+    @Req() { user }: { user: Oauth2UserDto },
+    @Res() res: Response,
+  ): Promise<void> {
+    const redirectUrl: string =
+      this.configService.get<string>('APP_OAUTH2_REDIRECT') ||
+      'http://localhost:3001';
+
+    const hasProfile: boolean = await this.profileService.userHasProfile(user);
+
+    if (!hasProfile) {
+      return res.redirect(redirectUrl + '/welcome');
+    }
+
+    if (user.otpEnabled) {
+      return res.redirect(redirectUrl + '/validate-otp');
+    }
+
+    return res.redirect(redirectUrl);
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async googleLogin(): Promise<void> {
+    return;
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/redirect')
+  @HttpCode(HttpStatus.OK)
+  async googleRedirect(
+    @Req() { user }: { user: Oauth2UserDto },
     @Res() res: Response,
   ): Promise<void> {
     const redirectUrl: string =
@@ -67,7 +101,7 @@ export class AuthController {
   @Get('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Session() session: Record<string, any>,
   ): Promise<ResponseMessageDto> {
     await this.authService.logoutUser(user, session);
@@ -77,12 +111,12 @@ export class AuthController {
   @Get('session')
   @HttpCode(HttpStatus.OK)
   async session(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Session() session: Record<string, any>,
-  ): Promise<FortyTwoUserDto> {
+  ): Promise<Oauth2UserDto> {
     this.logger.debug(`### User session: ${JSON.stringify(session)}`);
 
-    return plainToClass(FortyTwoUserDto, user);
+    return plainToClass(Oauth2UserDto, user);
   }
 
   @Get('session/unique-validation')
@@ -90,35 +124,35 @@ export class AuthController {
   async sessionUniqueValidation(
     @Req() req: Request,
     @Session() session: Record<string, any>,
-  ): Promise<FortyTwoUserDto> {
+  ): Promise<Oauth2UserDto> {
     this.logger.debug(`### User session: ${JSON.stringify(session)}`);
 
-    const user: FortyTwoUserDto = req.user as FortyTwoUserDto;
+    const user: Oauth2UserDto = req.user as Oauth2UserDto;
 
     await this.authService.validateUniqueSession(user.id, req.sessionID);
-    return plainToClass(FortyTwoUserDto, user);
+    return plainToClass(Oauth2UserDto, user);
   }
 
   @Post('session/destroy-old')
   @HttpCode(HttpStatus.OK)
-  async destroyOldSessions(@Req() req: Request): Promise<FortyTwoUserDto> {
+  async destroyOldSessions(@Req() req: Request): Promise<Oauth2UserDto> {
     this.logger.debug(`### user sessionId: ${JSON.stringify(req.sessionID)}`);
 
-    const user: FortyTwoUserDto = req.user as FortyTwoUserDto;
+    const user: Oauth2UserDto = req.user as Oauth2UserDto;
 
     await this.authService.destroyOldSessions(user.id, req.sessionID);
-    return plainToClass(FortyTwoUserDto, user);
+    return plainToClass(Oauth2UserDto, user);
   }
 
   @TwoFactorAuthentication()
   @Get('2fa/session')
   @HttpCode(HttpStatus.OK)
   async session2fa(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Session() session: Record<string, any>,
-  ): Promise<FortyTwoUserDto> {
+  ): Promise<Oauth2UserDto> {
     this.logger.debug(`### user session: ${JSON.stringify(session)}`);
-    return plainToClass(FortyTwoUserDto, user);
+    return plainToClass(Oauth2UserDto, user);
   }
 
   @Post('2fa/turn-on')
@@ -127,14 +161,14 @@ export class AuthController {
     @Res() res: Response,
     @Body() otp: OneTimePasswordDto,
   ): Promise<any> {
-    await this.authService.enable2FA(req.user as FortyTwoUserDto, otp);
+    await this.authService.enable2FA(req.user as Oauth2UserDto, otp);
     await this.authService.login2FAUser(req, res); //Express-Session Callback
   }
 
   @Post('2fa/turn-off')
   @HttpCode(HttpStatus.CREATED)
   async turnOff2FA(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<ResponseMessageDto> {
     await this.authService.disable2FA(user);
     return { message: 'Two-factor authentication disabled' };
@@ -147,12 +181,12 @@ export class AuthController {
     @Res() res: Response,
     @Body() otp: OneTimePasswordDto,
   ): Promise<any> {
-    await this.authService.validateOTP(req.user as FortyTwoUserDto, otp);
+    await this.authService.validateOTP(req.user as Oauth2UserDto, otp);
     await this.authService.login2FAUser(req, res); //Express-Session Callback
   }
 
   @Get('2fa/qr-code')
-  async qrCode2FA(@Req() { user }: { user: FortyTwoUserDto }): Promise<string> {
+  async qrCode2FA(@Req() { user }: { user: Oauth2UserDto }): Promise<string> {
     const otpAuthUrl: string = await this.authService.generate2FASecret(
       user.id,
       user.email,

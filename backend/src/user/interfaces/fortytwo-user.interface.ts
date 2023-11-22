@@ -1,9 +1,7 @@
-export interface FortyTwoUser {
+export interface OAuth2User {
   id: number;
-  username: string;
-  displayName: string;
-  profileUrl: string;
   email: string;
+  displayName: string;
   otpEnabled?: boolean;
   otpValidated?: boolean;
   otpSecret?: string;

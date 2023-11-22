@@ -11,13 +11,17 @@ import {
 import entities from '../db/entities';
 import { UserModule } from '../user/user.module';
 import { ProfileModule } from '../profile/profile.module';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Module({
   controllers: [AuthController],
   providers: [
     FortyTwoStrategy,
+    GoogleStrategy,
     UserAuthenticatedGuard,
     FortyTwoAuthGuard,
+    GoogleAuthGuard,
     SessionSerializer,
     AuthService,
   ],

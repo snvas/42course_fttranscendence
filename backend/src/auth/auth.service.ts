@@ -12,9 +12,9 @@ import { authenticator } from 'otplib';
 import { Request, Response } from 'express';
 import { UserService } from '../user/user.service';
 import { toDataURL, toFileStream } from 'qrcode';
-import { FortyTwoUser, OneTimePassword } from './index';
+import { OAuth2User, OneTimePassword } from './index';
 import { plainToClass } from 'class-transformer';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -29,7 +29,7 @@ export class AuthService {
     private readonly sessionRepository: Repository<SessionEntity>,
   ) {}
 
-  async loginUser(user: FortyTwoUser): Promise<FortyTwoUser> {
+  async loginUser(user: OAuth2User): Promise<OAuth2User> {
     this.logger.debug(`### OAuth2 user: ${JSON.stringify(user)}`);
 
     const userEntity: UserEntity = plainToClass(UserEntity, user);
@@ -42,17 +42,17 @@ export class AuthService {
     );
     if (databaseUser) {
       await this.userService.update(userEntity);
-      return plainToClass(FortyTwoUserDto, databaseUser);
+      return plainToClass(Oauth2UserDto, databaseUser);
     }
 
     this.logger.log(`### User [${user.id}] not found. Creating new user`);
     const newUser: UserEntity = await this.userService.create(userEntity);
-    return plainToClass(FortyTwoUserDto, await this.userService.save(newUser));
+    return plainToClass(Oauth2UserDto, await this.userService.save(newUser));
   }
 
   //Create new session for the two factor authenticated user, using express-session
   async login2FAUser(req: Request, res: Response): Promise<void> {
-    const user: FortyTwoUser = req.user as FortyTwoUser;
+    const user: OAuth2User = req.user as OAuth2User;
 
     req.logIn({ ...user, otpValidated: true }, function (err: any) {
       if (err) {
@@ -66,7 +66,7 @@ export class AuthService {
     this.logger.log(`### User [${user.id}] logged in with 2FA successfully`);
   }
 
-  async logoutUser(user: FortyTwoUser, session: any): Promise<void> {
+  async logoutUser(user: OAuth2User, session: any): Promise<void> {
     if (session) {
       session.destroy();
     }
@@ -110,7 +110,7 @@ export class AuthService {
     }
   }
 
-  async enable2FA(user: FortyTwoUser, otp: OneTimePassword): Promise<void> {
+  async enable2FA(user: OAuth2User, otp: OneTimePassword): Promise<void> {
     if (user.otpEnabled) {
       this.logger.log(`### User [${user.id}] already enabled OTP`);
       return;
@@ -125,7 +125,7 @@ export class AuthService {
     this.logger.log(`### User [${user.id}] enabled 2FA successfully`);
   }
 
-  async disable2FA(user: FortyTwoUser): Promise<void> {
+  async disable2FA(user: OAuth2User): Promise<void> {
     if (!user.otpEnabled) {
       throw new BadRequestException('OTP already disabled');
     }
@@ -134,7 +134,7 @@ export class AuthService {
     this.logger.log(`### User [${user.id}] disabled 2FA successfully`);
   }
 
-  async validateOTP(user: FortyTwoUser, otp: OneTimePassword): Promise<void> {
+  async validateOTP(user: OAuth2User, otp: OneTimePassword): Promise<void> {
     if (user.otpValidated) {
       this.logger.log(`### User [${user.id}] already validated OTP`);
       return;
@@ -197,13 +197,13 @@ export class AuthService {
     return await toDataURL(otpAuthUrl);
   }
 
-  async validateUser(id: number): Promise<FortyTwoUser> {
+  async validateUser(id: number): Promise<OAuth2User> {
     const user: UserEntity | null = await this.userService.findById(id);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    return plainToClass(FortyTwoUserDto, user);
+    return plainToClass(Oauth2UserDto, user);
   }
 }

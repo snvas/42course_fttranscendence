@@ -2,7 +2,7 @@ import type {PlayerStatusDto} from '../../../../backend/src/profile/models/playe
 
 export * from '../../../../backend/src/auth/models/response-message.dto';
 export * from '../../../../backend/src/auth/models/one-time-password.dto';
-export * from '../../../../backend/src/user/models/forty-two-user.dto';
+export * from '../../../../backend/src/user/models/oauth2-user.dto';
 export * from '../../../../backend/src/profile/models/profile.dto';
 export * from '../../../../backend/src/profile/models/profile-delete-response.dto';
 export * from '../../../../backend/src/chat/models/private/private-message-history.dto';

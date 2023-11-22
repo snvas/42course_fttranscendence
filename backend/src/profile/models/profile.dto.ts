@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Profile } from '../interfaces/profile.interface';
-import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../../user/models/oauth2-user.dto';
 import { Type } from 'class-transformer';
 import {
   AvatarEntity,
@@ -39,8 +39,8 @@ export class ProfileDTO implements Profile {
   avatarId?: number;
   @IsNotEmptyObject()
   @ValidateNested()
-  @Type(() => FortyTwoUserDto)
-  userEntity: FortyTwoUserDto;
+  @Type(() => Oauth2UserDto)
+  userEntity: Oauth2UserDto;
   @ValidateNested()
   avatar?: AvatarEntity | undefined;
   @ValidateNested()

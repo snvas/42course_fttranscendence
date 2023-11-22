@@ -23,7 +23,7 @@ import { AvatarService } from '../avatar/avatar.service';
 import { plainToClass } from 'class-transformer';
 import { ProfileDTO } from './models/profile.dto';
 import { AvatarDTO } from '../avatar/models/avatar.dto';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 
 @Injectable()
 export class ProfileService {
@@ -369,7 +369,7 @@ export class ProfileService {
    * @param user - The user object.
    * @returns A promise that resolves to a boolean indicating whether the user has a profile or not.
    */
-  public async userHasProfile(user: FortyTwoUserDto): Promise<boolean> {
+  public async userHasProfile(user: Oauth2UserDto): Promise<boolean> {
     try {
       const profileDTO: ProfileDTO = await this.findByUserId(user.id);
 

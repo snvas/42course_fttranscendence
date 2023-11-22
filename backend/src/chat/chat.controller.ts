@@ -12,7 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 import { GroupCreationDto } from './models/group/group-creation.dto';
 import { MessageHttpDto } from './models/message/message-http.dto';
 import { PrivateMessageDto } from './models/private/private-message.dto';
@@ -40,7 +40,7 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Get('private/messages/history')
   async getUserPrivateMessagesHistory(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<PrivateMessageHistoryDto[]> {
     return await this.chatService.getPrivateMessageHistory(user.id);
   }
@@ -48,7 +48,7 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Get('group/messages/history')
   async getUserGroupChatsHistory(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<GroupChatHistoryDto[]> {
     return await this.chatService.getGroupMessageHistory(user.id);
   }
@@ -62,7 +62,7 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('group/create')
   async createGroupChat(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Body() groupCreationDto: GroupCreationDto,
   ): Promise<GroupChatDto> {
     return await this.chatService.createGroupChat(groupCreationDto, user.id);
@@ -80,7 +80,7 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/join')
   async joinGroupChat(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() password: Partial<GroupChatPasswordDto>,
   ): Promise<GroupMemberDto> {
@@ -90,7 +90,7 @@ export class ChatController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('group/:chatId/leave')
   async leaveGroupChat(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<void> {
     await this.chatService.leaveGroupChat(chatId, user.id);
@@ -203,7 +203,7 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('group/:chatId/message')
   async saveGroupMessage(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Param('chatId', ParseIntPipe) chatId: number,
     @Body() messageDto: MessageHttpDto,
   ): Promise<GroupMessageDto> {
@@ -217,7 +217,7 @@ export class ChatController {
   @HttpCode(HttpStatus.CREATED)
   @Post('private/:profileId/message')
   async savePrivateMessage(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
     @Param('profileId', ParseIntPipe) profileId: number,
     @Body() messageDto: MessageHttpDto,
   ): Promise<PrivateMessageDto> {

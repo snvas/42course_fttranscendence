@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
-import { FortyTwoUserDto } from '../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../user/models/oauth2-user.dto';
 import { MatchUpdatedDto } from './models/match-updated.dto';
 import { MatchHistoryDto } from './models/match-history.dto';
 import { MatchAnswerDto } from './models/match-answer.dto';
@@ -32,9 +32,17 @@ export class MatchController {
   @HttpCode(HttpStatus.OK)
   @Get('history')
   async getMatchHistory(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<MatchHistoryDto[]> {
-    return await this.matchService.getMatchHistory(user.id);
+    return await this.matchService.getUserMatchHistory(user.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('history/public/:profileId')
+  async getPublicMatchHistory(
+    @Param('profileId', ParseIntPipe) profileId: number,
+  ): Promise<MatchHistoryDto[]> {
+    return await this.matchService.getProfileMatchHistory(profileId);
   }
 
   /**
@@ -45,7 +53,7 @@ export class MatchController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('queue/join')
   async joinMatchQueue(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<void> {
     await this.matchService.handleUserMatchStatus(user.id, 'waitingMatch');
   }
@@ -58,7 +66,7 @@ export class MatchController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('queue/leave')
   async leaveMatchQueue(
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<void> {
     await this.matchService.handleUserMatchStatus(user.id, 'online');
   }
@@ -73,7 +81,7 @@ export class MatchController {
   @Post('private/create/:profileId')
   async createPrivateMatch(
     @Param('profileId', ParseIntPipe) profileId: number,
-    @Req() { user }: { user: FortyTwoUserDto },
+    @Req() { user }: { user: Oauth2UserDto },
   ): Promise<void> {
     return await this.matchService.joinPrivateMatch(user.id, profileId);
   }

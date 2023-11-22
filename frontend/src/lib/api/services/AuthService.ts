@@ -1,6 +1,6 @@
 import type {AxiosInstance, AxiosResponse} from 'axios';
 import axios from 'axios';
-import type {FortyTwoUserDto, OneTimePasswordDto, ResponseMessageDto} from '$lib/dtos';
+import type {Oauth2UserDto, OneTimePasswordDto, ResponseMessageDto} from '$lib/dtos';
 
 class AuthService {
     private axiosInstance: AxiosInstance;
@@ -16,19 +16,19 @@ class AuthService {
         return this.axiosInstance.get('/logout');
     }
 
-    public async validateUserSession(): Promise<AxiosResponse<FortyTwoUserDto>> {
+    public async validateUserSession(): Promise<AxiosResponse<Oauth2UserDto>> {
         return this.axiosInstance.get('/session');
     }
 
-    public async validateUniqueUserSession(): Promise<AxiosResponse<FortyTwoUserDto>> {
+    public async validateUniqueUserSession(): Promise<AxiosResponse<Oauth2UserDto>> {
         return this.axiosInstance.get('/session/unique-validation');
     }
 
-    public async destroyOldUserSessions(): Promise<AxiosResponse<FortyTwoUserDto>> {
+    public async destroyOldUserSessions(): Promise<AxiosResponse<Oauth2UserDto>> {
         return this.axiosInstance.post('/session/destroy-old');
     }
 
-    public async validate2FASession(): Promise<AxiosResponse<FortyTwoUserDto>> {
+    public async validate2FASession(): Promise<AxiosResponse<Oauth2UserDto>> {
         return this.axiosInstance.get('/2fa/session');
     }
 

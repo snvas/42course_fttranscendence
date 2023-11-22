@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { FortyTwoUserDto } from '../../user/models/forty-two-user.dto';
+import { Oauth2UserDto } from '../../user/models/oauth2-user.dto';
 
 export type AuthenticatedSocket = Socket & {
-  request: { user: FortyTwoUserDto };
+  request: { user: Oauth2UserDto };
 };

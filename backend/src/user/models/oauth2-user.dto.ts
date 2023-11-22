@@ -1,4 +1,4 @@
-import { FortyTwoUser } from '../interfaces/fortytwo-user.interface';
+import { OAuth2User } from '../interfaces/fortytwo-user.interface';
 import {
   IsBoolean,
   IsDate,
@@ -10,20 +10,14 @@ import {
 } from 'class-validator';
 import { Exclude } from 'class-transformer';
 
-export class FortyTwoUserDto implements FortyTwoUser {
+export class Oauth2UserDto implements OAuth2User {
   @IsNumber()
   id: number;
-  @IsString()
-  @IsNotEmpty()
-  username: string;
-  @IsString()
-  @IsNotEmpty()
-  displayName: string;
-  @IsString()
-  @IsNotEmpty()
-  profileUrl: string;
   @IsEmail()
   email: string;
+  @IsNotEmpty()
+  @IsString()
+  displayName: string;
   @IsBoolean()
   @IsOptional()
   otpEnabled?: boolean;
@@ -41,7 +35,7 @@ export class FortyTwoUserDto implements FortyTwoUser {
   @IsNotEmpty()
   updatedAt: Date;
 
-  constructor(partial: Partial<FortyTwoUserDto>) {
+  constructor(partial: Partial<Oauth2UserDto>) {
     Object.assign(this, partial);
   }
 }
