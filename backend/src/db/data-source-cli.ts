@@ -15,7 +15,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: configService.get<string>('DB_NAME') || 'transcendence',
   entities: ['dist/**/*.entity.js'],
   migrations: ['dist/db/migrations/*.js'],
-  //synchronize: true,
+  synchronize: configService.get<boolean>('APP_ENABLE_DATABASE_SYNC') || false,
 };
 
 const dataSource: DataSource = new DataSource(dataSourceOptions);
