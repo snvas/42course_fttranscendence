@@ -107,7 +107,7 @@ export class GroupChatService {
     );
 
     if (
-      await this.groupMemberService.isNotMutedGroupMember(groupChat.id, user.id)
+      await this.groupMemberService.isMutedGroupMember(groupChat.id, user.id)
     ) {
       this.logger.error(
         `### Cant sent message: user [${user.id}] is not a member or is muted in group chat [${groupChat.id}]`,
