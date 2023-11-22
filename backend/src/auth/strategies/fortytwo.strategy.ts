@@ -44,13 +44,12 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
     profile: any,
   ): Promise<OAuth2User> {
     this.logger.verbose(`### Validating user ${profile.id} with 42 strategy`);
-    const { id, displayName, emails, otpEnabled, otpSecret } = profile;
+    const { displayName, emails, otpEnabled, otpSecret } = profile;
 
     const user: OAuth2User =
       this.configService.get<string>('APP_MOCK_42_USERS') === 'true'
         ? await this.authService.loginUser(this.generateFakeUser())
         : await this.authService.loginUser({
-            id,
             displayName,
             email: emails[0].value,
             otpEnabled,
@@ -60,9 +59,8 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
     return user || null;
   }
 
-  private generateFakeUser(): OAuth2User {
+  private generateFakeUser(): Omit<OAuth2User, 'id'> {
     return {
-      id: faker.number.int({ max: 2147483647 }),
       displayName: faker.person.fullName(),
       email: faker.internet.email(),
       otpEnabled: false,

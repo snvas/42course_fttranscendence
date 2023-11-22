@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-       - pong_network
+      - pong_network
     restart: unless-stopped
 
   pgadmin:
@@ -35,12 +35,12 @@ services:
 
   nestjs:
     depends_on:
-        - postgres
+      - postgres
     build: ./backend
     image: nestjs
     container_name: nestjs_container
     environment:
-      DB_HOST: ${DB_HOST} 
+      DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -51,6 +51,9 @@ services:
       APP_OAUTH2_CLIENT_ID: ${APP_OAUTH2_CLIENT_ID}
       APP_OAUTH2_CLIENT_SECRET: ${APP_OAUTH2_CLIENT_SECRET}
       APP_OAUTH2_CALLBACK_URL: ${APP_OAUTH2_CALLBACK_URL}
+      APP_GOOGLE_CLIENT_ID: ${APP_GOOGLE_CLIENT_ID}
+      APP_GOOGLE_CLIENT_SECRET: ${APP_GOOGLE_CLIENT_SECRET}
+      APP_GOOGLE_CALLBACK_URL: ${APP_GOOGLE_CALLBACK_URL}
       APP_OAUTH2_REDIRECT: ${APP_OAUTH2_REDIRECT}
       APP_SESSION_ID: ${APP_SESSION_ID}
       APP_SESSION_SECRET: ${APP_SESSION_SECRET}
@@ -61,35 +64,35 @@ services:
     ports:
       - "3000:3000"
     networks:
-         - pong_network
+      - pong_network
     restart: unless-stopped
 
   nestjs-migrate:
-      depends_on:
-        - nestjs
-      image: nestjs
-      container_name: nestjs_migrate_container
-      command: npm run migration:run
-      environment:
-        DB_HOST: ${DB_HOST}
-        DB_PORT: ${DB_PORT}
-        DB_USERNAME: ${DB_USERNAME}
-        DB_PASSWORD: ${DB_PASSWORD}
-        DB_NAME: ${DB_NAME}
-      networks:
-        - pong_network
-      restart: "no"
+    depends_on:
+      - nestjs
+    image: nestjs
+    container_name: nestjs_migrate_container
+    command: npm run migration:run
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    networks:
+      - pong_network
+    restart: "no"
 
   svelte:
     depends_on:
-        - nestjs
+      - nestjs
     build: ./frontend
     image: svelte
     container_name: svelte_container
     ports:
-        - "3001:3001"
+      - "3001:3001"
     networks:
-        - pong_network
+      - pong_network
     restart: unless-stopped
 
 networks:

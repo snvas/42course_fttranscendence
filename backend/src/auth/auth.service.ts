@@ -29,7 +29,7 @@ export class AuthService {
     private readonly sessionRepository: Repository<SessionEntity>,
   ) {}
 
-  async loginUser(user: OAuth2User): Promise<OAuth2User> {
+  async loginUser(user: Omit<OAuth2User, 'id'>): Promise<OAuth2User> {
     this.logger.debug(`### OAuth2 user: ${JSON.stringify(user)}`);
 
     const userEntity: UserEntity = plainToClass(UserEntity, user);
@@ -41,11 +41,11 @@ export class AuthService {
       `### Current Database User: ${JSON.stringify(databaseUser)}`,
     );
     if (databaseUser) {
-      await this.userService.update(userEntity);
+      await this.userService.update(databaseUser);
       return plainToClass(Oauth2UserDto, databaseUser);
     }
 
-    this.logger.log(`### User [${user.id}] not found. Creating new user`);
+    this.logger.log(`### User not found. Creating new user`);
     const newUser: UserEntity = await this.userService.create(userEntity);
     return plainToClass(Oauth2UserDto, await this.userService.save(newUser));
   }

@@ -68,15 +68,14 @@ export class GroupMemberService {
     }
   }
 
-  async isNotMutedGroupMember(
-    chatId: number,
-    userId: number,
-  ): Promise<boolean> {
+  async isMutedGroupMember(chatId: number, userId: number): Promise<boolean> {
     const groupMember: GroupMemberEntity | null =
       await this.groupMemberRepository.findOneBy([
         {
           profile: {
-            id: userId,
+            userEntity: {
+              id: userId,
+            },
           },
           groupChat: {
             id: chatId,
@@ -85,7 +84,7 @@ export class GroupMemberService {
         },
       ]);
 
-    return !!groupMember;
+    return groupMember === null;
   }
 
   async getGroupMemberships(profile: ProfileDTO): Promise<GroupMemberEntity[]> {
