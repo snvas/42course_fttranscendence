@@ -243,7 +243,7 @@
 				{/if}
 			</div>
 			<div class="flex flex-col lg:w-1/3 w-full h-full lg:order-1 order-first gap-10 overflow-y-auto overflow-x-hidden">
-				<Profile bind:profile={loadProfile} {onLogout} {avatar} />
+				<Profile bind:profile={loadProfile} {onLogout} {avatar} friends={$friendsList}/>
 
 				<div class="flex flex-col w-full h-full mx-auto">
 					{#if status == 'waiting-player'}

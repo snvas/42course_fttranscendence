@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { useAuth } from '$lib/stores';
-	import { getPublicProfile, getUserAvatar } from '$lib/api';
+	import { getFriendsPublic, getPublicProfile, getUserAvatar } from '$lib/api';
 	import Profile from '$lib/components/Profile.svelte';
 	import PongHeader from '$lib/components/PongHeader.svelte';
 	import { page } from '$app/stores';
@@ -14,6 +14,8 @@
 	const userId = $page.params['userId']!;
 
 	$: profile = getPublicProfile(userId);
+
+	$: friends = getFriendsPublic(userId);
 
 	$: avatar = getUserAvatar(profile);
 </script>
@@ -31,7 +33,11 @@
 		{#await profile}
 			Loading
 		{:then}
-			<Profile {profile} onLogout={null} {avatar} />
+			{#await friends then friends}
+				{#if friends}
+					<Profile {profile} onLogout={null} {avatar} friends={friends.data} />
+				{/if}
+			{/await}
 		{/await}
 	</div>
 </div>
