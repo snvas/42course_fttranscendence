@@ -29,9 +29,19 @@ export async function getPublicProfile(userId: string): Promise<AxiosResponse<Pr
 		verifyUnautorized(error);
 		if (error instanceof AxiosError) {
 			if (error.response?.status == 404) {
-				goto('/404.html');
+				goto('/404');
 			}
 		}
+		return null;
+	}
+}
+
+export async function getFriendsPublic(userId: string): Promise<AxiosResponse<SimpleProfileDto[]> | null> {
+	try {
+		const p = await profileService.getPublicFriends(userId);
+		return p;
+	} catch (error) {
+		verifyUnautorized(error);
 		return null;
 	}
 }
