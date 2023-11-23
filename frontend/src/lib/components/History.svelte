@@ -3,7 +3,7 @@
 	import AvatarImage from './AvatarImage.svelte';
 	import type { MatchHistoryDto } from '$lib/dtos';
 	import { getAvatarFromId } from '$lib/api';
-	
+
 	export let matchs: MatchHistoryDto[];
 	export let avatar: Promise<AxiosResponse<Blob> | null> | null;
 </script>
@@ -25,7 +25,7 @@
 					<div class="xl:w-20 w-12">
 						<AvatarImage {avatar} />
 					</div>
-					<p>{match.opponent.nickname}</p>
+					<p>{match.me.nickname}</p>
 				</div>
 			</div>
 		{/each}
