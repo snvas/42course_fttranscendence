@@ -1,4 +1,4 @@
-import {io, Socket} from 'socket.io-client';
+import {io, type Socket} from 'socket.io-client';
 import axios, {type AxiosInstance, type AxiosResponse} from 'axios';
 import type {
 	GroupChatDeletedResponseDto,
