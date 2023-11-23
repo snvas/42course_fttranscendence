@@ -5,17 +5,17 @@
 
 	let isLoading = false;
 
-	const baseUrl = import.meta.env.VITE_API_URL;
+	const authUrl = import.meta.env['VITE_AUTH_URL'];
 
 	async function onLogin() {
 		isLoading = true;
-		await goto(`${baseUrl}/api/auth/42/login`);
+		await goto(`${authUrl}/api/auth/42/login`);
 		isLoading = false;
 	}
 
 	async function onLoginGoogle() {
 		isLoading = true;
-		await goto(`${baseUrl}/api/auth/google/login`);
+		await goto(`${authUrl}/api/auth/google/login`);
 		isLoading = false;
 	}
 </script>
