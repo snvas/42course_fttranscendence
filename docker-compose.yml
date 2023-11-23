@@ -16,23 +16,6 @@ services:
       - pong_network
     restart: unless-stopped
 
-  pgadmin:
-    depends_on:
-      - postgres
-    container_name: pgadmin_container
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-root@admin.org}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-root}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    networks:
-      - pong_network
-    restart: unless-stopped
-
   nestjs:
     depends_on:
       - postgres
@@ -46,6 +29,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       APP_PORT: ${APP_PORT}
+      APP_ENABLE_DATABASE_SYNC: ${APP_ENABLE_DATABASE_SYNC}
       APP_OAUTH2_ENABLED: ${APP_OAUTH2_ENABLED}
       APP_MOCK_42_USERS: ${APP_MOCK_42_USERS}
       APP_OAUTH2_CLIENT_ID: ${APP_OAUTH2_CLIENT_ID}
@@ -67,21 +51,38 @@ services:
       - pong_network
     restart: unless-stopped
 
-  nestjs-migrate:
-    depends_on:
-      - nestjs
-    image: nestjs
-    container_name: nestjs_migrate_container
-    command: npm run migration:run
-    environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-    networks:
-      - pong_network
-    restart: "no"
+  #  nestjs-migrate:
+  #    depends_on:
+  #      - nestjs
+  #    image: nestjs
+  #    container_name: nestjs_migrate_container
+  #    command: npm run migration:run
+  #    environment:
+  #      DB_HOST: ${DB_HOST}
+  #      DB_PORT: ${DB_PORT}
+  #      DB_USERNAME: ${DB_USERNAME}
+  #      DB_PASSWORD: ${DB_PASSWORD}
+  #      DB_NAME: ${DB_NAME}
+  #    networks:
+  #      - pong_network
+  #    restart: "no"
+
+  #  pgadmin:
+  #    depends_on:
+  #      - postgres
+  #    container_name: pgadmin_container
+  #    image: dpage/pgadmin4
+  #    environment:
+  #      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-root@admin.org}
+  #      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-root}
+  #      PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #    volumes:
+  #      - pgadmin:/var/lib/pgadmin
+  #    ports:
+  #      - "${PGADMIN_PORT:-5050}:80"
+  #    networks:
+  #      - pong_network
+  #    restart: unless-stopped
 
   svelte:
     depends_on:
