@@ -50,8 +50,6 @@ services:
     networks:
       - pong_network
     restart: unless-stopped
-    volumes:
-      - data:/app
 
   #  nestjs-migrate:
   #    depends_on:
@@ -97,8 +95,6 @@ services:
     networks:
       - pong_network
     restart: unless-stopped
-    volumes:
-      - data:/app
     environment:
       VITE_AUTH_URL: ${VITE_AUTH_URL}
       PORT: ${FRONTEND_PORT}
@@ -110,4 +106,3 @@ networks:
 volumes:
   postgres:
   pgadmin:
-  data:
