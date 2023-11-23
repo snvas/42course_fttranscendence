@@ -50,6 +50,8 @@ services:
     networks:
       - pong_network
     restart: unless-stopped
+    volumes:
+      - database-data:/app
 
   #  nestjs-migrate:
   #    depends_on:
@@ -95,6 +97,8 @@ services:
     networks:
       - pong_network
     restart: unless-stopped
+    volumes:
+      - database-data:/app
 
 networks:
   pong_network:
@@ -103,3 +107,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  database-data:
