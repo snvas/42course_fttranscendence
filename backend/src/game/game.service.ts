@@ -92,6 +92,26 @@ export class GameService {
     });
   }
 
+  forceDesconnect(socketId:string){
+    const filteredFirstPlayer = [...this.player1.entries()].filter((entry) => {
+      const [key, item] = entry;
+      return item.soketId === socketId;
+    });
+    
+    if (filteredFirstPlayer.length) {
+      const [key, item] = filteredFirstPlayer[0];
+      this.abandonMatch(key, 'p1');
+    } else {
+      const filteredSecondPlayer = [...this.player2.entries()].filter((entry) => {
+        const [key, item] = entry;
+        return item.soketId === socketId;
+      });
+      if (filteredSecondPlayer.length) {
+        const [key, item] = filteredSecondPlayer[0];
+        this.abandonMatch(key, 'p2');
+      }
+    }
+  }
   /**
    * Finish a match.
    * @param matchId - The ID of the match to finish.
