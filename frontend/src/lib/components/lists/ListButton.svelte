@@ -45,13 +45,11 @@
 			text: 'UNBLOCK'
 		},
 		join: {
-			// TODO: corrigir icon
 			img: '/bate-papo-de-texto.png',
 			alt: 'join this group',
 			text: 'JOIN'
 		},
 		leave: {
-			// TODO: corrigir corrigir icon
 			img: '/bloqueado.png',
 			alt: 'leave this group',
 			text: 'LEAVE'
@@ -103,7 +101,6 @@
 			text: 'UNBAN'
 		},
 		unfriend: {
-			// TODO: atualizar icone
 			img: '/do-utilizador.png',
 			alt: 'remove friend',
 			text: 'FRIEND'
@@ -113,7 +110,7 @@
 	export let disabled = false;
 </script>
 
-<button class="w-8 xl:w-10 bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1 disabled:opacity-50 disabled:hover:bg-transparent" on:click {disabled}>
+<button class="bg-white bg-opacity-0 hover:bg-opacity-20 rounded-lg p-1 disabled:opacity-50 disabled:hover:bg-transparent" on:click {disabled}>
 	<img src={typeObject[type].img} alt={typeObject[type].alt} class="w-6 mx-auto" />
 	<p class="text-xs text-center">{typeObject[type].text}</p>
 </button>

@@ -28,7 +28,6 @@ let authState: AuthState = {
     uniqueSession: false
 };
 
-// ??? como fazer a requisição se repetir e manter o
 export function useSession(): Readable<AuthState> {
     const auth = readable<AuthState>(authState, (set) => {
         set({
