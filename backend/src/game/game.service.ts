@@ -92,22 +92,24 @@ export class GameService {
     });
   }
 
-  forceDesconnect(socketId:string){
+  forceDesconnect(socketId: string) {
     const filteredFirstPlayer = [...this.player1.entries()].filter((entry) => {
-      const [,item] = entry;
+      const [, item] = entry;
       return item.soketId === socketId;
     });
-    
+
     if (filteredFirstPlayer.length) {
-      const [key,] = filteredFirstPlayer[0];
+      const [key] = filteredFirstPlayer[0];
       this.abandonMatch(key, 'p1');
     } else {
-      const filteredSecondPlayer = [...this.player2.entries()].filter((entry) => {
-        const [,item] = entry;
-        return item.soketId === socketId;
-      });
+      const filteredSecondPlayer = [...this.player2.entries()].filter(
+        (entry) => {
+          const [, item] = entry;
+          return item.soketId === socketId;
+        },
+      );
       if (filteredSecondPlayer.length) {
-        const [key,] = filteredSecondPlayer[0];
+        const [key] = filteredSecondPlayer[0];
         this.abandonMatch(key, 'p2');
       }
     }
@@ -360,13 +362,13 @@ function resetBall(now: number): Ball {
  * @returns The identifier of the player ('p1' or 'p2') if the ball collided with a paddle, or null if it collided with a wall.
  */
 function checkWalls(ball: Ball): 'p1' | 'p2' | null {
-  if (ball.positionX - ball.diam / 2 <= 0) {
+  if (ball.positionX - ball.diam / 2 <= 15) {
     return 'p2';
   }
   if (ball.positionX - ball.diam / 2 >= width) {
     return 'p1';
   }
-  if (ball.positionY + ball.diam / 2 <= 0) {
+  if (ball.positionY + ball.diam / 2 <= 15) {
     ball.velocityY *= -1;
   }
   if (ball.positionY + ball.diam / 2 >= height) {
