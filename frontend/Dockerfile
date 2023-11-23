@@ -12,10 +12,9 @@ RUN npm install
 
 # Copy the rest of your SvelteKit application to the container
 COPY . .
-RUN npm run build
 
 # Expose the port your SvelteKit app will run on
 EXPOSE 3001
 
 # Command to start your SvelteKit app
-CMD ["node", "./build"]
+CMD ["bash", "./build.sh"]
