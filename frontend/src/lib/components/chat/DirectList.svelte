@@ -11,10 +11,10 @@
 	export let historyList: DashboardUsersList[];
 </script>
 
-<div class="flex-auto w-full flex flex-col overflow-x-hidden overflow-y-auto file:rounded-lg mb-2">
+<div class="flex-auto w-full flex flex-col overflow-x-hidden overflow-y-auto file:rounded-lg mb-2 pb-5">
 	{#each historyList as history}
 		<div
-			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between
+			class="border-b border-white border-opacity-20 p-1 flex flex-row gap-2 items-center justify-between rounded-lg
 			{$selectedDirect?.id == history.id ? 'bg-[#570b0b]' : ''}"
 		>
 			<button

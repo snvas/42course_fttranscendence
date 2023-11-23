@@ -60,7 +60,7 @@
 						<ListButton on:click={() => dispatch('leave', group)} type="leave" />
 					{/if}
 				{:else}
-					You are banned
+				<div class="p-4 items-center flex gap-3"><i class="fa fa-ban text-2xl icon-link" aria-hidden="true" /> You are banned</div>
 				{/if}
 			</div>
 		</div>
