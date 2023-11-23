@@ -3,7 +3,7 @@ version: '3.5'
 services:
   postgres:
     container_name: postgres_container
-    image: postgres
+    image: postgres:latest
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-root}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
@@ -20,7 +20,7 @@ services:
     depends_on:
       - postgres
     build: ./backend
-    image: nestjs
+    image: nestjs:latest
     container_name: nestjs_container
     environment:
       DB_HOST: ${DB_HOST}
@@ -51,7 +51,7 @@ services:
       - pong_network
     restart: unless-stopped
     volumes:
-      - database-data:/app
+      - data:/app
 
   #  nestjs-migrate:
   #    depends_on:
@@ -73,7 +73,7 @@ services:
   #    depends_on:
   #      - postgres
   #    container_name: pgadmin_container
-  #    image: dpage/pgadmin4
+  #    image: dpage/pgadmin4:latest
   #    environment:
   #      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-root@admin.org}
   #      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-root}
@@ -90,7 +90,7 @@ services:
     depends_on:
       - nestjs
     build: ./frontend
-    image: svelte
+    image: svelte:latest
     container_name: svelte_container
     ports:
       - "3001:3001"
@@ -98,7 +98,7 @@ services:
       - pong_network
     restart: unless-stopped
     volumes:
-      - database-data:/app
+      - data:/app
     environment:
       VITE_AUTH_URL: ${VITE_AUTH_URL}
       PORT: ${FRONTEND_PORT}
@@ -110,4 +110,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
-  database-data:
+  data:
