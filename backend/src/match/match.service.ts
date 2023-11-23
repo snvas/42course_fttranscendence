@@ -253,18 +253,16 @@ export class MatchService {
       profile.id,
     );
 
-    if (!socket) {
-      throw new BadRequestException('Player not connected');
-    }
+    if (socket) {
+      await this.status.set(socket, status);
 
-    await this.status.set(socket, status);
+      this.logger.verbose(
+        `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
+      );
 
-    this.logger.verbose(
-      `Player [${profile.id}] | [${profile.nickname}] set status to [${status}]`,
-    );
-
-    if (status === 'playing' || status === 'online') {
-      await this.sendPlayerStatusEvent();
+      if (status === 'playing' || status === 'online') {
+        await this.sendPlayerStatusEvent();
+      }
     }
   }
 

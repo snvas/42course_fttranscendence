@@ -94,20 +94,20 @@ export class GameService {
 
   forceDesconnect(socketId:string){
     const filteredFirstPlayer = [...this.player1.entries()].filter((entry) => {
-      const [key, item] = entry;
+      const [,item] = entry;
       return item.soketId === socketId;
     });
     
     if (filteredFirstPlayer.length) {
-      const [key, item] = filteredFirstPlayer[0];
+      const [key,] = filteredFirstPlayer[0];
       this.abandonMatch(key, 'p1');
     } else {
       const filteredSecondPlayer = [...this.player2.entries()].filter((entry) => {
-        const [key, item] = entry;
+        const [,item] = entry;
         return item.soketId === socketId;
       });
       if (filteredSecondPlayer.length) {
-        const [key, item] = filteredSecondPlayer[0];
+        const [key,] = filteredSecondPlayer[0];
         this.abandonMatch(key, 'p2');
       }
     }
@@ -130,9 +130,8 @@ export class GameService {
 
   async abandonMatch(matchId: string, by: 'p1' | 'p2') {
     const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
-    console.log('abandoned');
     this.isReady.get(matchId)?.pop(); //stop the game
-    this.emit(matchId, 'abandoned', { winner: updatedMatch.winner });
+    this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
     this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
     this.clean(matchId);
   }
