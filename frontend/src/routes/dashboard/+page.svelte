@@ -72,10 +72,13 @@
 	});
 
 	async function onLogout() {
-		$socket.disconnect();
-		//403 check
-		await authService.logoutUser();
-		goto('/login');
+		try {
+			$socket.disconnect();
+			await authService.logoutUser();
+			goto('/login');
+		} catch (error) {
+			verifyUnautorized(error);
+		}
 	}
 
 	async function onGame() {
