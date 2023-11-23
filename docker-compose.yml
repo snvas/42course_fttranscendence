@@ -99,6 +99,9 @@ services:
     restart: unless-stopped
     volumes:
       - database-data:/app
+    environment:
+      VITE_AUTH_URL: ${VITE_AUTH_URL}
+      PORT: ${FRONTEND_PORT}
 
 networks:
   pong_network:
