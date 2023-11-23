@@ -41,8 +41,4 @@
 		@apply border-red-700;
 		@apply text-red-700;
 	}
-	.yellow {
-		@apply border-yellow-600;
-		@apply text-yellow-700;
-	}
 </style>
