@@ -120,7 +120,6 @@
 		match.set(data);
 		privateMatch = null;
 		console.log(`Private Match started: ${data.matchId}`);
-		leaveMatchQueue();
 		goto('/game');
 	});
 
@@ -160,15 +159,6 @@
 		try {
 			await matchMakingService.rejectPrivateMatch(privateMatch.matchId, privateMatch.as);
 			status = 'none';
-		} catch (e) {
-			verifyUnautorized(e);
-			console.log(e);
-		}
-	}
-
-	async function leaveMatchQueue() {
-		try {
-			await matchMakingService.cancelMatchQueue();
 		} catch (e) {
 			verifyUnautorized(e);
 			console.log(e);
