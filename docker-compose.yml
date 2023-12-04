@@ -91,7 +91,7 @@ services:
     image: svelte:latest
     container_name: svelte_container
     ports:
-      - "3001:3001"
+      - "80:3001"
     networks:
       - pong_network
     restart: unless-stopped
