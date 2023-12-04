@@ -189,7 +189,7 @@
 					showStartText = false;
 					p5.textSize(24);
 					p5.fill(255);
-					p5.text('Waiting Oponnet press ENTER', width / 2, height / 2);
+					p5.text('Waiting Opponent press ENTER', width / 2, height / 2);
 				}
 			}
 		};
