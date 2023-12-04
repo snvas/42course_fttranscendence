@@ -72,8 +72,7 @@
 										<p>
 											{formatDistanceToNow(
 												new Date(
-													parseISO(conversation.createdAt).getTime() -
-														parseISO(conversation.createdAt).getTimezoneOffset() * 60 * 1000
+													parseISO(conversation.createdAt).getTime()
 												)
 											)}
 											ago
