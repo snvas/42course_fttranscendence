@@ -94,6 +94,6 @@ export class ProfileService {
 }
 
 export const profileService: ProfileService = new ProfileService(
-    'http://localhost:3000/api/profile',
-    'http://localhost:3000/api/social'
+    import.meta.env.VITE_API_URL + '/api/profile',
+	import.meta.env.VITE_API_URL + '/api/social'
 );
