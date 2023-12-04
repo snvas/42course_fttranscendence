@@ -49,4 +49,4 @@ class AuthService {
     }
 }
 
-export const authService: AuthService = new AuthService('http://localhost:3000/api/auth');
+export const authService: AuthService = new AuthService(import.meta.env.VITE_API_URL +'/api/auth');

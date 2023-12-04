@@ -173,4 +173,4 @@ class ChatService {
     }
 }
 
-export const chatService: ChatService = new ChatService('http://localhost:3000');
+export const chatService: ChatService = new ChatService(import.meta.env.VITE_API_URL);

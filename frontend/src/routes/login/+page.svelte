@@ -5,7 +5,7 @@
 
 	let isLoading = false;
 
-	const authUrl = import.meta.env['VITE_AUTH_URL'];
+	const authUrl = import.meta.env['VITE_API_URL'];
 
 	async function onLogin() {
 		isLoading = true;

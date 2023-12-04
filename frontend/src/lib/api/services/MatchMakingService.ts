@@ -68,5 +68,5 @@ export class MatchMakingService {
 }
 
 export const matchMakingService: MatchMakingService = new MatchMakingService(
-    'http://localhost:3000/api/match'
+	import.meta.env.VITE_API_URL + '/api/match'
 );

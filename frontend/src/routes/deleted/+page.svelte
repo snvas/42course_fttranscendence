@@ -7,7 +7,7 @@
 
 	async function onLogin() {
 		isLoading = true;
-		await goto('http://localhost:3000/api/auth/42/login');
+		await goto(import.meta.env.VITE_API_URL + '/api/auth/42/login');
 		isLoading = false;
 	}
 </script>
