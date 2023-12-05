@@ -88,10 +88,10 @@ services:
     depends_on:
       - nestjs
     build: ./frontend
-    image: svelte:latest
-    container_name: svelte_container
-    ports:
-      - "80:3001"
+    #image: svelte:latest
+    container_name: frontend
+    #ports:
+    #  - "3001:80"
     networks:
       - pong_network
     restart: unless-stopped
@@ -100,6 +100,17 @@ services:
       PORT: ${FRONTEND_PORT:-3001}
       VITE_API_URL: ${VITE_API_URL:-https://localhost:3000}
 
+  nginx:
+     depends_on:
+      - nestjs
+     build: ./webserver
+     container_name: webserver
+     ports:
+      - "3001:443"
+     networks:
+      - pong_network
+     restart: unless-stopped
+  
 networks:
   pong_network:
     driver: bridge
