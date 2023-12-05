@@ -97,6 +97,11 @@
 			}
 		});
 
+		// the ball in new rote
+		gameService.getSocket().on('play-sound', () => {
+			hitSound.play();
+		});
+
 		/**
 		 * Sets up the game canvas and initializes game objects.
 		 * @returns {Promise<void>}

@@ -64,8 +64,9 @@ export class GameService {
 
         ball.positionX += ball.velocityX * delta;
         ball.positionY += ball.velocityY * delta;
-        checkColisionPlayer(ball, player1);
-        checkColisionPlayer(ball, player2);
+        const collides =
+          checkColisionPlayer(ball, player1) ||
+          checkColisionPlayer(ball, player2);
         const playerThatScored = checkWalls(ball);
 
         if (playerThatScored) {
@@ -85,6 +86,9 @@ export class GameService {
           ball = resetBall(now);
         }
 
+        if (collides) {
+          this.emit(matchId, 'play-sound', true);
+        }
         this.ball.set(matchId, ball);
         this.lastUpdate.set(matchId, now);
         this.emit(matchId, 'ball-movement', ball);
@@ -362,13 +366,13 @@ function resetBall(now: number): Ball {
  * @returns The identifier of the player ('p1' or 'p2') if the ball collided with a paddle, or null if it collided with a wall.
  */
 function checkWalls(ball: Ball): 'p1' | 'p2' | null {
-  if (ball.positionX - ball.diam / 2 <= 15) {
+  if (ball.positionX + ball.diam / 2 <= 0) {
     return 'p2';
   }
   if (ball.positionX - ball.diam / 2 >= width) {
     return 'p1';
   }
-  if (ball.positionY + ball.diam / 2 <= 15) {
+  if (ball.positionY - ball.diam / 2 <= 0) {
     ball.velocityY *= -1;
   }
   if (ball.positionY + ball.diam / 2 >= height) {
@@ -432,4 +436,5 @@ function checkColisionPlayer(ball: Ball, player: Player) {
       ball.velocityY = vel * -Math.sin(bounceAngle); // Set the ball's vertical velocity based on the bounce angle
     }
   }
+  return collides;
 }
