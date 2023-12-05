@@ -106,7 +106,7 @@ services:
      build: ./webserver
      container_name: webserver
      ports:
-      - "3001:443"
+      - "443:443"
      networks:
       - pong_network
      restart: unless-stopped
