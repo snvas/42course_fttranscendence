@@ -104,8 +104,8 @@ export class MatchGameService {
     matchId: string,
     by: 'p1' | 'p2',
   ): Promise<MatchEntity> {
+    console.log(`Abandon Match: ${matchId}, by: ${by}`);
     const match: MatchEntity = await this.getMatch(matchId);
-
     if (by === 'p1') {
       await this.profileService.updateByProfileId(match.p1.id, {
         losses: match.p1.losses + 1,
