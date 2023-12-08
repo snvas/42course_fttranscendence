@@ -507,6 +507,7 @@
 	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
 	 */
 	onMount(async () => {
+		gameService.disconnect();
 		gameService.connect();
 		gameService.joinPlayerRoom(String($match?.matchId));
 
@@ -520,7 +521,7 @@
 		gameNew = new p5(sketch, element);
 		
 		window.addEventListener('beforeunload', () => {
-    		gameService.disconnect();
+    		gameService.getSocket().disconnect();
   });
 	});
 	/**
