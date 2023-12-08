@@ -133,7 +133,7 @@ export class GameGateway implements OnGatewayDisconnect, OnGatewayConnection {
   async handleDisconnect(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    console.log(`handle disconnection`);
+    console.log(`Handle FORCE disconnection`);
     this.gameService.forceDesconnect(socket.id);
     this.logger.verbose(`Client disconnected from chat socket: ${socket.id}`);
   }

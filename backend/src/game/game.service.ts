@@ -135,6 +135,7 @@ export class GameService {
   }
 
   async abandonMatch(matchId: string, by: 'p1' | 'p2') {
+    console.log(`Abandon Match: ${matchId}`);
     const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
     this.isReady.get(matchId)?.pop(); //stop the game
     this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
