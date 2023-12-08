@@ -104,7 +104,7 @@ export class GameService {
 
     if (filteredFirstPlayer.length) {
       const [key] = filteredFirstPlayer[0];
-      this.abandonMatch(key, 'p1');
+      this.abandonForceMatch(key, 'p1');
     } else {
       const filteredSecondPlayer = [...this.player2.entries()].filter(
         (entry) => {
@@ -114,7 +114,7 @@ export class GameService {
       );
       if (filteredSecondPlayer.length) {
         const [key] = filteredSecondPlayer[0];
-        this.abandonMatch(key, 'p2');
+        this.abandonForceMatch(key, 'p2');
       }
     }
   }
@@ -140,6 +140,14 @@ export class GameService {
     this.isReady.get(matchId)?.pop(); //stop the game
     this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
     this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
+    this.clean(matchId);
+  }
+
+  async abandonForceMatch(matchId: string, by: 'p1' | 'p2') {
+    console.log(`Abandon FORCED Match: ${matchId}`);
+    const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
+    this.isReady.get(matchId)?.pop(); //stop the game
+    this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
     this.clean(matchId);
   }
 
