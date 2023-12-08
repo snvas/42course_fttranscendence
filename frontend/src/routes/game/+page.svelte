@@ -507,7 +507,9 @@
 	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
 	 */
 	onMount(async () => {
-		gameService.disconnect();
+		if (!$match) {
+			gameService.disconnect();
+		}
 		gameService.connect();
 		gameService.joinPlayerRoom(String($match?.matchId));
 
