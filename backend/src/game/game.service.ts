@@ -96,6 +96,12 @@ export class GameService {
     });
   }
 
+  /**
+   * Forces a disconnection for a given socket ID.
+   * If the socket ID belongs to player 1, the corresponding match is abandoned with 'p1' as the reason.
+   * If the socket ID belongs to player 2, the corresponding match is abandoned with 'p2' as the reason.
+   * @param socketId The ID of the socket to disconnect.
+   */
   forceDesconnect(socketId: string) {
     const filteredFirstPlayer = [...this.player1.entries()].filter((entry) => {
       const [, item] = entry;
@@ -104,7 +110,7 @@ export class GameService {
 
     if (filteredFirstPlayer.length) {
       const [key] = filteredFirstPlayer[0];
-      this.abandonForceMatch(key, 'p1');
+      this.abandonMatch(key, 'p1');
     } else {
       const filteredSecondPlayer = [...this.player2.entries()].filter(
         (entry) => {
@@ -114,7 +120,7 @@ export class GameService {
       );
       if (filteredSecondPlayer.length) {
         const [key] = filteredSecondPlayer[0];
-        this.abandonForceMatch(key, 'p2');
+        this.abandonMatch(key, 'p2');
       }
     }
   }
@@ -140,14 +146,6 @@ export class GameService {
     this.isReady.get(matchId)?.pop(); //stop the game
     this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
     this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
-    this.clean(matchId);
-  }
-
-  async abandonForceMatch(matchId: string, by: 'p1' | 'p2') {
-    console.log(`Abandon FORCED Match: ${matchId}`);
-    const updatedMatch = await this.matchGameService.abandonMatch(matchId, by);
-    this.isReady.get(matchId)?.pop(); //stop the game
-    this.emit(matchId, 'abandon-match', { winner: updatedMatch.winner });
     this.clean(matchId);
   }
 
