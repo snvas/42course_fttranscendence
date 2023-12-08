@@ -551,7 +551,7 @@
 
 <div class="min-h-screen h-full flex flex-col">
 	<PongHeader />
-	{#if $match}
+	<!-- {#if $match} -->
 		<div class="flex flex-col justify-end items-end">
 			<button on:click={abandonMatch} class="mr-10 mt-10"
 				><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></button
@@ -562,10 +562,10 @@
 				<div id="p5-container" />
 			</div>
 		</div>
-	{:else}
+	<!-- {:else}
 		<div class=" h-full grow flex flex-col items-center justify-center p-20 gap-10">
 			<p class="text-xl">No match found</p>
 			<button class="btn-primary-red" on:click={onExit}>Back to Dashboard</button>
 		</div>
-	{/if}
+	{/if}-->
 </div>
