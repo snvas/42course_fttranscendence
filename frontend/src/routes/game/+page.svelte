@@ -90,6 +90,13 @@
 			}
 		});
 
+		gameService.getSocket().on('disconnect', (data) => {
+			if (data) {
+				game.stop();
+				goto('/endgame');
+			}
+		});
+
 		// the ball in new rote
 		gameService.getSocket().on('play-sound', () => {
 			hitSound.play();
