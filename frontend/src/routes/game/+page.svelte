@@ -523,6 +523,8 @@
 	 * Removes the game element and disconnects from the game service.
 	 */
 	onDestroy(() => {
+		console.log('Destroying game');
+		gameService.disconnect();
 		if (gameNew) {
 			gameNew.remove();
 		}
