@@ -286,11 +286,11 @@
 				this.positionY += this.velocityY * delta;
 				let positionX = this.positionX;
 				let positionY = this.positionY;
-				gameService.emitBall({
+				/*gameService.emitBall({
 					matchId: String($match?.matchId),
 					pos: { positionX, positionY },
 					userId
-				});
+				});*/
 			}
 		}
 
