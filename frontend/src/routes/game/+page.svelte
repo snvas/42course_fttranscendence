@@ -518,13 +518,15 @@
 		await import('p5/lib/addons/p5.sound');
 		console.log('Loaded Sound');
 		gameNew = new p5(sketch, element);
+		
+		window.addEventListener('beforeunload', () => {
+    		gameService.disconnect();
+  });
 	});
 	/**
 	 * Removes the game element and disconnects from the game service.
 	 */
 	onDestroy(() => {
-		console.log('Destroying game');
-		gameService.disconnect();
 		if (gameNew) {
 			gameNew.remove();
 		}
