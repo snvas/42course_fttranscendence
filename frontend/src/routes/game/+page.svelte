@@ -169,7 +169,7 @@
 				p5.text('Press ENTER to start', width / 2, height / 2 - 50);
 				p5.textSize(24);
 				p5.text('Use W/S or UP/DOWN to move', width / 2, height / 2);
-				p5.text('First to reach 5 points wins', width / 2, height / 2 + 50);
+				p5.text('First to reach 3 points wins', width / 2, height / 2 + 50);
 			}
 			if (game.running == true) {
 				ball1.draw();

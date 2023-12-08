@@ -328,7 +328,7 @@ function random(min = 0, max = 1) {
   return Math.random() * (max - min) + min;
 }
 
-const vel = 200;
+const vel = 400;
 
 /**
  * @brief Resets the ball to the center of the screen and gives it a random velocity.
