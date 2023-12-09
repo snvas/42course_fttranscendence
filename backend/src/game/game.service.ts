@@ -132,6 +132,7 @@ export class GameService {
     try {
       const updatedMatch = await this.matchGameService.finishMatch(matchId);
       this.emit(matchId, 'finished', { updatedMatch });
+      console.log('Finished OK');
       this.isReady.get(matchId)?.pop(); //stop the game
       this.emit(matchId, 'is_ready', this.isPlayersReady(matchId));
       this.clean(matchId);
