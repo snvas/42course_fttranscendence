@@ -526,6 +526,7 @@
 		} else if (localStorage.getItem('match')) {
 			const match = JSON.parse(localStorage.getItem('match')!);
 			gameService.getSocket().emit('abandon-match', { matchId: match.id, by: match.as });
+			localStorage.removeItem('match');
 		} 
 		console.log(gameService.getSocket().id);
 		gameService.joinPlayerRoom(String($match?.matchId));
@@ -564,6 +565,7 @@
 
 		if (playerType && matchId) {
 			gameService.getSocket().emit('abandon-match', { matchId, by: playerType });
+			localStorage.removeItem('match');
 		}
 	}
 
