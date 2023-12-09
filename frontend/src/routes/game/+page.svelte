@@ -5,6 +5,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { match } from '$lib/stores';
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 
 	type Positions = {
 		positionX: number;
@@ -515,7 +516,17 @@
 	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
 	 */
 	onMount(async () => {
+		if (!browser) {
+			return;
+		}
 		gameService.connect();
+		if ($match) {
+			localStorage.setItem('match', JSON.stringify($match));
+
+		} else if (localStorage.getItem('match')) {
+			const match = JSON.parse(localStorage.getItem('match')!);
+			gameService.getSocket().emit('abandon-match', { matchId: match.id, by: match.as });
+		} 
 		console.log(gameService.getSocket().id);
 		gameService.joinPlayerRoom(String($match?.matchId));
 
