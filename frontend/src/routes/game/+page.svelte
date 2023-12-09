@@ -23,8 +23,8 @@
 
 	const userId = $match?.as == 'p1' ? String($match?.p1.id) : String($match?.p2.id);
 
-	$: console.log("Matchs:", $match?.matchId);
-	$: console.log("Socket:", gameService.getSocket().id);
+	$: console.log('Matchs:', $match?.matchId);
+	$: console.log('Socket:', gameService.getSocket().id);
 
 	async function sketch(p5: p5) {
 		let game: Game;
@@ -47,6 +47,7 @@
 			}
 		});
 
+
 		/**
 		 * Listens for the 'scoreboard' event from the game socket and updates the game's player scores.
 		 *
@@ -64,7 +65,7 @@
 		 * @returns {void}
 		 */
 		gameService.getSocket().on('finished', (data) => {
-			console.log('finished OK')
+			console.log('finished OK');
 			game.stop();
 			game.gameOver(data.winner);
 		});
@@ -90,6 +91,12 @@
 				goto('/endgame');
 			}
 		});
+
+		gameService.getSocket().on('disconnect', (data) => {
+			console.log('disconnect', data);
+			abandonMatch();
+		});
+
 
 		// the ball in new rote
 		gameService.getSocket().on('play-sound', () => {
@@ -508,10 +515,7 @@
 	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
 	 */
 	onMount(async () => {
-		if (!$match) {
-			gameService.disconnect();
-		}
-		gameService.connect();
+		//gameService.connect();
 		gameService.joinPlayerRoom(String($match?.matchId));
 
 		let element: HTMLElement | null = window.document.getElementById('p5-container');
@@ -522,15 +526,21 @@
 		await import('p5/lib/addons/p5.sound');
 		console.log('Loaded Sound');
 		gameNew = new p5(sketch, element);
-		
-		window.addEventListener('beforeunload', () => {
-    		gameService.getSocket().disconnect();
-  });
 	});
 	/**
 	 * Removes the game element and disconnects from the game service.
 	 */
 	onDestroy(() => {
+		gameService
+			.getSocket()
+			.off('is-ready')
+			.off('scoreboard')
+			.off('finished')
+			.off('game-data')
+			.off('ball-movement')
+			.off('play-sound')
+			.off('abandon-match')
+			.off('disconnect');
 		if (gameNew) {
 			gameNew.remove();
 		}
@@ -552,7 +562,7 @@
 
 <div class="min-h-screen h-full flex flex-col">
 	<PongHeader />
-	{#if $match} 
+	{#if $match}
 		<div class="flex flex-col justify-end items-end">
 			<button on:click={abandonMatch} class="mr-10 mt-10"
 				><i class="fa fa-window-close-o mr-10 text-3xl icon-link" aria-hidden="true" /></button
@@ -563,7 +573,7 @@
 				<div id="p5-container" />
 			</div>
 		</div>
-	 {:else}
+	{:else}
 		<div class=" h-full grow flex flex-col items-center justify-center p-20 gap-10">
 			<p class="text-xl">No match found</p>
 			<button class="btn-primary-red" on:click={onExit}>Back to Dashboard</button>
