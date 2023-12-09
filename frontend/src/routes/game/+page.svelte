@@ -64,6 +64,7 @@
 		 * @returns {void}
 		 */
 		gameService.getSocket().on('finished', (data) => {
+			console.log('finished OK')
 			game.stop();
 			game.gameOver(data.winner);
 		});
