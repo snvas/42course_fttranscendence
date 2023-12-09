@@ -99,6 +99,8 @@
 
 	const onConnect = (): void => {
 		console.log('### connected to server via websocket');
+		console.log('Socket:', $socket.id);
+		
 	};
 
 	$socket.on('connect', onConnect);
