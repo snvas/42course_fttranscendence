@@ -102,7 +102,7 @@ export class GameService {
    * If the socket ID belongs to player 2, the corresponding match is abandoned with 'p2' as the reason.
    * @param socketId The ID of the socket to disconnect.
    */
-  forceDesconnect(socketId: string) {
+  async forceDesconnect(socketId: string) {
     const filteredFirstPlayer = [...this.player1.entries()].filter((entry) => {
       const [, item] = entry;
       return item.soketId === socketId;
@@ -110,7 +110,7 @@ export class GameService {
 
     if (filteredFirstPlayer.length) {
       const [key] = filteredFirstPlayer[0];
-      this.abandonMatch(key, 'p1');
+      await this.abandonMatch(key, 'p1');
     } else {
       const filteredSecondPlayer = [...this.player2.entries()].filter(
         (entry) => {
@@ -120,7 +120,7 @@ export class GameService {
       );
       if (filteredSecondPlayer.length) {
         const [key] = filteredSecondPlayer[0];
-        this.abandonMatch(key, 'p2');
+        await this.abandonMatch(key, 'p2');
       }
     }
   }
