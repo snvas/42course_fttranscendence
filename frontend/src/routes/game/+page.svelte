@@ -515,7 +515,8 @@
 	 * Creates a new p5 instance and assigns it to the 'gameNew' variable.
 	 */
 	onMount(async () => {
-		//gameService.connect();
+		gameService.connect();
+		console.log(gameService.getSocket().id);
 		gameService.joinPlayerRoom(String($match?.matchId));
 
 		let element: HTMLElement | null = window.document.getElementById('p5-container');
